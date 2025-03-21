@@ -1,4 +1,4 @@
-# 🚀 Feature PR  
+# 🚀 Feature PR Template
 
 ## 📌 Summary  
 Provide a concise summary of the feature being introduced.
