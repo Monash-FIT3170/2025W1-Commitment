@@ -1,6 +1,8 @@
-# Tauri + SvelteKit + TypeScript
+# 2025W1-Commitment
 
-This template should help get you started developing with Tauri, SvelteKit and TypeScript in Vite.
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 ## Releases
 
