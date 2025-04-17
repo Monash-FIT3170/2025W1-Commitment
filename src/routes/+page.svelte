@@ -12,7 +12,9 @@
 </script>
 
 <main class="container">
-  <h1>Welcome to Tauri + Svelte</h1>
+  <h1 class="text-3xl font-bold underline">
+    Hello world!
+  </h1>
 
   <div class="row">
     <a href="https://vitejs.dev" target="_blank">
@@ -34,7 +36,9 @@
   <p>{greetMsg}</p>
 </main>
 
-<style>
+<style lang="postcss">
+  @reference "tailwindcss";
+  
 .logo.vite:hover {
   filter: drop-shadow(0 0 2em #747bff);
 }
