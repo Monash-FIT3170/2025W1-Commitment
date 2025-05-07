@@ -41,6 +41,8 @@
       },
       xAxis: {
         type: 'value',
+        min: 0,
+        max: 95,
         name: 'Total Commits',
         nameLocation: 'middle',
         nameGap: 40,
@@ -97,7 +99,53 @@
     chart = echarts.init(chartContainer);
     chart.setOption(option);
 
-    
+    function updateGraphics() {
+      const gridTop = chart.convertToPixel({gridIndex: 0}, [0, 2])[1];
+      const xAxisY = chart.convertToPixel({gridIndex: 0}, [0, 0])[1];
+      const graphics = refPoints.map(ref => {
+        const x = chart.convertToPixel({gridIndex: 0}, [ref.value, 0])[0];
+        return {
+          type: 'group',
+          children: [
+            {
+              type: 'line',
+              shape: {
+                x1: x,
+                y1: gridTop,
+                x2: x,
+                y2: xAxisY
+              },
+              style: {
+                stroke: '#fff',
+                lineDash: [4, 4],
+                lineWidth: 1,
+                opacity: 0.5
+              },
+              silent: true
+            },
+            {
+              type: 'text',
+              style: {
+                text: ref.label,
+                fill: '#fff',
+                font: 'bold 16px sans-serif',
+                textAlign: 'center',
+                textVerticalAlign: 'bottom'
+              },
+              x: x,
+              y: gridTop - 10
+            }
+          ]
+        };
+      });
+      chart.setOption({ graphic: graphics });
+    }
+
+    chart.on('finished', updateGraphics);
+    window.addEventListener('resize', () => {
+      chart.resize();
+      updateGraphics();
+    });
 
     return () => {
       window.removeEventListener('resize', updateGraphics);
