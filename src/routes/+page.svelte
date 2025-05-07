@@ -41,8 +41,7 @@
       },
       xAxis: {
         type: 'value',
-        min: 0,
-        max: 95,
+
         name: 'Total Commits',
         nameLocation: 'middle',
         nameGap: 40,
@@ -76,7 +75,7 @@
         {
           type: 'scatter',
           data: people.map(p => [p.x, 1]),
-          symbolSize: 48,
+          symbolSize: 40,
           itemStyle: {
             color: function(params: { dataIndex: number }) {
               return people[params.dataIndex].color;
@@ -127,6 +126,7 @@
               type: 'text',
               style: {
                 text: ref.label,
+                fontSize: 12,
                 fill: '#fff',
                 font: 'bold 16px sans-serif',
                 textAlign: 'center',
