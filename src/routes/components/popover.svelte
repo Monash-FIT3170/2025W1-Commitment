@@ -1,5 +1,7 @@
 <script lang="ts">
-
+import Icon from "@iconify/svelte";
+import ButtonTintedMedium from "./button-tinted-medium.svelte";
+import ButtonPrimaryMedium from "./button-primary-medium.svelte";
 </script>
 
 <div class="popover">
@@ -7,7 +9,7 @@
         <!-- Icon can be broken into seperate component -->
         <div class="icon-header">
             <div data-property-1="tabler-icon-chart-line" class="large-2x">
-                <div class="vector-header"></div>
+                <Icon icon="tabler:sparkles" class="icon-large"/>
             </div>
         </div>
         <div class="heading">
@@ -29,12 +31,10 @@
     </div>
     <!-- Same with buttons -->
     <div class="buttons">
-        <div data-icon="false" data-state="Default" class="button-cancel">
-            <div class="label"><span class="label-text-cancel">cancel</span></div>
-        </div>
-        <div data-icon="false" data-state="Default" class="button-save">
-            <div class="label"><span class="label-text-save">save</span></div>
-        </div>
+        <ButtonTintedMedium label="cancel"/>
+        <ButtonPrimaryMedium label="save"/>
+        <ButtonTintedMedium icon="sparkles" label="hello" disabled={true}/>
+        <ButtonPrimaryMedium icon="sparkles" label="hello" disabled={true}/>
     </div>
 </div>
 
@@ -45,12 +45,12 @@
     left: 4px;
     top: 6px;
     position: absolute;
-    outline: 2px var(--Label-Primary, #181818) solid;
+    outline: 2px var(--Label-Primary) solid;
     outline-offset: -1px;
 }
 
 .heading-text-span {
-    color: var(--Label-Primary, #181818);
+    color: var(--Label-Primary);
     font-size: 22px;
     font-family: DM Mono;
     font-weight: 500;
@@ -71,12 +71,12 @@
     left: 4.50px;
     top: 4.50px;
     position: absolute;
-    outline: 1.50px var(--Label-Primary, #181818) solid;
+    outline: 1.50px var(--Label-Primary) solid;
     outline-offset: -0.75px;
 }
 
 .message-text-span {
-    color: var(--Label-Primary, #181818);
+    color: var(--Label-Primary);
     font-size: 13px;
     font-family: DM Sans;
     font-weight: 400;
@@ -90,7 +90,7 @@
 }
 
 .placeholder-span {
-    color: var(--Label-Secondary, #6A6A6A);
+    color: var(--Label-Secondary);
     font-size: 13px;
     font-family: DM Sans;
     font-weight: 400;
@@ -103,7 +103,7 @@
 }
 
 .label-text-cancel {
-    color: var(--Label-Primary, #181818);
+    color: var(--Label-Primary);
     font-size: 13px;
     font-family: DM Sans;
     font-weight: 600;
@@ -118,7 +118,7 @@
 }
 
 .label-text-save {
-    color: var(--Background-Secondary, #F6F6F6);
+    color: var(--Background-Secondary);
     font-size: 13px;
     font-family: DM Sans;
     font-weight: 600;
@@ -148,7 +148,7 @@
     padding-right: 11px;
     padding-top: 6px;
     padding-bottom: 6px;
-    background: var(--Background-Secondary, #F6F6F6);
+    background: var(--Background-Secondary);
     border-radius: 8px;
     justify-content: center;
     align-items: center;
@@ -188,7 +188,7 @@
     height: 29px;
     padding-left: 16px;
     padding-right: 16px;
-    background: var(--Background-Secondary, #F6F6F6);
+    background: var(--Background-Secondary);
     overflow: hidden;
     border-radius: 8px;
     justify-content: flex-start;
@@ -245,9 +245,9 @@
     width: 50%;
     height: 100%;
     padding: 32px;
-    background: var(--Background-Tint, rgba(235, 235, 235, 0.70));
+    background: var(--Background-Tint);
     border-radius: 12px;
-    outline: 1px var(--Label-Tertiary, #C5C5C5) solid;
+    outline: 1px var(--Label-Primary) solid;
     outline-offset: -1px;
     backdrop-filter: blur(16px);
     flex-direction: column;
