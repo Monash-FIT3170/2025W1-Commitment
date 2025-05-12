@@ -1,0 +1,165 @@
+/* global.css
+
+/* Display fonts */
+.display-title {
+    font-size: 2.625rem;
+    font-family: DM Mono;
+    font-weight: 500;
+    word-wrap: break-word
+}
+
+.display-subtitle {
+    font-size: 1.625rem;
+    font-family: DM Mono;
+    font-weight: 500;
+    word-wrap: break-word
+}
+
+.display-heading {
+    font-size: 1.063rem;
+    font-family: DM Mono;
+    font-weight: 500;
+    word-wrap: break-word
+}
+
+.display-body {
+    font-size: 1.063rem;
+    font-family: DM Sans;
+    font-weight: 400;
+    word-wrap: break-word
+}
+
+.display-body-accent {
+    font-size: 1.063rem;
+    font-family: DM Sans;
+    font-weight: 600;
+    word-wrap: break-word
+}
+
+/* Body text */
+.title {
+    font-size: 1.375rem;
+    font-family: DM Mono;
+    font-weight: 500;
+    word-wrap: break-word
+}
+
+.heading-1 {
+    font-size: 1.063rem;
+    font-family: DM Sans;
+    font-weight: 700;
+    word-wrap: break-word
+}
+
+.heading-2{
+    font-size: 0.938rem;
+    font-family: DM Sans;
+    font-weight: 400;
+    word-wrap: break-word
+}
+
+.body {
+    font-size: 0.813rem;
+    font-family: DM Sans;
+    font-weight: 400;
+    word-wrap: break-word
+}
+
+.body-accent {
+    font-size: 0.813rem;
+    font-family: DM Sans;
+    font-weight: 600;
+    word-wrap: break-word
+}
+
+.caption {
+    font-size: 0.688rem;
+    font-family: DM Sans;
+    font-weight: 600;
+    word-wrap: break-word
+}
+
+/* Colours */
+:root {
+    --black: #181818;
+    --white: #F7F7F7;
+
+    --wonderland--ff6eff: #FF6EFF;
+    --wonderland--ff6cd3: #FF6CD3;
+    --wonderland--ff6ca9: #FF6CA9;
+    --wonderland--ff748b: #FF748B;
+    --wonderland--ff8a6b: #FF8A6B;
+    --wonderland--ffae4f: #FFAE4F;
+    --wonderland--00d498: #00D498;
+    --wonderland--00c8f0: #00C8F0;
+    --wonderland--1fb4ff: #1FB4FF;
+    --wonderland--4c97ff: #4C97FF;
+    --wonderland--6080ff: #6080FF;
+    --wonderland--8e77ff: #8E77FF;
+    --wonderland--c86eff: #C86EFF;
+    --wonderland--fb719a: #FB719A;
+
+    --pastel-wonderland--d692ff: #D692FF;
+    --pastel-wonderland--ff91de: #FF91DE;
+    --pastel-wonderland--ff91bf: #FF91BF;
+    --pastel-wonderland--ff97a8: #FF97A8;
+    --pastel-wonderland--ffa790: #FFA790;
+    --pastel-wonderland--ffc27b: #FFC27B;
+    --pastel-wonderland--6fd9bb: #6FD9BB;
+    --pastel-wonderland--78d5e8: #78D5E8;
+    --pastel-wonderland--77ccf6: #77CCF6;
+    --pastel-wonderland--79b1ff: #79B1FF;
+    --pastel-wonderland--88a0ff: #88A0FF;
+    --pastel-wonderland--aa99ff: #AA99FF;
+    --pastel-wonderland--d694ff: #D694FF;
+    --pastel-wonderland--ff93b3: #FF93B3;
+
+    --background-primary: #181818;
+    --background-secondary: #1D1D1D;
+    --background-tertiary: #242424;
+
+    /* Label */
+    --label-primary: #FFFFFF;
+    --label-secondary: #A3A3A3;
+    --label-tertiary: #747474;
+
+    /* Fill */
+    --fill-00: #F2F2F2;
+    --fill-01: #EBEBEB;
+    --fill-02: #CACACA;
+    --fill-03: #464646;
+    --fill-04: #242424;
+    --fill-05: #1D1D1D;
+
+    /* Tint */
+    --tint-00: rgba(31, 31, 31, 0.7);   /* #1F1F1F */
+    --tint-01: rgba(47, 47, 47, 0.7);   /* #2F2F2F */
+    --tint-02: rgba(116, 116, 116, 0.7); /* #747474 */
+    --tint-03: rgba(209, 209, 209, 0.7); /* #D1D1D1 */
+}
+
+html, body, #app {
+    height: 100%;
+    margin: 0;
+    color: var(--label-primary);
+    background-color: var(--background-primary);
+    display: flex;
+    flex-direction: column;
+}
+
+.icon-small {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+.icon-medium {
+    width: 1.125rem;
+    height: 1.125rem;
+}
+.icon-large {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+.icon-xlarge {
+    width: 2.625rem;
+    height: 2.625rem;
+}
