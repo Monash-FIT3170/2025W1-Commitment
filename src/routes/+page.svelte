@@ -1,33 +1,371 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import * as echarts from 'echarts';
+  import { get } from 'svelte/store';
 
   let chartContainer: HTMLElement;
   let chart: echarts.ECharts;
 
+  // DUMMY DATA SETUP -- REMOVE LATER 
+  type Branch = Readonly<{
+    commits: Commit[],
+    dateRange: String
+  }>
+
+  type File = Readonly<{
+    status: String,
+    added: number,
+    deleted: number,
+    changed: number,
+    path: String
+  }>
+
+  type Commit = Readonly<{
+    date: String,
+    time: String,
+    branch: String,
+    filesChanged: File[]
+  }>
+
+  type User = Readonly<{
+    username: String,
+    userEmails: String[],
+    commits: Commit[]
+  }>;
+
+  // Dummy Data array - of users
+  const users: User[] = [
+  {
+    username: "alice",
+    userEmails: ["alice@example.com"],
+    commits: [
+      {
+        date: "2025-05-01",
+        time: "01:00 AM",
+        branch: "feature/login",
+        filesChanged: [
+          { status: "modified", added: 10, deleted: 2, changed: 12, path: "src/auth.ts" }
+        ]
+      },
+      {
+        date: "2025-05-02",
+        time: "02:00 PM",
+        branch: "feature/login",
+        filesChanged: [
+          { status: "added", added: 50, deleted: 0, changed: 50, path: "src/components/LoginForm.tsx" }
+        ]
+      },
+      {
+        date: "2025-05-03",
+        time: "03:00 AM",
+        branch: "feature/dashboard",
+        filesChanged: [
+          { status: "deleted", added: 0, deleted: 30, changed: 30, path: "src/legacy.ts" }
+        ]
+      },
+      {
+        date: "2025-05-04",
+        time: "04:00 PM",
+        branch: "feature/dashboard",
+        filesChanged: [
+          { status: "modified", added: 5, deleted: 3, changed: 8, path: "src/dashboard.tsx" }
+        ]
+      },
+      {
+        date: "2025-05-05",
+        time: "05:00 AM",
+        branch: "hotfix/login-crash",
+        filesChanged: [
+          { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
+        ]
+      },
+      {
+        date: "2025-05-06",
+        time: "06:00 PM",
+        branch: "hotfix/login-crash",
+        filesChanged: [
+          { status: "modified", added: 2, deleted: 1, changed: 3, path: "src/auth.ts" }
+        ]
+      }
+    ]
+  },
+  {
+    username: "bob",
+    userEmails: ["bob@example.com"],
+    commits: [
+      {
+        date: "2025-05-01",
+        time: "01:00 AM",
+        branch: "feature/notifications",
+        filesChanged: [
+          { status: "added", added: 40, deleted: 0, changed: 40, path: "src/notifications.ts" }
+        ]
+      },
+      {
+        date: "2025-05-02",
+        time: "02:00 PM",
+        branch: "feature/notifications",
+        filesChanged: [
+          { status: "modified", added: 12, deleted: 4, changed: 16, path: "src/notifications.ts" }
+        ]
+      },
+      {
+        date: "2025-05-03",
+        time: "03:00 AM",
+        branch: "feature/settings",
+        filesChanged: [
+          { status: "added", added: 30, deleted: 0, changed: 30, path: "src/settings.ts" }
+        ]
+      },
+      {
+        date: "2025-05-04",
+        time: "04:00 PM",
+        branch: "feature/settings",
+        filesChanged: [
+          { status: "modified", added: 7, deleted: 2, changed: 9, path: "src/settings.ts" }
+        ]
+      },
+      {
+        date: "2025-05-05",
+        time: "05:00 AM",
+        branch: "hotfix/email-bug",
+        filesChanged: [
+          { status: "deleted", added: 0, deleted: 15, changed: 15, path: "src/email.ts" }
+        ]
+      }
+    ]
+  },
+  {
+    username: "carol",
+    userEmails: ["carol@example.com"],
+    commits: [
+      {
+        date: "2025-05-01",
+        time: "01:00 PM",
+        branch: "feature/profile",
+        filesChanged: [
+          { status: "added", added: 25, deleted: 0, changed: 25, path: "src/profile.ts" }
+        ]
+      },
+      {
+        date: "2025-05-02",
+        time: "02:00 PM",
+        branch: "feature/profile",
+        filesChanged: [
+          { status: "modified", added: 10, deleted: 5, changed: 15, path: "src/profile.ts" }
+        ]
+      },
+      {
+        date: "2025-05-03",
+        time: "03:00 PM",
+        branch: "feature/preferences",
+        filesChanged: [
+          { status: "added", added: 18, deleted: 0, changed: 18, path: "src/preferences.ts" }
+        ]
+      },
+      {
+        date: "2025-05-04",
+        time: "04:00 PM",
+        branch: "feature/preferences",
+        filesChanged: [
+          { status: "modified", added: 6, deleted: 2, changed: 8, path: "src/preferences.ts" }
+        ]
+      },
+      {
+        date: "2025-05-05",
+        time: "05:00 PM",
+        branch: "hotfix/profile-404",
+        filesChanged: [
+          { status: "modified", added: 2, deleted: 2, changed: 4, path: "src/profile.ts" }
+        ]
+      }
+    ]
+  },
+  {
+    username: "dave",
+    userEmails: ["dave@example.com"],
+    commits: [
+      {
+        date: "2025-05-01",
+        time: "10:00 AM",
+        branch: "feature/chat",
+        filesChanged: [
+          { status: "added", added: 100, deleted: 0, changed: 100, path: "src/chat.ts" }
+        ]
+      },
+      {
+        date: "2025-05-02",
+        time: "11:00 AM",
+        branch: "feature/chat",
+        filesChanged: [
+          { status: "modified", added: 15, deleted: 5, changed: 20, path: "src/chat.ts" }
+        ]
+      },
+      {
+        date: "2025-05-03",
+        time: "12:00 PM",
+        branch: "feature/chat-ui",
+        filesChanged: [
+          { status: "added", added: 60, deleted: 0, changed: 60, path: "src/components/ChatUI.tsx" }
+        ]
+      },
+      {
+        date: "2025-05-04",
+        time: "01:00 PM",
+        branch: "feature/chat-ui",
+        filesChanged: [
+          { status: "modified", added: 5, deleted: 3, changed: 8, path: "src/components/ChatUI.tsx" }
+        ]
+      },
+      {
+        date: "2025-05-05",
+        time: "02:00 PM",
+        branch: "hotfix/chat-scroll",
+        filesChanged: [
+          { status: "modified", added: 2, deleted: 1, changed: 3, path: "src/chat.ts" }
+        ]
+      }
+    ]
+  },
+  {
+    username: "eve",
+    userEmails: ["eve@example.com"],
+    commits: [
+      {
+        date: "2025-05-01",
+        time: "09:00 AM",
+        branch: "feature/security",
+        filesChanged: [
+          { status: "added", added: 80, deleted: 0, changed: 80, path: "src/security.ts" }
+        ]
+      },
+      {
+        date: "2025-05-02",
+        time: "10:00 AM",
+        branch: "feature/security",
+        filesChanged: [
+          { status: "modified", added: 8, deleted: 2, changed: 10, path: "src/security.ts" }
+        ]
+      },
+      {
+        date: "2025-05-03",
+        time: "11:00 AM",
+        branch: "feature/encryption",
+        filesChanged: [
+          { status: "added", added: 35, deleted: 0, changed: 35, path: "src/encryption.ts" }
+        ]
+      },
+      {
+        date: "2025-05-04",
+        time: "12:00 PM",
+        branch: "feature/encryption",
+        filesChanged: [
+          { status: "modified", added: 10, deleted: 1, changed: 11, path: "src/encryption.ts" }
+        ]
+      },
+      {
+        date: "2025-05-05",
+        time: "01:00 PM",
+        branch: "hotfix/security-alert",
+        filesChanged: [
+          { status: "deleted", added: 0, deleted: 5, changed: 5, path: "src/legacySecurity.ts" }
+        ]
+      },
+      {
+        date: "2025-05-06",
+        time: "02:00 PM",
+        branch: "hotfix/security-alert",
+        filesChanged: [
+          { status: "modified", added: 4, deleted: 0, changed: 4, path: "src/security.ts" }
+        ]
+      }
+    ]
+  }
+];
+
+  function getAverageCommits(users: User[]): number{
+    const commit_mean: number = users.reduce((acc, curr) => {
+        return acc + curr.commits.length;
+    }, 0) / users.length;
+
+    return commit_mean;
+  }
+
+
+  function getRandomHexColor(): string {
+    const randomColor = Math.floor(Math.random() * 0xffffff);
+    return `#${randomColor.toString(16).padStart(6, '0')}`;
+}
+
+  function getUserCommits(users: User[]){
+    let userTotalCommits: any[] = [];
+    users.forEach(user => { 
+      userTotalCommits.push({
+        username: user.username,
+        colour: getRandomHexColor(),
+        numCommits: user.commits.length
+      })
+    })
+    return userTotalCommits;
+  }
+
+  const commit_mean = getAverageCommits(users);
+
+  function getSD(users: User[]): number {
+    let commits: number[] = [];
+
+    // Get the list of total commits for each user
+    users.forEach(user => {
+      commits.push(user.commits.length);
+    })
+
+    // Creating the mean with Array.reduce
+    const n: number = users.length;
+
+    const variance: number = commits.reduce((acc: number, val: number) => acc + Math.pow(val - commit_mean, 2), 0) / n;
+    
+    const sd = Math.sqrt(variance);
+
+    return sd;
+  }
+
+  const sd = getSD(users);
+
+  // Calculate SD & Mean
+  function getRefPoints() {
+
+    const refPoints: number[] = [(commit_mean - (2 * sd)), (commit_mean - sd), commit_mean, (commit_mean + sd), (commit_mean + (2 * sd))]
+
+    return refPoints
+}
+  
+  const refPointValues: number[] = getRefPoints();
+
   // Reference points for vertical lines
   const refPoints = [
-    { label: '-2σ', value: 15 },
-    { label: '-σ', value: 35 },
-    { label: 'mean', value: 50 },
-    { label: '+σ', value: 70 },
-    { label: '+2σ', value: 85 }
+    { label: '-2σ', value: refPointValues[0] },
+    { label: '-σ', value: refPointValues[1] },
+    { label: 'mean', value: refPointValues[2] },
+    { label: '+σ', value: refPointValues[3] },
+    { label: '+2σ', value: refPointValues[4] }
   ];
 
   // Dummy data for people (aggregate x-values)
-  const people = [
-    { name: 'A', color: '#6fcf97', x: 15 },
-    { name: 'B', color: '#e0e0e0', x: 20 },
-    { name: 'C', color: '#bb6bd9', x: 28 },
-    { name: 'D', color: '#6fcf97', x: 38 },
-    { name: 'E', color: '#f2994a', x: 40 },
-    { name: 'F', color: '#2d9cdb', x: 52 },
-    { name: 'G', color: '#f2994a', x: 54 },
-    { name: 'H', color: '#6fcf97', x: 60 },
-    { name: 'I', color: '#27ae60', x: 70 },
-    { name: 'J', color: '#bb6bd9', x: 80 },
-    { name: 'K', color: '#b7e4c7', x: 85 }
-  ];
+  const people = getUserCommits(users);
+  
+  // [
+  //   { name: 'A', color: '#6fcf97', x: 15 },
+  //   { name: 'B', color: '#e0e0e0', x: 20 },
+  //   { name: 'C', color: '#bb6bd9', x: 28 },
+  //   { name: 'D', color: '#6fcf97', x: 38 },
+  //   { name: 'E', color: '#f2994a', x: 40 },
+  //   { name: 'F', color: '#2d9cdb', x: 52 },
+  //   { name: 'G', color: '#f2994a', x: 54 },
+  //   { name: 'H', color: '#6fcf97', x: 60 },
+  //   { name: 'I', color: '#27ae60', x: 70 },
+  //   { name: 'J', color: '#bb6bd9', x: 80 },
+  //   { name: 'K', color: '#b7e4c7', x: 85 }
+  // ];
 
   onMount(() => {
     const option = {
@@ -41,7 +379,8 @@
       },
       xAxis: {
         type: 'value',
-
+        min: Math.ceil(commit_mean - (3 * sd)),
+        max: Math.ceil(commit_mean + (3 * sd)),
         name: 'Total Commits',
         nameLocation: 'middle',
         nameGap: 40,
@@ -74,14 +413,14 @@
         // Scatter points for people
         {
           type: 'scatter',
-          data: people.map(p => [p.x, 1]),
+          data: people.map(p => [p.numCommits, 1]),
           symbolSize: 40,
           itemStyle: {
             color: function(params: { dataIndex: number }) {
-              return people[params.dataIndex].color;
+              return people[params.dataIndex].colour;
             },
             borderColor: function(params: { dataIndex: number }) {
-              return people[params.dataIndex].color;
+              return people[params.dataIndex].colour;
             },
             borderWidth: 4,
             shadowBlur: 0
