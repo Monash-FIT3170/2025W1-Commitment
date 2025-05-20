@@ -173,14 +173,14 @@
           { status: "modified", added: 6, deleted: 2, changed: 8, path: "src/preferences.ts" }
         ]
       },
-      {
-        date: "2025-05-05",
-        time: "05:00 PM",
-        branch: "hotfix/profile-404",
-        filesChanged: [
-          { status: "modified", added: 2, deleted: 2, changed: 4, path: "src/profile.ts" }
-        ]
-      }
+      // {
+      //   date: "2025-05-05",
+      //   time: "05:00 PM",
+      //   branch: "hotfix/profile-404",
+      //   filesChanged: [
+      //     { status: "modified", added: 2, deleted: 2, changed: 4, path: "src/profile.ts" }
+      //   ]
+      // }
     ]
   },
   {
@@ -308,7 +308,8 @@
         numCommits: user.commits.length
       })
     })
-    return userTotalCommits;
+    // Sort by number of commits
+    return userTotalCommits.sort((a, b) => a.numCommits - b.numCommits);
   }
 
   const commit_mean = getAverageCommits(users);
@@ -415,7 +416,7 @@
         // Scatter points for people
         {
           type: 'scatter',
-          data: people.map(p => [p.numCommits, 1]),
+          data: people.map(p => [p.numCommits, 4]),
           symbolSize: 40,
           itemStyle: {
             color: function(params: { dataIndex: number }) {
@@ -441,17 +442,19 @@
 
     //function to add jitter to the y-axis values
     function jitter(data: [number, number][]): [number, number][] {
-      return data.map(([numCommits, y]) => {
-
-        const jitterYAxisAmount = Math.random() * 5;
-        return [numCommits, y + jitterYAxisAmount];
+      // Data is already sorted from getUserCommits
+      const stepSize = 0.5; // Adjust this value to control the vertical spread
+      
+      return data.map(([numCommits, y], index) => {
+        const heightOffset = index * stepSize;
+        return [numCommits, y + heightOffset];
       });
     }
+
     //function to remove jitter from the y-axis values
     function unjitter(data: [number, number][]): [number, number][] {
       return data.map(([numCommits, y]) => {
-        const jitterYAxisAmount = 1;
-        return [numCommits, y - jitterYAxisAmount];
+        return [numCommits, 4]; // Return to base height
       });
     }
 
@@ -459,7 +462,7 @@
     //add hover effect        
     chartContainer.addEventListener('mouseenter', () => {
       hovermessage = 'hover in';
-      const jitteredData = jitter(people.map(p => [p.numCommits, 1]));
+      const jitteredData = jitter(people.map(p => [p.numCommits, 4]));
       chart.setOption({
         series: [{ data: jitteredData }]
       });
@@ -468,7 +471,7 @@
 
     // remove hover effect
     chartContainer.addEventListener('mouseleave', () => {
-            const jitteredData = unjitter(people.map(p => [p.numCommits, 1]));
+            const jitteredData = unjitter(people.map(p => [p.numCommits, 4]));
       chart.setOption({
         series: [{ data: jitteredData }]
       });
