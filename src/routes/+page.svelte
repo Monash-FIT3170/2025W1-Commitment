@@ -5,6 +5,8 @@
 
   let chartContainer: HTMLElement;
   let chart: echarts.ECharts;
+  let hovermessage: string = '';    //temp to check hover event
+  let onclickmessage: string = '';  //temp to check onclick event
 
   // DUMMY DATA SETUP -- REMOVE LATER 
   type Branch = Readonly<{
@@ -407,7 +409,7 @@
       yAxis: {
         show: false,
         min: 0,
-        max: 2
+        max: users.length + 1,
       },
       series: [
         // Scatter points for people
@@ -437,8 +439,55 @@
     chart = echarts.init(chartContainer);
     chart.setOption(option);
 
+    //function to add jitter to the y-axis values
+    function jitter(data: [number, number][]): [number, number][] {
+      return data.map(([numCommits, y]) => {
+
+        const jitterYAxisAmount = Math.random() * 5;
+        return [numCommits, y + jitterYAxisAmount];
+      });
+    }
+    //function to remove jitter from the y-axis values
+    function unjitter(data: [number, number][]): [number, number][] {
+      return data.map(([numCommits, y]) => {
+        const jitterYAxisAmount = 1;
+        return [numCommits, y - jitterYAxisAmount];
+      });
+    }
+
+
+    //add hover effect        
+    chartContainer.addEventListener('mouseenter', () => {
+      hovermessage = 'hover in';
+      const jitteredData = jitter(people.map(p => [p.numCommits, 1]));
+      chart.setOption({
+        series: [{ data: jitteredData }]
+      });
+    });
+
+
+    // remove hover effect
+    chartContainer.addEventListener('mouseleave', () => {
+            const jitteredData = unjitter(people.map(p => [p.numCommits, 1]));
+      chart.setOption({
+        series: [{ data: jitteredData }]
+      });
+      hovermessage = "hover out";
+    });
+
+
+    //onclick event to show the user name
+    chart.on('click', function (params) {
+      if (params.componentType === 'scatter') {
+        const i = params.dataIndex;
+        const person = people[i];
+        onclickmessage = `Clicked on ${person.username}`;
+      }
+    });
+
+
     function updateGraphics() {
-      const gridTop = chart.convertToPixel({gridIndex: 0}, [0, 2])[1];
+      const gridTop = chart.convertToPixel({gridIndex: 0}, [0, users.length + 1])[1];
       const xAxisY = chart.convertToPixel({gridIndex: 0}, [0, 0])[1];
       const graphics = refPoints.map(ref => {
         const x = chart.convertToPixel({gridIndex: 0}, [ref.value, 0])[0];
@@ -486,6 +535,7 @@
       updateGraphics();
     });
 
+
     return () => {
       window.removeEventListener('resize', updateGraphics);
       chart.dispose();
@@ -520,3 +570,13 @@
     text-align: center;
   }
 </style>
+{#if hovermessage}
+  <div class="hover-message">
+    {hovermessage}
+  </div>
+{/if}
+{#if onclickmessage}
+  <div class="click-message">
+    {onclickmessage}
+  </div>
+{/if}
