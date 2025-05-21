@@ -42,6 +42,22 @@ export const users: User[] = [
             ]
           },
           {
+            date: "2025-05-01",
+            time: "01:00 AM",
+            branch: "feature/login",
+            filesChanged: [
+              { status: "modified", added: 10, deleted: 2, changed: 12, path: "src/auth.ts" }
+            ]
+          },
+          {
+            date: "2025-05-01",
+            time: "01:00 AM",
+            branch: "feature/login",
+            filesChanged: [
+              { status: "modified", added: 10, deleted: 2, changed: 12, path: "src/auth.ts" }
+            ]
+          },
+          {
             date: "2025-05-02",
             time: "02:00 PM",
             branch: "feature/login",
@@ -99,7 +115,7 @@ export const users: User[] = [
           {
             date: "2025-05-01",
             time: "01:00 AM",
-            branch: "feature/notifications",
+            branch: "feature/login",
             filesChanged: [
               { status: "added", added: 40, deleted: 0, changed: 40, path: "src/notifications.ts" }
             ]
@@ -107,31 +123,39 @@ export const users: User[] = [
           {
             date: "2025-05-02",
             time: "02:00 PM",
-            branch: "feature/notifications",
+            branch: "feature/login",
             filesChanged: [
               { status: "modified", added: 12, deleted: 4, changed: 16, path: "src/notifications.ts" }
             ]
           },
           {
+            date: "2025-05-01",
+            time: "01:00 AM",
+            branch: "feature/login",
+            filesChanged: [
+              { status: "modified", added: 10, deleted: 2, changed: 12, path: "src/auth.ts" }
+            ]
+          },
+          {
             date: "2025-05-03",
             time: "03:00 AM",
-            branch: "feature/settings",
+            branch: "feature/dashboard",
             filesChanged: [
               { status: "added", added: 30, deleted: 0, changed: 30, path: "src/settings.ts" }
             ]
           },
           {
-            date: "2025-05-04",
-            time: "04:00 PM",
-            branch: "feature/settings",
+            date: "2025-05-03",
+            time: "03:00 AM",
+            branch: "feature/dashboard",
             filesChanged: [
-              { status: "modified", added: 7, deleted: 2, changed: 9, path: "src/settings.ts" }
+              { status: "deleted", added: 0, deleted: 30, changed: 30, path: "src/legacy.ts" }
             ]
           },
           {
             date: "2025-05-05",
             time: "05:00 AM",
-            branch: "hotfix/email-bug",
+            branch: "hotfix/login-crash",
             filesChanged: [
               { status: "deleted", added: 0, deleted: 15, changed: 15, path: "src/email.ts" }
             ]
@@ -146,7 +170,7 @@ export const users: User[] = [
           {
             date: "2025-05-01",
             time: "01:00 PM",
-            branch: "feature/profile",
+            branch: "feature/login",
             filesChanged: [
               { status: "added", added: 25, deleted: 0, changed: 25, path: "src/profile.ts" }
             ]
@@ -154,7 +178,7 @@ export const users: User[] = [
           {
             date: "2025-05-02",
             time: "02:00 PM",
-            branch: "feature/profile",
+            branch: "feature/login",
             filesChanged: [
               { status: "modified", added: 10, deleted: 5, changed: 15, path: "src/profile.ts" }
             ]
@@ -162,19 +186,35 @@ export const users: User[] = [
           {
             date: "2025-05-03",
             time: "03:00 PM",
-            branch: "feature/preferences",
+            branch: "feature/dashboard",
             filesChanged: [
               { status: "added", added: 18, deleted: 0, changed: 18, path: "src/preferences.ts" }
             ]
           },
           {
-            date: "2025-05-04",
-            time: "04:00 PM",
-            branch: "feature/preferences",
+            date: "2025-05-03",
+            time: "03:00 AM",
+            branch: "feature/dashboard",
             filesChanged: [
-              { status: "modified", added: 6, deleted: 2, changed: 8, path: "src/preferences.ts" }
+              { status: "deleted", added: 0, deleted: 30, changed: 30, path: "src/legacy.ts" }
             ]
           },
+          {
+            date: "2025-05-06",
+            time: "02:00 PM",
+            branch: "hotfixlogin-crash",
+            filesChanged: [
+              { status: "modified", added: 4, deleted: 0, changed: 4, path: "src/security.ts" }
+            ]
+          },
+          {
+            date: "2025-05-06",
+            time: "02:00 PM",
+            branch: "hotfixlogin-crash",
+            filesChanged: [
+              { status: "modified", added: 4, deleted: 0, changed: 4, path: "src/security.ts" }
+            ]
+          }
           // {
           //   date: "2025-05-05",
           //   time: "05:00 PM",
@@ -193,7 +233,7 @@ export const users: User[] = [
           {
             date: "2025-05-01",
             time: "10:00 AM",
-            branch: "feature/chat",
+            branch: "feature/login",
             filesChanged: [
               { status: "added", added: 100, deleted: 0, changed: 100, path: "src/chat.ts" }
             ]
@@ -201,7 +241,7 @@ export const users: User[] = [
           {
             date: "2025-05-02",
             time: "11:00 AM",
-            branch: "feature/chat",
+            branch: "feature/login",
             filesChanged: [
               { status: "modified", added: 15, deleted: 5, changed: 20, path: "src/chat.ts" }
             ]
@@ -209,7 +249,7 @@ export const users: User[] = [
           {
             date: "2025-05-03",
             time: "12:00 PM",
-            branch: "feature/chat-ui",
+            branch: "feature/dashboard",
             filesChanged: [
               { status: "added", added: 60, deleted: 0, changed: 60, path: "src/components/ChatUI.tsx" }
             ]
@@ -217,7 +257,7 @@ export const users: User[] = [
           {
             date: "2025-05-04",
             time: "01:00 PM",
-            branch: "feature/chat-ui",
+            branch: "feature/dashboard",
             filesChanged: [
               { status: "modified", added: 5, deleted: 3, changed: 8, path: "src/components/ChatUI.tsx" }
             ]
@@ -225,7 +265,7 @@ export const users: User[] = [
           {
             date: "2025-05-05",
             time: "02:00 PM",
-            branch: "hotfix/chat-scroll",
+            branch: "hotfix/login-crash",
             filesChanged: [
               { status: "modified", added: 2, deleted: 1, changed: 3, path: "src/chat.ts" }
             ]
@@ -240,7 +280,7 @@ export const users: User[] = [
           {
             date: "2025-05-01",
             time: "09:00 AM",
-            branch: "feature/security",
+            branch: "feature/login",
             filesChanged: [
               { status: "added", added: 80, deleted: 0, changed: 80, path: "src/security.ts" }
             ]
@@ -248,7 +288,7 @@ export const users: User[] = [
           {
             date: "2025-05-02",
             time: "10:00 AM",
-            branch: "feature/security",
+            branch: "feature/login",
             filesChanged: [
               { status: "modified", added: 8, deleted: 2, changed: 10, path: "src/security.ts" }
             ]
@@ -256,7 +296,7 @@ export const users: User[] = [
           {
             date: "2025-05-03",
             time: "11:00 AM",
-            branch: "feature/encryption",
+            branch: "feature/dashboard",
             filesChanged: [
               { status: "added", added: 35, deleted: 0, changed: 35, path: "src/encryption.ts" }
             ]
@@ -264,7 +304,7 @@ export const users: User[] = [
           {
             date: "2025-05-04",
             time: "12:00 PM",
-            branch: "feature/encryption",
+            branch: "feature/dashboard",
             filesChanged: [
               { status: "modified", added: 10, deleted: 1, changed: 11, path: "src/encryption.ts" }
             ]
@@ -272,7 +312,7 @@ export const users: User[] = [
           {
             date: "2025-05-05",
             time: "01:00 PM",
-            branch: "hotfix/security-alert",
+            branch: "hotfix/login-crash",
             filesChanged: [
               { status: "deleted", added: 0, deleted: 5, changed: 5, path: "src/legacySecurity.ts" }
             ]
@@ -280,7 +320,7 @@ export const users: User[] = [
           {
             date: "2025-05-06",
             time: "02:00 PM",
-            branch: "hotfix/security-alert",
+            branch: "hotfixlogin-crash",
             filesChanged: [
               { status: "modified", added: 4, deleted: 0, changed: 4, path: "src/security.ts" }
             ]

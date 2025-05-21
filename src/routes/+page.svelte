@@ -3,13 +3,30 @@
   import * as echarts from 'echarts';
   import { get } from 'svelte/store';
   import { users, type User } from '../data/dummyData';
-    import { Size } from '@tauri-apps/api/dpi';
+  import { Size } from '@tauri-apps/api/dpi';
 
   let chartContainer: HTMLElement;
   let chart: echarts.ECharts;
   let isJittered: boolean = false; // State for jitter effect
 
-  function getAverageCommits(users: User[]): number{
+  // Add branch selection state
+  let selectedBranch = 'all';
+  
+  // Extract unique branches from dummy data and add 'all' option
+  const branches = ['all', ...new Set(users.flatMap(user => 
+    user.commits.map(commit => commit.branch)
+  ))];
+
+  // Filter users based on selected branch
+  $: filteredUsers = selectedBranch === 'all' 
+    ? users 
+    : users.map(user => ({
+        ...user,
+        commits: user.commits.filter(commit => commit.branch === selectedBranch)
+      })).filter(user => user.commits.length > 0);
+
+  function getAverageCommits(users: User[]): number {
+    if (users.length === 0) return 0;
     const commit_mean: number = users.reduce((acc, curr) => {
         return acc + curr.commits.length;
     }, 0) / users.length;
@@ -17,13 +34,43 @@
     return commit_mean;
   }
 
+  function getSD(users: User[]): number {
+    if (users.length === 0) return 0;
+    let commits: number[] = [];
+
+    // Get the list of total commits for each user
+    users.forEach(user => {
+      commits.push(user.commits.length);
+    })
+
+    // Creating the mean with Array.reduce
+    const n: number = users.length;
+    const mean = getAverageCommits(users);
+
+    const variance: number = commits.reduce((acc: number, val: number) => acc + Math.pow(val - mean, 2), 0) / n;
+    
+    return Math.sqrt(variance);
+  }
+
+  // Calculate SD & Mean
+  function getRefPoints(mean: number, sd: number): number[] {
+    if (sd === 0) return [mean, mean, mean, mean, mean];
+    return [
+      (mean - (2 * sd)),
+      (mean - sd),
+      mean,
+      (mean + sd),
+      (mean + (2 * sd))
+    ];
+  }
 
   function getRandomHexColor(): string {
     const randomColor = Math.floor(Math.random() * 0xffffff);
     return `#${randomColor.toString(16).padStart(6, '0')}`;
 }
 
-  function getUserCommits(users: User[]){
+  function getUserCommits(users: User[]) {
+    if (users.length === 0) return [];
     let userTotalCommits: any[] = [];
     users.forEach(user => { 
       userTotalCommits.push({
@@ -51,7 +98,6 @@
         result.push(users[0]);
       } else {
         users.forEach((user, index) => {
-          // Store the index for later use in updateGraphics
           result.push({
             ...user,
             offsetIndex: index - (users.length - 1) / 2
@@ -63,46 +109,22 @@
     return result;
   }
 
-  const commit_mean = getAverageCommits(users);
-
-  function getSD(users: User[]): number {
-    let commits: number[] = [];
-
-    // Get the list of total commits for each user
-    users.forEach(user => {
-      commits.push(user.commits.length);
-    })
-
-    // Creating the mean with Array.reduce
-    const n: number = users.length;
-
-    const variance: number = commits.reduce((acc: number, val: number) => acc + Math.pow(val - commit_mean, 2), 0) / n;
-    
-    const sd = Math.sqrt(variance);
-
-    return sd;
-  }
-
-  const sd = getSD(users);
-
-  // Calculate SD & Mean
-  function getRefPoints() {
-
-    const refPoints: number[] = [(commit_mean - (2 * sd)), (commit_mean - sd), commit_mean, (commit_mean + sd), (commit_mean + (2 * sd))]
-
-    return refPoints
-}
-  
-  const refPointValues: number[] = getRefPoints();
+  // Reactive declarations for derived values
+  $: commit_mean = getAverageCommits(filteredUsers);
+  $: sd = getSD(filteredUsers);
+  $: refPointValues = getRefPoints(commit_mean, sd);
+  $: filteredPeople = getUserCommits(filteredUsers);
 
   // Reference points for vertical lines
-  const refPoints = [
-    { label: '-2σ', value: refPointValues[0] },
-    { label: '-σ', value: refPointValues[1] },
-    { label: 'mean', value: refPointValues[2] },
-    { label: '+σ', value: refPointValues[3] },
-    { label: '+2σ', value: refPointValues[4] }
-  ];
+  $: refPoints = (sd === 0)
+    ? [{ label: 'mean', value: refPointValues[2] }]
+    : [
+        { label: '-2σ', value: refPointValues[0] },
+        { label: '-σ', value: refPointValues[1] },
+        { label: 'mean', value: refPointValues[2] },
+        { label: '+σ', value: refPointValues[3] },
+        { label: '+2σ', value: refPointValues[4] }
+      ];
 
   // Dummy data for people (aggregate x-values)
   const people = getUserCommits(users);
@@ -121,7 +143,101 @@
   //   { name: 'K', color: '#b7e4c7', x: 85 }
   // ];
 
-  onMount(() => {
+  function updateGraphics() {
+    if (!chart) return;
+    
+    // Use y=2 as the top of the y-axis for gridTop
+    const gridTop = chart.convertToPixel({gridIndex: 0}, [0, 2])[1];
+    const xAxisY = chart.convertToPixel({gridIndex: 0}, [0, 0])[1];
+    
+    // Create graphics for reference lines
+    const refLineGraphics = refPoints.map(ref => {
+      const x = chart.convertToPixel({gridIndex: 0}, [ref.value, 0])[0];
+      return {
+        type: 'group',
+        children: [
+          {
+            type: 'line',
+            shape: {
+              x1: x,
+              y1: gridTop,
+              x2: x,
+              y2: xAxisY
+            },
+            style: {
+              stroke: '#fff',
+              lineDash: [4, 4],
+              lineWidth: 1,
+              opacity: 0.5
+            },
+            silent: true
+          },
+          {
+            type: 'text',
+            style: {
+              text: ref.label,
+              fontSize: 12,
+              fill: '#fff',
+              font: 'bold 16px sans-serif',
+              textAlign: 'center',
+              textVerticalAlign: 'bottom'
+            },
+            x: x,
+            y: gridTop - 8 
+          }
+        ]
+      };
+    });
+
+    // Create graphics for user images with fixed pixel offset
+    const userGraphics = filteredPeople.map((person) => {
+      // Convert the base position to pixels
+      const [baseX, y] = chart.convertToPixel({gridIndex: 0}, [person.numCommits, 1]);
+      // Apply fixed 16px offset if there's an offsetIndex
+      const x = baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
+      
+      return {
+        type: 'group',
+        children: [
+          {
+            type: 'image',
+            style: {
+              image: person.image,
+              width: 40,
+              height: 40
+            },
+            x: x - 20, // Center the image
+            y: y - 20, // Center the image
+            silent: false,
+            clipPath: {
+              type: 'circle',
+              shape: {
+                cx: 20,
+                cy: 20,
+                r: 20
+              }
+            }
+          }
+        ]
+      };
+    });
+
+    // Combine all graphics
+    chart.setOption({ 
+      graphic: [...refLineGraphics, ...userGraphics]
+    });
+
+    console.log(filteredPeople);
+  }
+
+  // Calculate min and max number of commits for filteredPeople
+  $: minCommits = filteredPeople.length > 0 ? Math.min(...filteredPeople.map(p => p.numCommits)) : 0;
+  $: maxCommits = filteredPeople.length > 0 ? Math.max(...filteredPeople.map(p => p.numCommits)) : 1;
+  $: xMin = minCommits === maxCommits ? minCommits - 1 : minCommits - 1;
+  $: xMax = minCommits === maxCommits ? maxCommits + 1 : maxCommits + 1;
+
+  // Update the chart config to use xMin and xMax
+  $: if (chart && selectedBranch) {
     const option = {
       backgroundColor: '#222',
       grid: {
@@ -133,8 +249,8 @@
       },
       xAxis: {
         type: 'value',
-        min: Math.ceil(commit_mean - (3 * sd)),
-        max: Math.ceil(commit_mean + (3 * sd)),
+        min: xMin,
+        max: xMax,
         name: 'Total Commits',
         nameLocation: 'middle',
         nameGap: 40,
@@ -161,12 +277,12 @@
       yAxis: {
         show: false,
         min: 0,
-        max: users.length + 1,
+        max: 2,
       },
       series: [
         {
           type: 'scatter',
-          data: people.map(p => [p.numCommits, 3]),
+          data: filteredPeople.map(p => [p.numCommits, 1]),
           symbolSize: 0,
           z: 3
         }
@@ -174,128 +290,17 @@
       graphic: []
     };
 
+    chart.setOption(option, true); // true for not merging with previous options
+    updateGraphics();
+  }
+
+  onMount(() => {
     chart = echarts.init(chartContainer);
-    chart.setOption(option);
-
-    //function to add jitter to the y-axis values
-    function jitter(data: [number, number][]): [number, number][] {
-      // Data is already sorted from getUserCommits
-      const stepSize = 0.5; // Adjust this value to control the vertical spread
-      
-      return data.map(([numCommits, y], index) => {
-        const heightOffset = index * stepSize;
-        return [numCommits, y + heightOffset];
-      });
-    }
-
-    //function to remove jitter from the y-axis values
-    function unjitter(data: [number, number][]): [number, number][] {
-      return data.map(([numCommits, y]) => {
-        return [numCommits, 3]; // Return to base height 3
-      });
-    }
-
-    // //onclick event to toggle jitter
-    // chart.on('click', function (params) {
-    //   isJittered = !isJittered;
-    //   const newData = isJittered ? 
-    //     jitter(people.map(p => [p.numCommits, 3])) :
-    //     unjitter(people.map(p => [p.numCommits, 3]));
-      
-    //   chart.setOption({
-    //     series: [{ data: newData }]
-    //   });
-    //   updateGraphics();
-    // });
-
-    function updateGraphics() {
-      const gridTop = chart.convertToPixel({gridIndex: 0}, [0, users.length + 1])[1];
-      const xAxisY = chart.convertToPixel({gridIndex: 0}, [0, 0])[1];
-      
-      // Create graphics for reference lines
-      const refLineGraphics = refPoints.map(ref => {
-        const x = chart.convertToPixel({gridIndex: 0}, [ref.value, 0])[0];
-        return {
-          type: 'group',
-          children: [
-            {
-              type: 'line',
-              shape: {
-                x1: x,
-                y1: gridTop,
-                x2: x,
-                y2: xAxisY
-              },
-              style: {
-                stroke: '#fff',
-                lineDash: [4, 4],
-                lineWidth: 1,
-                opacity: 0.5
-              },
-              silent: true
-            },
-            {
-              type: 'text',
-              style: {
-                text: ref.label,
-                fontSize: 12,
-                fill: '#fff',
-                font: 'bold 16px sans-serif',
-                textAlign: 'center',
-                textVerticalAlign: 'bottom'
-              },
-              x: x,
-              y: gridTop - 10
-            }
-          ]
-        };
-      });
-
-      // Create graphics for user images with fixed pixel offset
-      const userGraphics = people.map((person) => {
-        // Convert the base position to pixels
-        const [baseX, y] = chart.convertToPixel({gridIndex: 0}, [person.numCommits, 3]);
-        // Apply fixed 16px offset if there's an offsetIndex
-        const x = baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
-        
-        return {
-          type: 'group',
-          children: [
-            {
-              type: 'image',
-              style: {
-                image: person.image,
-                width: 40,
-                height: 40
-              },
-              x: x - 20, // Center the image
-              y: y - 20, // Center the image
-              silent: false,
-              clipPath: {
-                type: 'circle',
-                shape: {
-                  cx: 20,
-                  cy: 20,
-                  r: 20
-                }
-              }
-            }
-          ]
-        };
-      });
-
-      // Combine all graphics
-      chart.setOption({ 
-        graphic: [...refLineGraphics, ...userGraphics]
-      });
-    }
-
-    chart.on('finished', updateGraphics);
+    
     window.addEventListener('resize', () => {
       chart.resize();
       updateGraphics();
     });
-
 
     return () => {
       window.removeEventListener('resize', updateGraphics);
@@ -352,23 +357,25 @@
 
   // Add this function after the other utility functions
   function calculateScalingFactor(numCommits: number): number {
+    if (sd === 0) return 1.0;
     const zScore = (numCommits - commit_mean) / sd;
-    
-    if (Math.abs(zScore) <= 1) {
+    const EPSILON = 1e-6;
+    if (Math.abs(zScore) < EPSILON) {
+      return 1.0;
+    } else if (Math.abs(zScore) <= 1) {
       return 1.0;
     } else if (zScore < -1 && zScore >= -2) {
-      return 0.9;  // Fixed value for -2 to -1 SD
+      return 0.9;
     } else if (zScore > 1 && zScore <= 2) {
-      return 1.1;  // Fixed value for 1 to 2 SD
+      return 1.1;
     } else {
-      // For values beyond ±2 SD, use the extreme values
       return zScore < 0 ? 0.8 : 1.2;
     }
   }
 
-  // Modify the peopleWithMetrics mapping to include scaling factor
-  const peopleWithMetrics = people.map(person => {
-    const user = users.find(u => u.username === person.username);
+  // Update the peopleWithMetrics to use filteredUsers
+  $: peopleWithMetrics = filteredPeople.map(person => {
+    const user = filteredUsers.find(u => u.username === person.username);
     const scalingFactor = calculateScalingFactor(person.numCommits);
     return {
       ...person,
@@ -383,7 +390,17 @@
 </script>
 
 <main class="container">
-  <h1 class="title">Overview Page</h1>
+  <div class="header-row">
+    <h1 class="title">Overview Page</h1>
+    <select 
+      bind:value={selectedBranch} 
+      class="branch-select"
+    >
+      {#each branches as branch}
+        <option value={branch}>{branch === 'all' ? 'All Branches' : branch}</option>
+      {/each}
+    </select>
+  </div>
   <div bind:this={chartContainer} class="chart-container" style="width: 100%; height: 200px;"></div>
   <div class="cards-row">
     {#each peopleWithMetrics as person, i}
@@ -549,5 +566,33 @@
   .metrics-deletions {
     color: #fb7185;
     font-weight: bold;
+  }
+
+  .header-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  .branch-select {
+    background-color: #333;
+    color: #f6f6f6;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .branch-select:hover {
+    border-color: #666;
+  }
+
+  .branch-select:focus {
+    border-color: #888;
   }
 </style>
