@@ -7,6 +7,7 @@
   let chart: echarts.ECharts;
   let hovermessage: string = '';    //temp to check hover event
   let onclickmessage: string = '';  //temp to check onclick event
+  let isJittered: boolean = false; // State for jitter effect
 
   // DUMMY DATA SETUP -- REMOVE LATER 
   type Branch = Readonly<{
@@ -374,8 +375,8 @@
     const option = {
       backgroundColor: '#222',
       grid: {
-        top: '30%',
-        bottom: '30%',
+        top: '10%',
+        bottom: '25%',
         left: 40,
         right: 40,
         containLabel: false
@@ -386,7 +387,7 @@
         max: Math.ceil(commit_mean + (3 * sd)),
         name: 'Total Commits',
         nameLocation: 'middle',
-        nameGap: 40,
+        nameGap: 30,
         axisLine: {
           lineStyle: {
             color: '#fff',
@@ -416,7 +417,7 @@
         // Scatter points for people
         {
           type: 'scatter',
-          data: people.map(p => [p.numCommits, 4]),
+          data: people.map(p => [p.numCommits, 3]),
           symbolSize: 40,
           itemStyle: {
             color: function(params: { dataIndex: number }) {
@@ -454,38 +455,57 @@
     //function to remove jitter from the y-axis values
     function unjitter(data: [number, number][]): [number, number][] {
       return data.map(([numCommits, y]) => {
-        return [numCommits, 4]; // Return to base height
+        return [numCommits, 3]; // Return to base height 3
       });
     }
 
 
     //add hover effect        
-    chartContainer.addEventListener('mouseenter', () => {
-      hovermessage = 'hover in';
-      const jitteredData = jitter(people.map(p => [p.numCommits, 4]));
-      chart.setOption({
-        series: [{ data: jitteredData }]
-      });
-    });
+    // chartContainer.addEventListener('mouseenter', () => {
+    //   hovermessage = 'hover in';
+    //   const jitteredData = jitter(people.map(p => [p.numCommits, 2]));
+    //   chart.setOption({
+    //     series: [{ data: jitteredData }]
+    //   });
+    // });
 
 
     // remove hover effect
-    chartContainer.addEventListener('mouseleave', () => {
-            const jitteredData = unjitter(people.map(p => [p.numCommits, 4]));
-      chart.setOption({
-        series: [{ data: jitteredData }]
-      });
-      hovermessage = "hover out";
-    });
+    // chartContainer.addEventListener('mouseleave', () => {
+    //   const unjitteredData = unjitter(people.map(p => [p.numCommits, 2]));
+    //   chart.setOption({
+    //     series: [{ data: unjitteredData }]
+    //   });
+    //   hovermessage = "hover out";
+    // });
 
 
-    //onclick event to show the user name
+    //onclick event to show the user name and toggle jitter
     chart.on('click', function (params) {
-      if (params.componentType === 'scatter') {
+      // if (params.componentType === 'scatter') { // This check might be too restrictive if we want to click anywhere on chart
         const i = params.dataIndex;
-        const person = people[i];
-        onclickmessage = `Clicked on ${person.username}`;
-      }
+        // Update click message only if a data point was clicked
+        if (params.componentType === 'series' && params.seriesType === 'scatter' && i !== undefined) {
+            const person = people[i];
+            onclickmessage = `Clicked on ${person.username}`;
+        }
+
+        isJittered = !isJittered; // Toggle jitter state
+
+        if (isJittered) {
+          const jitteredData = jitter(people.map(p => [p.numCommits, 3])); // Base Y for jitter is 3
+          chart.setOption({
+            series: [{ data: jitteredData }]
+          });
+          hovermessage = 'Jitter ON'; // Update hovermessage to reflect state
+        } else {
+          const unjitteredData = unjitter(people.map(p => [p.numCommits, 3])); // Base Y for unjitter is 3
+          chart.setOption({
+            series: [{ data: unjitteredData }]
+          });
+          hovermessage = 'Jitter OFF'; // Update hovermessage to reflect state
+        }
+      // }
     });
 
 
@@ -570,7 +590,9 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     text-align: center;
+    min-height: 100vh;
   }
 </style>
 {#if hovermessage}
