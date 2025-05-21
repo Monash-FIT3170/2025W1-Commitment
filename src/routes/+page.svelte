@@ -51,10 +51,10 @@
         result.push(users[0]);
       } else {
         users.forEach((user, index) => {
-          const offset = (index - (users.length - 1) / 2) * 0.04; // 16px horizontal movement
+          // Store the index for later use in updateGraphics
           result.push({
             ...user,
-            xOffset: offset
+            offsetIndex: index - (users.length - 1) / 2
           });
         });
       }
@@ -166,7 +166,7 @@
       series: [
         {
           type: 'scatter',
-          data: people.map(p => [p.numCommits + (p.xOffset || 0), 3]),
+          data: people.map(p => [p.numCommits, 3]),
           symbolSize: 0,
           z: 3
         }
@@ -251,9 +251,13 @@
         };
       });
 
-      // Create graphics for user images
-      const userGraphics = people.map((person, index) => {
-        const [x, y] = chart.convertToPixel({gridIndex: 0}, [person.numCommits + (person.xOffset || 0), 3]);
+      // Create graphics for user images with fixed pixel offset
+      const userGraphics = people.map((person) => {
+        // Convert the base position to pixels
+        const [baseX, y] = chart.convertToPixel({gridIndex: 0}, [person.numCommits, 3]);
+        // Apply fixed 16px offset if there's an offsetIndex
+        const x = baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
+        
         return {
           type: 'group',
           children: [
