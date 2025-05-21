@@ -285,8 +285,48 @@
           data: filteredPeople.map(p => [p.numCommits, 1]),
           symbolSize: 0,
           z: 3
+        },
+        {
+          name: 'hoverPoints',
+          type: 'scatter',
+          data: filteredPeople.map(p => [p.numCommits, 1, p.username]),
+          symbolSize: 32,
+          z: 10,
+          itemStyle: {
+            color: 'transparent',
+          },
+          emphasis: {
+            focus: 'series',
+            itemStyle: {
+              color: 'transparent',
+              borderColor: '#fff',
+              borderWidth: 2,
+              shadowBlur: 10,
+              shadowColor: 'rgba(255, 255, 255, 0.7)'
+            }
+          }
         }
       ],
+      tooltip: {
+            trigger: 'item',
+            formatter: function (params: any) {
+              // Only show tooltip for the hoverPoints series
+              if (params.seriesName === 'hoverPoints') {
+                const username = params.data[2];
+                const person = peopleWithMetrics.find(p => p.username === username);
+                if (!person) return username;
+                return `
+
+                  <div style="text-align: left;">
+                    <strong>${username}</strong><br/>
+                    Scaling: ${person.scalingFactor}<br/>
+                    Total Commits: ${params.data[0]}
+                  </div>
+                `;
+              }
+              return '';
+            }
+          },
       graphic: []
     };
 
