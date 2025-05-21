@@ -104,6 +104,14 @@ export const users: User[] = [
             filesChanged: [
               { status: "modified", added: 2, deleted: 2, changed: 4, path: "src/profile.ts" }
             ]
+          },
+          {
+            date: "2025-05-05",
+            time: "05:00 AM",
+            branch: "hotfix/server-crash",
+            filesChanged: [
+              { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
+            ]
           }
         ]
       },
@@ -159,6 +167,22 @@ export const users: User[] = [
             filesChanged: [
               { status: "deleted", added: 0, deleted: 15, changed: 15, path: "src/email.ts" }
             ]
+          },
+          {
+            date: "2025-05-05",
+            time: "05:00 AM",
+            branch: "hotfix/login-crash",
+            filesChanged: [
+              { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
+            ]
+          },
+          {
+            date: "2025-05-05",
+            time: "05:00 AM",
+            branch: "hotfix/server-crash",
+            filesChanged: [
+              { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
+            ]
           }
         ]
       },
@@ -202,7 +226,7 @@ export const users: User[] = [
           {
             date: "2025-05-06",
             time: "02:00 PM",
-            branch: "hotfixlogin-crash",
+            branch: "hotfix/login-crash",
             filesChanged: [
               { status: "modified", added: 4, deleted: 0, changed: 4, path: "src/security.ts" }
             ]
@@ -210,19 +234,19 @@ export const users: User[] = [
           {
             date: "2025-05-06",
             time: "02:00 PM",
-            branch: "hotfixlogin-crash",
+            branch: "hotfix/login-crash",
             filesChanged: [
               { status: "modified", added: 4, deleted: 0, changed: 4, path: "src/security.ts" }
             ]
+          },
+          {
+            date: "2025-05-05",
+            time: "05:00 AM",
+            branch: "hotfix/server-crash",
+            filesChanged: [
+              { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
+            ]
           }
-          // {
-          //   date: "2025-05-05",
-          //   time: "05:00 PM",
-          //   branch: "hotfix/profile-404",
-          //   filesChanged: [
-          //     { status: "modified", added: 2, deleted: 2, changed: 4, path: "src/profile.ts" }
-          //   ]
-          // }
         ]
       },
       {
@@ -268,6 +292,14 @@ export const users: User[] = [
             branch: "hotfix/login-crash",
             filesChanged: [
               { status: "modified", added: 2, deleted: 1, changed: 3, path: "src/chat.ts" }
+            ]
+          },
+          {
+            date: "2025-05-05",
+            time: "05:00 AM",
+            branch: "hotfix/server-crash",
+            filesChanged: [
+              { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
             ]
           }
         ]
@@ -320,11 +352,46 @@ export const users: User[] = [
           {
             date: "2025-05-06",
             time: "02:00 PM",
-            branch: "hotfixlogin-crash",
+            branch: "hotfix/login-crash",
             filesChanged: [
               { status: "modified", added: 4, deleted: 0, changed: 4, path: "src/security.ts" }
             ]
-          }
+          },
+          {
+            date: "2025-05-05",
+            time: "05:00 AM",
+            branch: "hotfix/server-crash",
+            filesChanged: [
+              { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
+            ]
+          },
+          ,
+          {
+            date: "2025-05-05",
+            time: "05:00 AM",
+            branch: "hotfix/server-crash",
+            filesChanged: [
+              { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
+            ]
+          },
+          ,
+          {
+            date: "2025-05-05",
+            time: "05:00 AM",
+            branch: "hotfix/server-crash",
+            filesChanged: [
+              { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
+            ]
+          },
+          ,
+          {
+            date: "2025-05-05",
+            time: "05:00 AM",
+            branch: "hotfix/server-crash",
+            filesChanged: [
+              { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
+            ]
+          },
         ]
       }
     ];
