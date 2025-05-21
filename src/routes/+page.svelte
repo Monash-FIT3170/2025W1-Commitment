@@ -27,7 +27,7 @@
     users.forEach(user => { 
       userTotalCommits.push({
         username: user.username,
-        colour: getRandomHexColor(),
+        image: user.image,
         numCommits: user.commits.length
       })
     })
@@ -136,28 +136,14 @@
         max: users.length + 1,
       },
       series: [
-        // Scatter points for people
         {
           type: 'scatter',
           data: people.map(p => [p.numCommits, 3]),
-          symbolSize: 40,
-          itemStyle: {
-            color: function(params: { dataIndex: number }) {
-              return people[params.dataIndex].colour;
-            },
-            borderColor: function(params: { dataIndex: number }) {
-              return people[params.dataIndex].colour;
-            },
-            borderWidth: 4,
-            shadowBlur: 0
-          },
-          label: {
-            show: false
-          },
+          symbolSize: 0,
           z: 3
         }
       ],
-      graphic: [] // Will be set after chart is initialized
+      graphic: []
     };
 
     chart = echarts.init(chartContainer);
@@ -181,27 +167,25 @@
       });
     }
 
-    //onclick event to toggle jitter
-    chart.on('click', function (params) {
-      isJittered = !isJittered; // Toggle jitter state
-
-      if (isJittered) {
-        const jitteredData = jitter(people.map(p => [p.numCommits, 3]));
-        chart.setOption({
-          series: [{ data: jitteredData }]
-        });
-      } else {
-        const unjitteredData = unjitter(people.map(p => [p.numCommits, 3]));
-        chart.setOption({
-          series: [{ data: unjitteredData }]
-        });
-      }
-    });
+    // //onclick event to toggle jitter
+    // chart.on('click', function (params) {
+    //   isJittered = !isJittered;
+    //   const newData = isJittered ? 
+    //     jitter(people.map(p => [p.numCommits, 3])) :
+    //     unjitter(people.map(p => [p.numCommits, 3]));
+      
+    //   chart.setOption({
+    //     series: [{ data: newData }]
+    //   });
+    //   updateGraphics();
+    // });
 
     function updateGraphics() {
       const gridTop = chart.convertToPixel({gridIndex: 0}, [0, users.length + 1])[1];
       const xAxisY = chart.convertToPixel({gridIndex: 0}, [0, 0])[1];
-      const graphics = refPoints.map(ref => {
+      
+      // Create graphics for reference lines
+      const refLineGraphics = refPoints.map(ref => {
         const x = chart.convertToPixel({gridIndex: 0}, [ref.value, 0])[0];
         return {
           type: 'group',
@@ -238,7 +222,40 @@
           ]
         };
       });
-      chart.setOption({ graphic: graphics });
+
+      // Create graphics for user images
+      const userGraphics = people.map((person, index) => {
+        const [x, y] = chart.convertToPixel({gridIndex: 0}, [person.numCommits, 3]);
+        return {
+          type: 'group',
+          children: [
+            {
+              type: 'image',
+              style: {
+                image: person.image,
+                width: 40,
+                height: 40
+              },
+              x: x - 20, // Center the image
+              y: y - 20, // Center the image
+              silent: false,
+              clipPath: {
+                type: 'circle',
+                shape: {
+                  cx: 20,
+                  cy: 20,
+                  r: 20
+                }
+              }
+            }
+          ]
+        };
+      });
+
+      // Combine all graphics
+      chart.setOption({ 
+        graphic: [...refLineGraphics, ...userGraphics]
+      });
     }
 
     chart.on('finished', updateGraphics);
