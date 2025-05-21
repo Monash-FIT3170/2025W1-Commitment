@@ -350,16 +350,34 @@
     );
   }
 
-  // In the template, precompute the metrics for each person in the people array for efficiency and to avoid undefined errors
+  // Add this function after the other utility functions
+  function calculateScalingFactor(numCommits: number): number {
+    const zScore = (numCommits - commit_mean) / sd;
+    
+    if (Math.abs(zScore) <= 1) {
+      return 1.0;
+    } else if (zScore < -1 && zScore >= -2) {
+      return 0.9;  // Fixed value for -2 to -1 SD
+    } else if (zScore > 1 && zScore <= 2) {
+      return 1.1;  // Fixed value for 1 to 2 SD
+    } else {
+      // For values beyond ±2 SD, use the extreme values
+      return zScore < 0 ? 0.8 : 1.2;
+    }
+  }
+
+  // Modify the peopleWithMetrics mapping to include scaling factor
   const peopleWithMetrics = people.map(person => {
     const user = users.find(u => u.username === person.username);
+    const scalingFactor = calculateScalingFactor(person.numCommits);
     return {
       ...person,
       totalLinesOfCode: user ? getUserTotalLinesOfCode(user) : 0,
       linesPerCommit: user ? getUserLinesPerCommit(user) : 0,
       commitsPerDay: user ? getUserCommitsPerDay(user) : 0,
       totalAdditions: user ? getUserTotalAdditions(user) : 0,
-      totalDeletions: user ? getUserTotalDeletions(user) : 0
+      totalDeletions: user ? getUserTotalDeletions(user) : 0,
+      scalingFactor: scalingFactor.toFixed(1)
     };
   });
 </script>
@@ -375,7 +393,7 @@
           <div class="profile-header-main">
             <div class="profile-header-info">
               <div class="profile-title">{person.username}</div>
-              <div class="profile-scaling">scaling: 1.0</div>
+              <div class="profile-scaling">scaling: {person.scalingFactor}</div>
             </div>
             <div class="profile-metrics-main">
               <div class="profile-metrics-row">
