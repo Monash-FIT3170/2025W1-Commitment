@@ -28,8 +28,8 @@ export type User = Readonly<{
 // Dummy Data array - of users
 export const users: User[] = [
     {
-        username: "alice",
-        userEmails: ["alice@example.com"],
+        username: "Harshath",
+        userEmails: ["harshath@example.com"],
         commits: [
           {
             date: "2025-05-01",
@@ -82,8 +82,8 @@ export const users: User[] = [
         ]
       },
       {
-        username: "bob",
-        userEmails: ["bob@example.com"],
+        username: "Audrey",
+        userEmails: ["audrey@example.com"],
         commits: [
           {
             date: "2025-05-01",
@@ -128,8 +128,8 @@ export const users: User[] = [
         ]
       },
       {
-        username: "carol",
-        userEmails: ["carol@example.com"],
+        username: "Yali",
+        userEmails: ["yali@example.com"],
         commits: [
           {
             date: "2025-05-01",
@@ -174,8 +174,8 @@ export const users: User[] = [
         ]
       },
       {
-        username: "dave",
-        userEmails: ["dave@example.com"],
+        username: "Tyler",
+        userEmails: ["tyler@example.com"],
         commits: [
           {
             date: "2025-05-01",
@@ -220,8 +220,8 @@ export const users: User[] = [
         ]
       },
       {
-        username: "eve",
-        userEmails: ["eve@example.com"],
+        username: "Darcy",
+        userEmails: ["darcy@example.com"],
         commits: [
           {
             date: "2025-05-01",

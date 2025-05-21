@@ -6,8 +6,6 @@
 
   let chartContainer: HTMLElement;
   let chart: echarts.ECharts;
-  let hovermessage: string = '';    //temp to check hover event
-  let onclickmessage: string = '';  //temp to check onclick event
   let isJittered: boolean = false; // State for jitter effect
 
   function getAverageCommits(users: User[]): number{
@@ -183,35 +181,22 @@
       });
     }
 
-
-    //onclick event to show the user name and toggle jitter
+    //onclick event to toggle jitter
     chart.on('click', function (params) {
-      // if (params.componentType === 'scatter') { // This check might be too restrictive if we want to click anywhere on chart
-        const i = params.dataIndex;
-        // Update click message only if a data point was clicked
-        if (params.componentType === 'series' && params.seriesType === 'scatter' && i !== undefined) {
-            const person = people[i];
-            onclickmessage = `Clicked on ${person.username}`;
-        }
+      isJittered = !isJittered; // Toggle jitter state
 
-        isJittered = !isJittered; // Toggle jitter state
-
-        if (isJittered) {
-          const jitteredData = jitter(people.map(p => [p.numCommits, 3])); // Base Y for jitter is 3
-          chart.setOption({
-            series: [{ data: jitteredData }]
-          });
-          hovermessage = 'Jitter ON'; // Update hovermessage to reflect state
-        } else {
-          const unjitteredData = unjitter(people.map(p => [p.numCommits, 3])); // Base Y for unjitter is 3
-          chart.setOption({
-            series: [{ data: unjitteredData }]
-          });
-          hovermessage = 'Jitter OFF'; // Update hovermessage to reflect state
-        }
-      // }
+      if (isJittered) {
+        const jitteredData = jitter(people.map(p => [p.numCommits, 3]));
+        chart.setOption({
+          series: [{ data: jitteredData }]
+        });
+      } else {
+        const unjitteredData = unjitter(people.map(p => [p.numCommits, 3]));
+        chart.setOption({
+          series: [{ data: unjitteredData }]
+        });
+      }
     });
-
 
     function updateGraphics() {
       const gridTop = chart.convertToPixel({gridIndex: 0}, [0, users.length + 1])[1];
@@ -271,7 +256,19 @@
 </script>
 
 <main class="container">
-  <div bind:this={chartContainer} style="width: 100%; height: 200px;"></div>
+  <h1 class="title">Overview Page</h1>
+  <div bind:this={chartContainer} class="chart-container" style="width: 100%; height: 200px;"></div>
+  <div class="cards-row">
+    {#each people as person}
+      <div class="profile-card">
+        <div class="profile-avatar" style="background: {person.colour};"></div>
+        <div class="profile-info">
+          <div class="profile-title">{person.username}</div>
+          <div class="profile-subtitle">{person.numCommits} commits</div>
+        </div>
+      </div>
+    {/each}
+  </div>
 </main>
 
 <style>
@@ -290,22 +287,72 @@
   }
   .container {
     margin: 0;
-    padding: 2rem;
+    padding: 1rem 2rem;  /* Reset to normal padding */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-height: auto;
+  }
+  .title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+    color: #f6f6f6;
+  }
+  .chart-container {
+    margin-top: 10rem;  /* Add margin to push the chart down */
+  }
+  .cards-row {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+    margin-top: 3rem;
+  }
+
+  .profile-card {
+    display: flex;
+    align-items: center;
+    background: var(--Fill-Tint-00, rgba(31, 31, 31, 0.90));
+    border-radius: 12px;
+    padding: 20px 28px;
+    min-width: 320px;
+    min-height: 70px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    gap: 18px;
+  }
+
+  .profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: #ccc; /* fallback */
+  }
+
+  .profile-info {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    text-align: center;
-    min-height: 100vh;
+    align-items: flex-start;
+  }
+
+  .profile-title {
+    color: #fff;
+    font-size: 18px;
+    font-family: DM Sans, Inter, Arial, sans-serif;
+    font-weight: 600;
+    margin-bottom: 2px;
+    text-align: left;
+  }
+
+  .profile-subtitle {
+    color: #A3A3A3;
+    font-size: 14px;
+    font-family: DM Sans, Inter, Arial, sans-serif;
+    font-weight: 400;
+    text-align: left;
   }
 </style>
-{#if hovermessage}
-  <div class="hover-message">
-    {hovermessage}
-  </div>
-{/if}
-{#if onclickmessage}
-  <div class="click-message">
-    {onclickmessage}
-  </div>
-{/if}
