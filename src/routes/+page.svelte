@@ -259,9 +259,9 @@
   <h1 class="title">Overview Page</h1>
   <div bind:this={chartContainer} class="chart-container" style="width: 100%; height: 200px;"></div>
   <div class="cards-row">
-    {#each people as person}
+    {#each people as person, i}
       <div class="profile-card">
-        <div class="profile-avatar" style="background: {person.colour};"></div>
+        <img class="profile-avatar" src={(users.find(u => u.username === person.username)?.image || '').toString()} alt={person.username} />
         <div class="profile-info">
           <div class="profile-title">{person.username}</div>
           <div class="profile-subtitle">{person.numCommits} commits</div>
@@ -329,7 +329,8 @@
     height: 40px;
     border-radius: 50%;
     flex-shrink: 0;
-    background: #ccc; /* fallback */
+    object-fit: cover;
+    background: #ccc;
   }
 
   .profile-info {

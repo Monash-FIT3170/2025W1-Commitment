@@ -21,6 +21,7 @@ export type Commit = Readonly<{
 
 export type User = Readonly<{
   username: String,
+  image: String,
   userEmails: String[],
   commits: Commit[]
 }>;
@@ -29,6 +30,7 @@ export type User = Readonly<{
 export const users: User[] = [
     {
         username: "Harshath",
+        image: 'https://github.com/identicons/Hersheys2604.png',
         userEmails: ["harshath@example.com"],
         commits: [
           {
@@ -83,6 +85,7 @@ export const users: User[] = [
       },
       {
         username: "Audrey",
+        image: 'https://github.com/identicons/audreypho.png',
         userEmails: ["audrey@example.com"],
         commits: [
           {
@@ -129,6 +132,7 @@ export const users: User[] = [
       },
       {
         username: "Yali",
+        image: 'https://github.com/identicons/JohnYaliLin.png',
         userEmails: ["yali@example.com"],
         commits: [
           {
@@ -175,6 +179,7 @@ export const users: User[] = [
       },
       {
         username: "Tyler",
+        image: 'https://github.com/identicons/oraqlle.png',
         userEmails: ["tyler@example.com"],
         commits: [
           {
@@ -221,6 +226,7 @@ export const users: User[] = [
       },
       {
         username: "Darcy",
+        image: 'https://github.com/identicons/dBystersky.png',
         userEmails: ["darcy@example.com"],
         commits: [
           {
