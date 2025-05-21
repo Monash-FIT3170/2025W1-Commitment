@@ -80,6 +80,14 @@ export const users: User[] = [
             filesChanged: [
               { status: "modified", added: 2, deleted: 1, changed: 3, path: "src/auth.ts" }
             ]
+          },
+          {
+            date: "2025-05-05",
+            time: "05:00 PM",
+            branch: "hotfix/profile-404",
+            filesChanged: [
+              { status: "modified", added: 2, deleted: 2, changed: 4, path: "src/profile.ts" }
+            ]
           }
         ]
       },

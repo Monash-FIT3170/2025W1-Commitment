@@ -3,6 +3,7 @@
   import * as echarts from 'echarts';
   import { get } from 'svelte/store';
   import { users, type User } from '../data/dummyData';
+    import { Size } from '@tauri-apps/api/dpi';
 
   let chartContainer: HTMLElement;
   let chart: echarts.ECharts;
@@ -32,7 +33,34 @@
       })
     })
     // Sort by number of commits
-    return userTotalCommits.sort((a, b) => a.numCommits - b.numCommits);
+    const sortedCommits = userTotalCommits.sort((a, b) => a.numCommits - b.numCommits);
+    
+    // Group by numCommits and apply horizontal offset
+    const groups = new Map<number, any[]>();
+    sortedCommits.forEach(user => {
+      if (!groups.has(user.numCommits)) {
+        groups.set(user.numCommits, []);
+      }
+      groups.get(user.numCommits)!.push(user);
+    });
+
+    // Apply horizontal offset to overlapping points
+    const result: any[] = [];
+    groups.forEach((users, commits) => {
+      if (users.length === 1) {
+        result.push(users[0]);
+      } else {
+        users.forEach((user, index) => {
+          const offset = (index - (users.length - 1) / 2) * 0.04; // 16px horizontal movement
+          result.push({
+            ...user,
+            xOffset: offset
+          });
+        });
+      }
+    });
+
+    return result;
   }
 
   const commit_mean = getAverageCommits(users);
@@ -109,7 +137,7 @@
         max: Math.ceil(commit_mean + (3 * sd)),
         name: 'Total Commits',
         nameLocation: 'middle',
-        nameGap: 30,
+        nameGap: 40,
         axisLine: {
           lineStyle: {
             color: '#fff',
@@ -138,7 +166,7 @@
       series: [
         {
           type: 'scatter',
-          data: people.map(p => [p.numCommits, 3]),
+          data: people.map(p => [p.numCommits + (p.xOffset || 0), 3]),
           symbolSize: 0,
           z: 3
         }
@@ -225,7 +253,7 @@
 
       // Create graphics for user images
       const userGraphics = people.map((person, index) => {
-        const [x, y] = chart.convertToPixel({gridIndex: 0}, [person.numCommits, 3]);
+        const [x, y] = chart.convertToPixel({gridIndex: 0}, [person.numCommits + (person.xOffset || 0), 3]);
         return {
           type: 'group',
           children: [
