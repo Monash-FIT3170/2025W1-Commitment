@@ -364,34 +364,7 @@ export const users: User[] = [
             filesChanged: [
               { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
             ]
-          },
-          ,
-          {
-            date: "2025-05-05",
-            time: "05:00 AM",
-            branch: "hotfix/server-crash",
-            filesChanged: [
-              { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
-            ]
-          },
-          ,
-          {
-            date: "2025-05-05",
-            time: "05:00 AM",
-            branch: "hotfix/server-crash",
-            filesChanged: [
-              { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
-            ]
-          },
-          ,
-          {
-            date: "2025-05-05",
-            time: "05:00 AM",
-            branch: "hotfix/server-crash",
-            filesChanged: [
-              { status: "added", added: 20, deleted: 0, changed: 20, path: "src/utils/errorHandler.ts" }
-            ]
-          },
+          }
         ]
       }
     ];
