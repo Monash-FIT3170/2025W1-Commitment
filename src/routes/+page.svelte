@@ -302,18 +302,99 @@
       chart.dispose();
     };
   });
+
+  // 1. Total Commits for a user
+  function getUserTotalCommits(user: User): number {
+    return user.commits.length;
+  }
+
+  // 2. Total Lines of Code (additions + deletions) for a user
+  function getUserTotalLinesOfCode(user: User): number {
+    return user.commits.reduce((commitAcc, commit) =>
+      commitAcc + commit.filesChanged.reduce((fileAcc, file) =>
+        fileAcc + file.added + file.deleted, 0
+      ), 0
+    );
+  }
+
+  // 3. Lines per Commit for a user
+  function getUserLinesPerCommit(user: User): number {
+    const totalCommits = getUserTotalCommits(user);
+    const totalLines = getUserTotalLinesOfCode(user);
+    return totalCommits === 0 ? 0 : Math.round(totalLines / totalCommits);
+  }
+
+  // 4. Commits per Day for a user
+  function getUserCommitsPerDay(user: User): number {
+    const allDates = user.commits.map(commit => commit.date);
+    const uniqueDates = new Set(allDates);
+    const totalCommits = getUserTotalCommits(user);
+    return uniqueDates.size === 0 ? 0 : +(totalCommits / uniqueDates.size).toFixed(2);
+  }
+
+  // 5. Total Additions for a user
+  function getUserTotalAdditions(user: User): number {
+    return user.commits.reduce((commitAcc, commit) =>
+      commitAcc + commit.filesChanged.reduce((fileAcc, file) =>
+        fileAcc + file.added, 0
+      ), 0
+    );
+  }
+
+  // 6. Total Deletions for a user
+  function getUserTotalDeletions(user: User): number {
+    return user.commits.reduce((commitAcc, commit) =>
+      commitAcc + commit.filesChanged.reduce((fileAcc, file) =>
+        fileAcc + file.deleted, 0
+      ), 0
+    );
+  }
+
+  // In the template, precompute the metrics for each person in the people array for efficiency and to avoid undefined errors
+  const peopleWithMetrics = people.map(person => {
+    const user = users.find(u => u.username === person.username);
+    return {
+      ...person,
+      totalLinesOfCode: user ? getUserTotalLinesOfCode(user) : 0,
+      linesPerCommit: user ? getUserLinesPerCommit(user) : 0,
+      commitsPerDay: user ? getUserCommitsPerDay(user) : 0,
+      totalAdditions: user ? getUserTotalAdditions(user) : 0,
+      totalDeletions: user ? getUserTotalDeletions(user) : 0
+    };
+  });
 </script>
 
 <main class="container">
   <h1 class="title">Overview Page</h1>
   <div bind:this={chartContainer} class="chart-container" style="width: 100%; height: 200px;"></div>
   <div class="cards-row">
-    {#each people as person, i}
+    {#each peopleWithMetrics as person, i}
       <div class="profile-card">
-        <img class="profile-avatar" src={(users.find(u => u.username === person.username)?.image || '').toString()} alt={person.username} />
-        <div class="profile-info">
-          <div class="profile-title">{person.username}</div>
-          <div class="profile-subtitle">{person.numCommits} commits</div>
+        <div class="profile-header-row">
+          <img class="profile-avatar" src={person.image} alt={person.username} />
+          <div class="profile-header-main">
+            <div class="profile-header-info">
+              <div class="profile-title">{person.username}</div>
+              <div class="profile-scaling">scaling: 1.0</div>
+            </div>
+            <div class="profile-metrics-main">
+              <div class="profile-metrics-row">
+                <span>{person.numCommits} commits</span>
+                <span class="metrics-separator">&nbsp;&nbsp;</span>
+                <span>{person.totalLinesOfCode} lines of code</span>
+              </div>
+              <div class="profile-metrics-row">
+                <span>{person.linesPerCommit} lines/commit</span>
+                <span class="metrics-separator">&nbsp;&nbsp;</span>
+                <span>{person.commitsPerDay} commits/day</span>
+              </div>
+              <div class="profile-metrics-row">
+                <span class="metrics-additions">{person.totalAdditions}++ additions</span>
+                <span class="metrics-separator">&nbsp;&nbsp;</span>
+                <span class="metrics-deletions">{person.totalDeletions}-- deletions</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     {/each}
@@ -363,14 +444,35 @@
 
   .profile-card {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     background: var(--Fill-Tint-00, rgba(31, 31, 31, 0.90));
     border-radius: 12px;
     padding: 20px 28px;
     min-width: 320px;
     min-height: 70px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    gap: 18px;
+  }
+
+  .profile-header-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 0;
+  }
+
+  .profile-header-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+  }
+
+  .profile-header-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1px;
   }
 
   .profile-avatar {
@@ -382,13 +484,6 @@
     background: #ccc;
   }
 
-  .profile-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-  }
-
   .profile-title {
     color: #fff;
     font-size: 18px;
@@ -398,11 +493,43 @@
     text-align: left;
   }
 
-  .profile-subtitle {
+  .profile-scaling {
     color: #A3A3A3;
     font-size: 14px;
     font-family: DM Sans, Inter, Arial, sans-serif;
     font-weight: 400;
     text-align: left;
+    margin-bottom: 8px;
+  }
+
+  .profile-metrics-main {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .profile-metrics-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-size: 15px;
+    color: #ccc;
+    margin-bottom: 2px;
+    font-family: DM Sans, Inter, Arial, sans-serif;
+  }
+
+  .metrics-separator {
+    width: 16px;
+    display: inline-block;
+  }
+
+  .metrics-additions {
+    color: #4ade80;
+    font-weight: bold;
+  }
+
+  .metrics-deletions {
+    color: #fb7185;
+    font-weight: bold;
   }
 </style>
