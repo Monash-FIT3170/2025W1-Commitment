@@ -2,8 +2,28 @@
   import { onMount } from 'svelte';
   import * as echarts from 'echarts';
   import { get } from 'svelte/store';
+  import { invoke } from "@tauri-apps/api/core";
+  import { info } from "@tauri-apps/plugin-log";
   import { users, type User } from '../data/dummyData';
   import { Size } from '@tauri-apps/api/dpi';
+
+  let repo = "jekyll";
+  let owner = "jekyll";
+  let branches: string[] = [];
+
+  async function loadBranches() {
+        info(`Loading branches for ${owner}/${repo}...`);
+        try {
+            const realBranches = await invoke<string[]>('get_branch_names', { owner, repo });
+            branches = ['All', ...realBranches];
+            if (!branches.includes(selectedBranch)) {
+                selectedBranch = 'all';
+            }
+        } catch (err) {
+        console.error('Failed to load branches: ',err);
+
+        }
+    }
 
   let chartContainer: HTMLElement;
   let chart: echarts.ECharts;
@@ -11,11 +31,6 @@
 
   // Add branch selection state
   let selectedBranch = 'all';
-  
-  // Extract unique branches from dummy data and add 'all' option
-  const branches = ['all', ...new Set(users.flatMap(user => 
-    user.commits.map(commit => commit.branch)
-  ))];
 
   // Filter users based on selected branch
   $: filteredUsers = selectedBranch === 'all' 
@@ -334,7 +349,8 @@
     updateGraphics();
   }
 
-  onMount(() => {
+  onMount(async () => {
+    await loadBranches();
     chart = echarts.init(chartContainer);
     
     window.addEventListener('resize', () => {
