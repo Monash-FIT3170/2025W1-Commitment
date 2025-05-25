@@ -1,16 +1,20 @@
 <script lang="ts">
-    import { page } from '$app/stores';
     import Icon from '@iconify/svelte';
+    import { bookmarks } from '$lib/stores/bookmarks';
+    import type { Bookmark } from '$lib/stores/bookmarks';
+    export let repoUrl: string;
 
-    export let repoPath: string;
-  
-    //bookmark toggle state
-    let isBookmarked = false;
+    let bookmarked = bookmarks.contains(repoUrl);
+    let repoPath = new URL(repoUrl).pathname.slice(1);
 
     function toggleBookmark() {
-      isBookmarked = !isBookmarked;
+      bookmarked = !bookmarked;
+      const bookmark: Bookmark = {
+        "repoName": repoUrl.split('/').pop()?.replace('.git', '') || repoUrl,
+        "repoUrl": repoUrl
+      }
+      bookmarks.toggle(bookmark);
     }
-
 
   </script>
 
@@ -30,10 +34,10 @@
       type="button"
       class="bookmark-btn"
       on:click={toggleBookmark}
-      aria-pressed={isBookmarked}
+      aria-pressed={bookmarked}
     >
       <Icon
-        icon={isBookmarked ? 'tabler:star-filled' : 'tabler:star'}
+        icon={bookmarked ? 'tabler:star-filled' : 'tabler:star'}
         class="icon-medium"
       />
     </button>
@@ -63,11 +67,6 @@
       font-size: 1rem;
       color: var(--label-primary);
       white-space: nowrap;
-    }
-  
-    .placeholder {
-      font-style: italic;
-      color: var(--label-tertiary);
     }
   
     .bookmark-btn {
