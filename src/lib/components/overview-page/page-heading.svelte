@@ -5,6 +5,8 @@
   import Icon from "@iconify/svelte";
   import ButtonTintedMedium from "$lib/components/global/button-tinted-medium.svelte";
   import ButtonUnderlineMedium from "$lib/components/global/button-underline-medium.svelte"
+  import Calendar from '$lib/components/global/calendar.svelte';
+
 
   export let repoName: string;
   export let repoType = "github";
@@ -12,8 +14,13 @@
   let branchOptions = ["main", "devel", "feat/components"];
   let branchSelection = createDropdownSelection(branchOptions[1]);
 
-  let startDateSelected = "01-01-25";
-  let endDateSelected = "20-01-25";
+  let startDate = '01-01-25';
+  let endDate   = '20-01-25';
+
+  function onDateChange(e) {
+    startDate = e.detail.start;
+    endDate   = e.detail.end;
+  }
 
   let selectedView: 'overview' | 'analysis' = 'overview';
 
@@ -33,6 +40,7 @@
   
   function openCalendar() {
     //calendar logic
+    //task for future sprint
   }
 
 </script>
@@ -63,13 +71,14 @@
 
       <!-- calendar btn -->
       <ButtonTintedMedium 
-        label="{startDateSelected} → {endDateSelected}" 
+        label="{startDate}  →  {endDate}"
         icon="calendar-month" 
+        labelClass="body" 
         iconFirst={false} 
-        width=15rem 
-        on:Click={openCalendar} 
+        width="16rem" 
+        on:click={openCalendar} 
       />
-      
+    
     </div>
   </div>
 
