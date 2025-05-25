@@ -4,6 +4,7 @@
     let {
         icon = null,
         label,
+        labelClass = 'body',
         disabled = false,
         width = 'auto',      
         iconFirst = true    
@@ -20,9 +21,9 @@
                 style="color: currentColor"
             />
         {/if}
-        <div class="label"><span class="body-accent">{label}</span></div>
+        <div class="label"><span class={labelClass}>{label}</span></div>
     {:else}
-        <div class="label"><span class="body-accent">{label}</span></div>
+        <div class="label"><span class={labelClass}>{label}</span></div>
         {#if icon}
             <Icon
                 icon={`tabler:${icon}`}
@@ -36,7 +37,7 @@
 <style>
 .label {
     text-align: center;
-    justify-content: center;
+    justify-content: space-between; 
     display: flex;
 }
 
@@ -47,6 +48,8 @@ button {
     background-color: var(--tint-00);
     cursor: pointer;
     transition: background-color 0.2s ease;
+    justify-content: space-between; 
+
 }
 
 button.medium {

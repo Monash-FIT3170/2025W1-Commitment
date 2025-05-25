@@ -4,6 +4,7 @@
   import DropdownTintedMedium from "$lib/components/global/dropdown-tinted-medium.svelte";
   import Icon from "@iconify/svelte";
   import ButtonTintedMedium from "$lib/components/global/button-tinted-medium.svelte";
+  import ButtonUnderlineMedium from "$lib/components/global/button-underline-medium.svelte"
 
   export let repoName: string;
   export let repoType = "github";
@@ -11,8 +12,27 @@
   let branchOptions = ["main", "devel", "feat/components"];
   let branchSelection = createDropdownSelection(branchOptions[1]);
 
+  let startDateSelected = "01-01-25";
+  let endDateSelected = "20-01-25";
+
+  let selectedView: 'overview' | 'analysis' = 'overview';
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: 'chart-line' },
+    { id: 'analysis', label: 'Contribution Analysis', icon: 'id' }
+  ];
+
+
+  function selectView(id: 'overview' | 'analysis') {
+    selectedView = id;
+  }
+
   function openConfig() {
-    // Your config logic
+    //config logic
+  }
+  
+  function openCalendar() {
+    //calendar logic
   }
 
 </script>
@@ -21,47 +41,93 @@
   <div class="top-container">
     <div class="display-title">
       {repoName}
-      <Icon
-        icon={`tabler:brand-${repoType}`}
-        class="icon-xlarge"
-        style="color: white"
-      />
+      <Icon icon={`tabler:brand-${repoType}`} class="icon-xlarge" style="color: white" />
     </div>
-    <!-- <ButtonTintedMedium label="Config" icon="settings-2" on:click={openConfig} /> -->
-    <ButtonTintedMedium label="Config" icon="settings-2" iconFirst={true} width="4rem" on:click={openConfig}/>
 
-    <DropdownTintedMedium options={branchOptions} selected={branchSelection.selected} />
+    <div class="heading-btns">
+      <!-- config btn -->
+      <ButtonTintedMedium 
+        label="Config" 
+        icon="settings-2" 
+        labelClass="body-accent" 
+        iconFirst={true} 
+        width="4rem" 
+        on:click={openConfig} 
+      />
 
-      <!-- title
-      config-btn 
-      branch dropdwn 
-      calendar btn -->
+      <!-- branch dropdown btn -->
+      <DropdownTintedMedium 
+        options={branchOptions} 
+        selected={branchSelection.selected}
+      />
 
+      <!-- calendar btn -->
+      <ButtonTintedMedium 
+        label="{startDateSelected} → {endDateSelected}" 
+        icon="calendar-month" 
+        iconFirst={false} 
+        width=15rem 
+        on:Click={openCalendar} 
+      />
+      
+    </div>
   </div>
-  <!-- subheading 
-  overview page btn 
-  contirbution analysis btn  -->
 
+  <span class="display-subtitle">Contribution Statistics</span>
+    <div class="page-select-btns">
+      <!-- for each tab -->
+        {#each tabs as tab}
+        <ButtonUnderlineMedium
+          label={tab.label}
+          icon={tab.icon}
+          selected={selectedView === tab.id}
+          width=20rem
+          on:click={() => selectView(tab.id)}
+        />
+      {/each}
+    </div>
 </div>
 
 <style>
 .page-heading {
   display: flex;
   flex-direction: column;
+  padding: 2rem;
+  margin: 0 auto;
+  width: 1200px;
+
 }
 
 .top-container {
   display: flex;
-  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
+  width: 100%;         
+  padding-top: 2rem;
 }
 
 .display-title {
   display: flex;
   flex-direction: row;
   align-items: center;
+  gap: 1.5rem;
+}
+
+.display-subtitle {
+  color: var(--label-secondary);
+  padding: 0.6rem 0;
+}
+
+.heading-btns {
+  display: flex;
   gap: 1rem;
-  padding: 2rem;
+  justify-content: flex-end; 
+  align-items: center; 
+  padding: 0; 
+}
+
+.page-select-btns {
+  padding-top: 2rem;
 }
 
 </style>
