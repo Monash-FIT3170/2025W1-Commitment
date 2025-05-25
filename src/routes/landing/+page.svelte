@@ -6,8 +6,8 @@
     let inputRepo = '';
   
     interface RepoBookmark {
-      repo_name: string,
-      repo_url: string
+      repoName: string,
+      repoUrl: string
     }
   
     let sidebarOpen = false;
@@ -18,15 +18,15 @@
       sidebarOpen = !sidebarOpen;
     }
   
-    let bookmarked_repo: RepoBookmark[] = [
-      {repo_name: "fit3170-A1", repo_url: "https://github.com/user/fit3170-A1.git"},
-      {repo_name: "this-is-a-repo", repo_url: "https://gitlab.com/abc0012/this-is-a-repo.git"},
-      {repo_name: "project", repo_url: "https://github.com/example-org/project.git"},
-      {repo_name: "another-project", repo_url: "https://gitlab.com/example-org/another-project.git"},
-      {repo_name: "assignment", repo_url: "https://gitlab.com/xyz0001/assignment.git"},
-      {repo_name: "assignment", repo_url: "https://gitlab.com/xyz0001/assignment.git2"},
-      {repo_name: "assignment", repo_url: "https://gitlab.com/xyz0001/assignment.git3"},
-      {repo_name: "assignment", repo_url: "https://gitlab.com/xyz0001/assignment.git4"},
+    let bookmarkedRepos: RepoBookmark[] = [
+      {repoName: "fit3170-A1", repoUrl: "https://github.com/user/fit3170-A1.git"},
+      {repoName: "this-is-a-repo", repoUrl: "https://gitlab.com/abc0012/this-is-a-repo.git"},
+      {repoName: "project", repoUrl: "https://github.com/example-org/project.git"},
+      {repoName: "another-project", repoUrl: "https://gitlab.com/example-org/another-project.git"},
+      {repoName: "assignment", repoUrl: "https://gitlab.com/xyz0001/assignment.git"},
+      {repoName: "assignment", repoUrl: "https://gitlab.com/xyz0001/assignment.git2"},
+      {repoName: "assignment", repoUrl: "https://gitlab.com/xyz0001/assignment.git3"},
+      {repoName: "assignment", repoUrl: "https://gitlab.com/xyz0001/assignment.git4"},
     ];
   
     // 
@@ -153,9 +153,9 @@
   
       <!-- Repo link list -->
       <div class="repo-bookmark-list">
-        {#each bookmarked_repo as bookmark (bookmark.repo_url)}
+        {#each bookmarkedRepos as bookmark (bookmark.repoUrl)}
           <button class="repo-list-btn" type="button">
-            <h6 class="display-body repo-list-text white">{bookmark.repo_url}</h6>
+            <h6 class="display-body repo-list-text white">{bookmark.repoUrl}</h6>
           </button>
         {/each}
       </div>
@@ -193,10 +193,10 @@
         <h2 class="heading-1 bookmark-text white">bookmarks</h2>
       </div>
       
-      {#each bookmarked_repo as repo (repo.repo_url)}
+      {#each bookmarkedRepos as repo (repo.repoUrl)}
         <button class="bookmark-item">
-          <h6 class="heading-2 repo-name label-secondary">{repo.repo_name}</h6>
-          <h6 class="caption repo-url label-secondary">{repo.repo_url}</h6>
+          <h6 class="heading-2 repo-name label-secondary">{repo.repoName}</h6>
+          <h6 class="caption repo-url label-secondary">{repo.repoUrl}</h6>
         </button>
       {/each}
     </div>
