@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '@iconify/svelte';
-  import { sidebarOpen, toggleSidebar } from '$lib/stores/sidebar';
+  import { sidebarOpen, openSidebar } from '$lib/stores/sidebar';
 
   export let userName: string;
   export let profileImageURL: string;
@@ -14,7 +14,7 @@
     <img src="{profileImageURL}" alt="Profile" class="profile-img" />
   </div>
 
-  <button class="hamburger-btn" on:click={toggleSidebar} aria-expanded={sidebarOpen}>
+  <button class="hamburger-btn" on:click={openSidebar} aria-expanded={$sidebarOpen}>
     <Icon icon="tabler:menu-2" class="icon-medium" />
   </button>
 </div>
