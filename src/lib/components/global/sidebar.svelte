@@ -1,32 +1,17 @@
 <script lang="ts">
-    import { sidebarOpen, toggleSidebar } from '$lib/stores/sidebar';
+    import { sidebarOpen, closeSidebar } from '$lib/stores/sidebar';
     import { bookmarks } from '$lib/stores/bookmarks';
     import Icon from '@iconify/svelte';
-    import { onDestroy } from 'svelte';
   
-    let isOpen = false;
-    const unsubscribeSidebar = sidebarOpen.subscribe(value => {
-      isOpen = value;
-    });
-  
-    let bookmarkList = [];
-    const unsubscribeBookmarks = bookmarks.subscribe(value => {
-      bookmarkList = value;
-    });
-  
-    onDestroy(() => {
-      unsubscribeSidebar();
-      unsubscribeBookmarks();
-    });
   </script>
   
-  <div class={`sidebar ${isOpen ? 'open' : 'closed'}`}>
+  <div class={`sidebar ${$sidebarOpen ? 'open' : 'closed'}`}>
     <div class="sidebar-header">
       <div class="sidebar-title">
         <Icon icon="tabler:chart-line" class="icon-large" style="color: white" />
         <h1 class="title sidebar-title-text white">Settings</h1>
       </div>
-      <button class="close-button" on:click={toggleSidebar} aria-label="Close sidebar">
+      <button class="close-button" on:click={closeSidebar} aria-label="Close sidebar">
         <Icon icon="tabler:x" class="icon-medium" style="color: white" />
       </button>
     </div>
@@ -37,10 +22,10 @@
         <h2 class="heading-1 bookmark-text white">Bookmarks</h2>
       </div>
   
-      {#each bookmarkList as repo (repo.repo_url)}
+      {#each $bookmarks as repo (repo.repoUrl)}
         <button class="bookmark-item" type="button">
-          <h6 class="heading-2 repo-name label-secondary">{repo.repo_name}</h6>
-          <h6 class="caption repo-url label-secondary">{repo.repo_url}</h6>
+          <h6 class="heading-2 repo-name label-secondary">{repo.repoName}</h6>
+          <h6 class="caption repo-url label-secondary">{repo.repoUrl}</h6>
         </button>
       {/each}
     </div>
