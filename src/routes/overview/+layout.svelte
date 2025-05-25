@@ -2,6 +2,7 @@
     import { page }     from '$app/stores';
     import { derived }  from 'svelte/store';
     import Icon         from '@iconify/svelte';
+    import Graph        from '$lib/components/overview-page/Graph.svelte';
 
     //import layout components
     import Banner from '$lib/components/overview-page/banner.svelte';
@@ -30,6 +31,7 @@
 
 </script>
 <div class="page">
+    <Graph />
     <!-- fixed -->
     <div class="header">
         <Banner {repoPath}/>
