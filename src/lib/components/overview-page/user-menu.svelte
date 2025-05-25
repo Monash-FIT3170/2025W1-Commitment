@@ -22,19 +22,21 @@
   
 <style>
 .user-menu {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
+  /* position: fixed; */
+  /* top: 1rem;
+  right: 1rem; */
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   z-index: 200;
+  flex-direction: row;
 }
 
 .user-info {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .user-name {

@@ -16,7 +16,7 @@
 
   <div class="topbar">
     <!-- Logo / Home Link -->
-    <a href="/" class="logo-section cursor-pointer">
+    <a href="/landing-page" class="logo-section cursor-pointer">
       <img src="/submark.png" alt="logo" class="logo-img" color=""/>
     </a>
   
@@ -44,13 +44,14 @@
   <style>
     /* topbar wrapper fixed at top-left */
     .topbar {
-      position: fixed;
-      top: 1rem;
-      left: 1rem;
+      /* position: fixed; */
+      /* top: 1rem; */
+      /* left: 1rem; */
       display: flex;
       align-items: center;
       gap: 0.75rem;
       z-index: 200;
+      flex-direction: row;
     }
   
     .logo-img {

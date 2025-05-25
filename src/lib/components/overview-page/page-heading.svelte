@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Icon from '@iconify/svelte';
   import { onMount } from 'svelte';
 
   let dropdownOpen = false;
@@ -7,6 +8,8 @@
 
   let startDate = '01-01-25';
   let endDate = '20-01-25';
+  export let repoName: string;
+  let repoType = 'github';
 
   function toggleDropdown() {
     dropdownOpen = !dropdownOpen;
@@ -30,6 +33,29 @@
     selected = options[0];
   });
 </script>
+
+<div class="page-heading">
+  <div class="top-container">
+    <div class="display-title">
+      {repoName}
+      <Icon
+        icon={`tabler:brand-${repoType}`}
+        class="icon-xlarge"
+        style="color: white"
+      />
+
+    </div>
+      <!-- title
+      config-btn 
+      branch dropdwn 
+      calendar btn -->
+
+  </div>
+  <!-- subheading 
+  overview page btn 
+  contirbution analysis btn  -->
+
+</div>
 
 <div class="header-controls">
   <!-- Config Button -->
@@ -166,4 +192,24 @@
   .date-range-btn:hover {
     background-color: #333;
   }
+
+
+.page-heading {
+  display: flex;
+  flex-direction: column;
+}
+
+.top-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.display-title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
 </style>

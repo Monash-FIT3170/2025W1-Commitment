@@ -8,6 +8,7 @@
     import UserMenu from '$lib/components/overview-page/user-menu.svelte';
     import Sidebar from '$lib/components/global/sidebar.svelte';
     import ContributorGrid from '$lib/components/overview-page/contibutor-grid.svelte';
+    import PageHeading from "$lib/components/overview-page/page-heading.svelte"
     // import Graph from '$lib/components/overiew-page/graph.svelte'
 
     //import functions
@@ -19,6 +20,7 @@
     onDestroy(unsubscribe);
 
     //dummy data for demo
+    let repoType = 'github'
     let institutionName = 'Monash'
     let unitCode = 'FIT3170'
     let repoName = '2025W1-Commitment';
@@ -32,13 +34,19 @@
 <div class="page">
     <!-- fixed -->
     <div class="header">
-        <Banner {repoPath}/>
-        <UserMenu {userName} {profileImageURL}/>
-        <Sidebar />
+        <div class="left-container">
+            <Banner {repoPath}/>
+            <PageHeading {repoName} {repoType}/>
+            <!-- <PageDropDown /> -->
+        </div>
+        <div class="right-container">
+            <UserMenu {userName} {profileImageURL} />
+            <Sidebar />
+        </div>
     </div>
 
     <!-- scrollable content -->
-    <div class="main">
+    <div class="body">
         <slot />
         Graph goes here!<br><br><br><br><br><br><br><br>
         {#each Array(50) as _}
@@ -58,11 +66,16 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 90%;
+    width: 100%;
+    max-width: 2500px;
     z-index: 1000;
     background: inherit;
     backdrop-filter: blur(6px);
-    padding: 5rem;
+    padding: 2rem;
+    align-items: flex-start;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .main {

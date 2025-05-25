@@ -5,6 +5,8 @@
   import ContributorCards from '../lib/components/overview-page/ContributorCards.svelte';
   import Icon from '@iconify/svelte';
   import { loadBranches } from '../lib/metrics';
+  import Banner from '$lib/components/overview-page/banner.svelte';
+
 
   let repo = "jekyll";
   let owner = "jekyll";
@@ -12,6 +14,7 @@
   let selectedBranch = 'all';
   let sidebarOpen = false;
   let bookmarked_repo: { repo_name: string; repo_url: string }[] = [];
+  let repoPath = "test path"
 
   function toggleSidebar() {
     sidebarOpen = !sidebarOpen;
@@ -28,6 +31,7 @@
 
 <main class="container">
   <div class="header-row">
+    <Banner {repoPath}/>
     <h1 class="title">Overview Page</h1>
     <select 
       bind:value={selectedBranch} 
