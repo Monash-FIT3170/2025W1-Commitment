@@ -1,17 +1,36 @@
 <script>
     import Icon from "@iconify/svelte";
-    let { icon = null, label, disabled = false } = $props();
+    
+    let {
+        icon = null,
+        label,
+        disabled = false,
+        width = 'auto',      
+        iconFirst = true    
+    } = $props();
+
 </script>
 
-<button class="medium" {disabled}>
-    {#if icon}
-        <Icon
-            icon={`tabler:${icon}`}
-            class="icon-medium"
-            style="color: currentColor"
-        />
-    {/if}
+<button class="medium" {disabled} style="width: {width}">
+    {#if iconFirst}
+        {#if icon}
+            <Icon
+                icon={`tabler:${icon}`}
+                class="icon-medium"
+                style="color: currentColor"
+            />
+        {/if}
         <div class="label"><span class="body-accent">{label}</span></div>
+    {:else}
+        <div class="label"><span class="body-accent">{label}</span></div>
+        {#if icon}
+            <Icon
+                icon={`tabler:${icon}`}
+                class="icon-medium"
+                style="color: currentColor"
+            />
+        {/if}
+    {/if}
 </button>
 
 <style>

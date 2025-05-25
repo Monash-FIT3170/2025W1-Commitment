@@ -27,7 +27,9 @@
         style="color: white"
       />
     </div>
-    <ButtonTintedMedium label="Config" icon="settings-2" on:click={openConfig} />
+    <!-- <ButtonTintedMedium label="Config" icon="settings-2" on:click={openConfig} /> -->
+    <ButtonTintedMedium label="Config" icon="settings-2" iconFirst={true} width="4rem" on:click={openConfig}/>
+
     <DropdownTintedMedium options={branchOptions} selected={branchSelection.selected} />
 
       <!-- title
