@@ -37,7 +37,6 @@
         <div class="left-container">
             <Banner {repoPath}/>
             <PageHeading {repoName} {repoType}/>
-            <!-- <PageDropDown /> -->
         </div>
         <div class="right-container">
             <UserMenu {userName} {profileImageURL} />
