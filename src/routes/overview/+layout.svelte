@@ -5,10 +5,10 @@
     import Graph        from '$lib/components/overview-page/Graph.svelte';
 
     //import layout components
-    import Banner from '$lib/components/overview-page/banner.svelte';
-    import UserMenu from '$lib/components/overview-page/user-menu.svelte';
+    import Banner from '$lib/components/overview-page/Banner.svelte';
+    import UserMenu from '$lib/components/overview-page/UserMenu.svelte';
     import Sidebar from '$lib/components/global/sidebar.svelte';
-    import ContributorGrid from '$lib/components/overview-page/contibutor-grid.svelte';
+    import ContributorGrid from '$lib/components/overview-page/ContributorGrid.svelte';
     // import Graph from '$lib/components/overiew-page/graph.svelte'
 
     //import functions
@@ -23,7 +23,7 @@
     let institutionName = 'Monash'
     let unitCode = 'FIT3170'
     let repoName = '2025W1-Commitment';
-    $: repoPath = `/${institutionName}/${unitCode}/${repoName}`;
+    $: repoUrl = `https://github.com/${institutionName}/${unitCode}/${repoName}`;
 
     let profileImageURL = '/mock_profile_img.png';
     let userName = 'Baaset Moslih';
@@ -31,10 +31,9 @@
 
 </script>
 <div class="page">
-    <Graph />
     <!-- fixed -->
     <div class="header">
-        <Banner {repoPath}/>
+        <Banner {repoUrl}/>
         <UserMenu {userName} {profileImageURL}/>
         <Sidebar />
     </div>
