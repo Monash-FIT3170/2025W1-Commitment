@@ -179,3 +179,30 @@ html, body, #app {
     width: 2.625rem;
     height: 2.625rem;
 }
+/* 
+.btn {
+    background-color: var(--fill-04); 
+    color: var(--label-primary);
+    border: none;
+    border-radius: 12px;
+    font-family: DM Sans, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+    fill: var(--fill-00)
+  }
+  
+.btn-medium {
+    height: 2.25rem;
+    padding: 2rem;
+    font-size: 0.875rem;
+  }
+  
+  .btn:hover {
+    background-color: var(--fill-03); 
+  } */

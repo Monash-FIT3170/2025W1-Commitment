@@ -7,7 +7,7 @@
     {#if icon}
         <Icon
             icon={`tabler:${icon}`}
-            class="icon-small"
+            class="icon-medium"
             style="color: currentColor"
         />
     {/if}
@@ -32,7 +32,7 @@ button {
 
 button.medium {
     gap: 4px;
-    padding: 6px 11px;
+    padding: 0.5rem 1.2rem;
     border-radius: 8px;
 }
 
