@@ -101,9 +101,7 @@
 .page-heading {
   display: flex;
   flex-direction: column;
-  padding: 2rem;
-  margin: 0 auto;
-  width: 1200px;
+  padding: 2rem 4rem;
 
 }
 
@@ -112,7 +110,6 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;         
-  padding-top: 2rem;
 }
 
 .display-title {
