@@ -1,23 +1,39 @@
-<script>
+<script lang="ts">
     import Icon from "@iconify/svelte";
-    let { icon = null, label, disabled = false } = $props();
+    export let icon: string | null;
+    export let label: string;
+    export let labelClass: string;
+    export let disabled: boolean = false;
+    export let width: string;
+    export let iconFirst: boolean;
 </script>
 
-<button class="medium" {disabled}>
-    {#if icon}
-        <Icon
-            icon={`tabler:${icon}`}
-            class="icon-small"
-            style="color: currentColor"
-        />
+<button class="medium" {disabled} style="width: {width}">
+    {#if iconFirst}
+        {#if icon}
+            <Icon
+                icon={`tabler:${icon}`}
+                class="icon-medium"
+                style="color: currentColor"
+            />
+        {/if}
+        <div class="label"><span class={labelClass}>{label}</span></div>
+    {:else}
+        <div class="label"><span class={labelClass}>{label}</span></div>
+        {#if icon}
+            <Icon
+                icon={`tabler:${icon}`}
+                class="icon-medium"
+                style="color: currentColor"
+            />
+        {/if}
     {/if}
-        <div class="label"><span class="body-accent">{label}</span></div>
 </button>
 
 <style>
 .label {
     text-align: center;
-    justify-content: center;
+    justify-content: space-between; 
     display: flex;
 }
 
@@ -28,11 +44,13 @@ button {
     background-color: var(--tint-00);
     cursor: pointer;
     transition: background-color 0.2s ease;
+    justify-content: space-between; 
+
 }
 
 button.medium {
     gap: 4px;
-    padding: 6px 11px;
+    padding: 0.5rem 1.2rem;
     border-radius: 8px;
 }
 
