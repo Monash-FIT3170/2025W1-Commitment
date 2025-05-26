@@ -257,7 +257,7 @@
   .profile-img {
     height: 1.375rem;
     width: 1.375rem;
-    margin-left: 0.8125rem;
+    margin-left: 0.5rem;
     margin-right: 0.8125rem;
     object-fit: cover;
   }
@@ -266,9 +266,7 @@
     cursor: pointer;
     background: none;
     border: none;
-    padding: 0;
-    height: 1.375rem;
-    width: 1.375rem;
+    padding: 0.125rem;
     display: flex;
     justify-content: center;
     align-items: center;
