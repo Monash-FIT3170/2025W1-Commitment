@@ -24,7 +24,7 @@
   
       {#each $bookmarks as repo (repo.repoUrl)}
         <button class="bookmark-item" type="button">
-          <h6 class="heading-2 repo-name label-secondary">{repo.repoName}</h6>
+          <h6 class="heading-2 repo-name label-secondary">{repo.repoPath}</h6>
           <h6 class="caption repo-url label-secondary">{repo.repoUrl}</h6>
         </button>
       {/each}
