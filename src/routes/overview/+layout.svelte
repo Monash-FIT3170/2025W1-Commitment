@@ -1,23 +1,10 @@
 <script lang="ts">
-    import { page }     from '$app/stores';
-    import { derived }  from 'svelte/store';
-    import Icon         from '@iconify/svelte';
-    import Graph        from '$lib/components/overview-page/Graph.svelte';
 
     //import layout components
     import Banner from '$lib/components/overview-page/Banner.svelte';
     import UserMenu from '$lib/components/overview-page/UserMenu.svelte';
     import Sidebar from '$lib/components/global/sidebar.svelte';
     import ContributorGrid from '$lib/components/overview-page/ContributorGrid.svelte';
-    // import Graph from '$lib/components/overiew-page/graph.svelte'
-
-    //import functions
-    import { toggleSidebar, sidebarOpen } from '$lib/stores/sidebar';
-    import { onDestroy } from 'svelte';
-
-    let open = false;
-    const unsubscribe = sidebarOpen.subscribe(value => open = value);
-    onDestroy(unsubscribe);
 
     //dummy data for demo
     let institutionName = 'Monash'
