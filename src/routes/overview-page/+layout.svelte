@@ -9,7 +9,7 @@
     import Sidebar from '$lib/components/global/sidebar.svelte';
     import ContributorGrid from '$lib/components/overview-page/contibutor-grid.svelte';
     import PageHeading from "$lib/components/overview-page/page-heading.svelte"
-    // import Graph from '$lib/components/overiew-page/graph.svelte'
+    import Graph from '$lib/components/overview-page/Graph.svelte'
 
     //import functions
     import { toggleSidebar, sidebarOpen } from '$lib/stores/sidebar';
@@ -48,9 +48,7 @@
     <div class="body">
         <slot />
         Graph goes here!<br><br><br><br><br><br><br><br>
-        {#each Array(50) as _}
-        <p>Filler content to test background scrolling</p>
-        {/each}
+        
 
         <section class="contributors-section">
             <div class="heading-1">Our Contributors</div>
