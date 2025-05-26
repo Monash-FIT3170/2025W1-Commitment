@@ -52,7 +52,7 @@
   .topbar {
     display: flex;
     align-items: center;
-    height: 1.375rem;
+    height: inherit;
   }
 
   .logo-section {

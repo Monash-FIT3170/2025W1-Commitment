@@ -9,10 +9,8 @@
   
   <!-- user menu: user name, avatar, and sidebar toggle button -->
 <div class="user-menu">
-  <div class="user-info">
-    <h6 class="body-accent white user-name">{userName}</h6>
-    <img src="{profileImageURL}" alt="Profile" class="profile-img" />
-  </div>
+  <h6 class="body-accent user-name">{userName}</h6>
+  <img src="{profileImageURL}" alt="Profile" class="profile-img" />
 
   <button class="hamburger-btn" on:click={openSidebar} aria-expanded={$sidebarOpen}>
     <Icon icon="tabler:menu-2" class="icon-medium" />
@@ -22,27 +20,15 @@
   
 <style>
 .user-menu {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  z-index: 200;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  height: inherit;
 }
 
 .user-name {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.875rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--white);
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-right: 0.5rem;
 }
 
 .profile-img {
@@ -50,12 +36,13 @@
   height: 1.375rem;
   border-radius: 50%;
   object-fit: cover;
+  margin-right: 0.8125rem;
 }
 
 .hamburger-btn {
   background: none;
   border: none;
-  padding: 0.25rem;
+  padding: 0.125rem;
   cursor: pointer;
   display: flex;
   color: var(--label-primary)
