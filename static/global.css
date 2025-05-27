@@ -16,9 +16,12 @@
     background-blend-mode: screen;
 }
 
+/* global.css
+
 /* Display fonts */
 .display-title {
     font-size: 2.625rem;
+    line-height: 3.41875rem;
     font-family: DM Mono, monospace;
     font-weight: 500;
     word-wrap: break-word
@@ -26,6 +29,7 @@
 
 .display-subtitle {
     font-size: 1.625rem;
+    line-height: 2.11875rem;
     font-family: DM Mono, monospace;
     font-weight: 500;
     word-wrap: break-word
@@ -33,6 +37,7 @@
 
 .display-heading {
     font-size: 1.0625rem;
+    line-height: 1.38125rem;
     font-family: DM Mono, monospace;
     font-weight: 500;
     word-wrap: break-word
@@ -40,6 +45,7 @@
 
 .display-body {
     font-size: 1.0625rem;
+    line-height: 1.38125rem;
     font-family: DM Sans, sans-serif;
     font-weight: 400;
     word-wrap: break-word
@@ -47,6 +53,7 @@
 
 .display-body-accent {
     font-size: 1.0625rem;
+    line-height: 1.38125rem;
     font-family: DM Sans, sans-serif;
     font-weight: 600;
     word-wrap: break-word
@@ -55,6 +62,7 @@
 /* Body text */
 .title {
     font-size: 1.375rem;
+    line-height: 1.7875rem;
     font-family: DM Mono, monospace;
     font-weight: 500;
     word-wrap: break-word
@@ -62,6 +70,7 @@
 
 .heading-1 {
     font-size: 1.0625rem;
+    line-height: 1.38125rem;
     font-family: DM Sans, sans-serif;
     font-weight: 700;
     word-wrap: break-word
@@ -69,6 +78,7 @@
 
 .heading-2{
     font-size: 0.9375rem;
+    line-height: 1.21875rem;
     font-family: DM Sans, sans-serif;
     font-weight: 400;
     word-wrap: break-word
@@ -76,6 +86,7 @@
 
 .body {
     font-size: 0.8125rem;
+    line-height: 1.0625rem;
     font-family: DM Sans, sans-serif;
     font-weight: 400;
     word-wrap: break-word
@@ -83,6 +94,7 @@
 
 .body-accent {
     font-size: 0.8125rem;
+    line-height: 1.0625rem;
     font-family: DM Sans, sans-serif;
     font-weight: 600;
     word-wrap: break-word
@@ -90,6 +102,7 @@
 
 .caption {
     font-size: 0.6875rem;
+    line-height: 0.89375rem;
     font-family: DM Sans, sans-serif;
     font-weight: 600;
     word-wrap: break-word
