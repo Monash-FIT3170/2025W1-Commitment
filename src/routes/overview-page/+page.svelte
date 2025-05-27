@@ -7,12 +7,8 @@
     } from "../../lib/metrics";
     import Graph from "$lib/components/overview-page/Graph.svelte";
     import ContributorCards from "$lib/components/overview-page/ContributorCards.svelte";
-    import { info } from "@tauri-apps/plugin-log";
     import { page } from "$app/stores"; // Import the $page store
 
-    // Remove hardcoded owner and repo
-    // let repo = "clap";
-    // let owner = "clap-rs";
 
     // Initialize from $page.state
     let contributors: Contributor[] = $state(($page.state as any).commitData || []);
@@ -45,7 +41,7 @@
     </div>
 
     <Graph {contributors} />
-    <ContributorCards {selected_branch} users={contributors} />
+    <ContributorCards users={contributors} />
 </main>
 
 <!-- Sidebar -->

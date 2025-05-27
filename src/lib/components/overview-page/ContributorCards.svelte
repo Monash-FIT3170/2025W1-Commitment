@@ -11,13 +11,7 @@
         type Contributor,
     } from "../../metrics";
 
-    let {
-        users,
-        selected_branch: selected_branch,
-    }: {
-        users: Contributor[];
-        selected_branch: string;
-    } = $props();
+    let { users }: { users: Contributor[] } = $props();
 
     // Calculate metrics for each user
     let commit_mean = get_average_commits(users);
@@ -201,4 +195,3 @@
         font-weight: bold;
     }
 </style>
-

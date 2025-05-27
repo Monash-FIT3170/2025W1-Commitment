@@ -19,54 +19,10 @@
         offsetIndex: number;
     }>;
 
-    function get_user_commits(users: Contributor[]) {
-        if (users.length === 0) return [];
-
-        let user_total_commits: any[] = [];
-        users.forEach((user) => {
-            user_total_commits.push({
-                username: user.author.login,
-                image: user.author.avatar_url,
-            });
-        });
-
-        // Sort by number of commits
-        const sorted_commits = user_total_commits.sort(
-            (a, b) => a.total_commits - b.total_commits,
-        );
-
-        // Group by numCommits and apply horizontal offset
-        const groups = new Map<number, any[]>();
-        sorted_commits.forEach((user) => {
-            if (!groups.has(user.total_commits)) {
-                groups.set(user.total_commits, []);
-            }
-            groups.get(user.total_commits)!.push(user);
-        });
-
-        // Apply horizontal offset to overlapping points
-        const result: User[] = [];
-        groups.forEach((users, _) => {
-            if (users.length === 1) {
-                result.push(users[0]);
-            } else {
-                users.forEach((user, index) => {
-                    result.push({
-                        ...user,
-                        offsetIndex: index - (users.length - 1) / 2,
-                    });
-                });
-            }
-        });
-
-        return result;
-    }
-
     // Reactive declarations for derived values
     let commit_mean = $state(get_average_commits(contributors));
     let sd = $state(get_sd(contributors));
     let ref_point_values = $derived(get_ref_points(commit_mean, sd));
-    //let contributor_data = $state(get_user_commits(contributors));
 
     // Reference points for vertical lines
     let ref_points = $derived(
@@ -100,71 +56,18 @@
     use([ScatterChart, GridComponent, CanvasRenderer, TitleComponent]);
 
     let commit_data = $derived(
-        contributors.map((p: Contributor) => [p.total_commits, 1])
+        contributors.map((p: Contributor) => [p.total_commits, 1]),
     );
 
     let contributor_data = $derived(
-        contributors.map((p: Contributor) => [p.total_commits, 1, p.author.login])
+        contributors.map((p: Contributor) => [
+            p.total_commits,
+            1,
+            p.author.login,
+        ]),
     );
 
-    // const ref_line_graphics = $derived( ref_points.map((ref) => { const x = chart.convertToPixel({ gridIndex: 0 }, [ref.value, 0])[0];
-    //            return {
-    //                type: "group",
-    //                children: [
-    //                    {
-    //                        type: "line",
-    //                        shape: {
-    //                            x1: x,
-    //                            y1: grid_top,
-    //                            x2: x,
-    //                            y2: x_axis_Y,
-    //                        },
-    //                        style: {
-    //                            stroke: "#fff",
-    //                            lineDash: [4, 4],
-    //                            lineWidth: 1,
-    //                            opacity: 0.5,
-    //                        },
-    //                        silent: true,
-    //                    },
-    //                    {
-    //                        type: "text",
-    //                        style: {
-    //                            text: ref.label,
-    //                            fontSize: 12,
-    //                            fill: "#fff",
-    //                            font: "bold 16px sans-serif",
-    //                            textAlign: "center",
-    //                            textVerticalAlign: "bottom",
-    //                        },
-    //                        x: x,
-    //                        y: grid_top - 8,
-    //                    },
-    //                ],
-    //            };
-    //        }),
-    //    );
-    //
-    //    // Use y=2 as the top of the y-axis for gridTop
-    //    const grid_top = chart.convertToPixel({ gridIndex: 0 }, [0, 2])[1];
-    //    const x_axis_Y = chart.convertToPixel({ gridIndex: 0 }, [0, 0])[1];
-    //
-    //    // Create graphics for reference lines
-    //
-    //    // Create graphics for user images with fixed pixel offset
-    //    const user_graphics = contributor_data.map((person: User) => {
-    //        // Convert the base position to pixels
-    //        const [baseX, y] = chart.convertToPixel({ gridIndex: 0 }, [
-    //            person.contributor.total_commits,
-    //            1,
-    //        ]);
-    //        // Apply fixed 16px offset if there's an offsetIndex
-    //        const x = baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
-    //
-    //    });
-
     let options = $derived({
-        backgroundColor: "#222",
         grid: {
             top: "10%",
             bottom: "25%",
@@ -208,8 +111,23 @@
             {
                 type: "scatter",
                 data: commit_data,
-                symbolSize: 3,
+                symbolSize: 32,
                 z: 3,
+                markLine: {
+                    silent: true,
+                    data: [
+                        {
+                            type: "average",
+                            name: "mean",
+                            indexValue: 0,
+                            lineStyle: {
+                                color: "#fff",
+                                width: 20,
+                                type: "dashed",
+                            },
+                        },
+                    ],
+                },
             },
             {
                 name: "hover_points",
@@ -252,32 +170,6 @@
                 return "";
             },
         },
-        graphics: eUtils.map(contributor_data, (p: User) => {
-            return {
-                type: "group",
-                children: [
-                    {
-                        type: "image",
-                        style: {
-                            image: p.contributor.author.avatar_url,
-                            width: 40,
-                            height: 40,
-                        },
-                        x: x - 20, // Center the image
-                        y: y - 20, // Center the image
-                        silent: false,
-                        clipPath: {
-                            type: "circle",
-                            shape: {
-                                cx: 20,
-                                cy: 20,
-                                r: 20,
-                            },
-                        },
-                    },
-                ],
-            };
-        }),
     });
 </script>
 

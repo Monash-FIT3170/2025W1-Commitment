@@ -114,7 +114,7 @@
             verificationError = null;
 
             // Call loadBranches and loadCommitData and wait for both to complete
-            const [branches, commitData] = await Promise.all([
+            const [branches, commit_data] = await Promise.all([
                 load_branches(backendResult.owner, backendResult.repo),
                 load_commit_data(backendResult.owner, backendResult.repo),
             ]);
@@ -123,7 +123,7 @@
             goto(`/overview-page`, {
                 state: {
                     branches: branches,
-                    commitData: commitData,
+                    commitData: commit_data,
                 },
             });
         } catch (error: any) {
