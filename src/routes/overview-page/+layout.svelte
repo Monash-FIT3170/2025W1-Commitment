@@ -41,6 +41,6 @@
 }
 
 .body {
-    height: calc(100vh - 1.375rem)
+    min-height: calc(100vh - 1.375rem)
 }
 </style>

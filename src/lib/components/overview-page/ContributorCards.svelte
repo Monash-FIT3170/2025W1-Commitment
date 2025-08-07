@@ -95,7 +95,7 @@
         flex-wrap: wrap;
         gap: 2rem;
         justify-content: center;
-        margin-top: 3rem;
+        margin-top: 100px; /* Increased to prevent overlap with expanded graph x-axis */
     }
 
     .profile-card {

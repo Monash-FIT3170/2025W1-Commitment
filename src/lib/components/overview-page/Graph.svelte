@@ -21,9 +21,21 @@
     let ref_point_values: number[] = [];
     let refPoints: { label: string, value: number }[] = [];
     let resizeHandler: () => void;
+    let isStaggeredMode = $state(false);
+    let chartHeight = $state(350);
 
     $effect(() => {
         filteredPeople = getUserCommits(contributors);
+    });
+    
+    // Watch for staggered mode changes specifically
+    $effect(() => {
+        console.log('Staggered mode effect triggered:', isStaggeredMode);
+        if (isStaggeredMode !== undefined) {
+            filteredPeople = getUserCommits(contributors);
+            // Force height recalculation
+            console.log('Forcing height recalculation due to mode change');
+        }
     });
     $effect(() => {
         minCommits = filteredPeople.length > 0 ? Math.min(...filteredPeople.map((p: any) => p.numCommits)) : 0;
@@ -58,6 +70,35 @@
             ];
     });
     $effect(() => {
+        // Update chart height based on mode and number of contributors
+        const oldHeight = chartHeight;
+        const newHeight = isStaggeredMode ? 100 + (filteredPeople.length * 80) : 350;
+        console.log('Height effect triggered. Old height:', oldHeight, 'New height:', newHeight, 'Staggered mode:', isStaggeredMode, 'Contributors:', filteredPeople.length);
+        chartHeight = newHeight;
+        
+        // Trigger chart resize when height changes
+        if (chart && oldHeight !== newHeight) {
+            console.log('Resizing chart due to height change');
+            // Use requestAnimationFrame to wait for DOM update
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    console.log('Executing delayed resize and redraw');
+                    console.log('Container dimensions:', chartContainer.clientWidth, 'x', chartContainer.clientHeight);
+                    chart.resize();
+                    
+                    // Wait for CSS transition to complete (300ms) before refreshing
+                    setTimeout(() => {
+                        console.log('Forcing complete chart refresh after transition');
+                        console.log('Container dimensions after transition:', chartContainer.clientWidth, 'x', chartContainer.clientHeight);
+                        chart.resize();
+                        chart.clear();
+                        setChartOptions();
+                    }, 350);
+                });
+            });
+        }
+    });
+    $effect(() => {
         if (chart) setChartOptions();
     });
 
@@ -72,27 +113,42 @@
             });
         });
         const sortedCommits = userTotalCommits.sort((a, b) => a.numCommits - b.numCommits);
-        const groups = new Map<number, any[]>();
-        sortedCommits.forEach(user => {
-            if (!groups.has(user.numCommits)) {
-                groups.set(user.numCommits, []);
-            }
-            groups.get(user.numCommits)!.push(user);
-        });
-        const result: any[] = [];
-        groups.forEach((users, commits) => {
-            if (users.length === 1) {
-                result.push(users[0]);
-            } else {
-                users.forEach((user, index) => {
-                    result.push({
-                        ...user,
-                        offsetIndex: index - (users.length - 1) / 2
+        
+        if (isStaggeredMode) {
+            // In staggered mode, assign y-values progressively from left to right with more spacing
+            return sortedCommits.map((user, index) => ({
+                ...user,
+                yValue: 5 + (index * 1000)  // Start at 5 and increment by 1000 for distinct separation
+            }));
+        } else {
+            // Original mode with offsetIndex for same x-values
+            const groups = new Map<number, any[]>();
+            sortedCommits.forEach(user => {
+                if (!groups.has(user.numCommits)) {
+                    groups.set(user.numCommits, []);
+                }
+                groups.get(user.numCommits)!.push(user);
+            });
+            const result: any[] = [];
+            groups.forEach((users, commits) => {
+                if (users.length === 1) {
+                    result.push({ 
+                        ...users[0], 
+                        yValue: 1,
+                        offsetIndex: 0 // Reset offsetIndex
                     });
-                });
-            }
-        });
-        return result;
+                } else {
+                    users.forEach((user, index) => {
+                        result.push({
+                            ...user,
+                            offsetIndex: index - (users.length - 1) / 2,
+                            yValue: 1
+                        });
+                    });
+                }
+            });
+            return result;
+        }
     }
 
     function updateGraphics() {
@@ -215,8 +271,8 @@
             };
         });
         const userGraphics = filteredPeople.map((person: any) => {
-            const [baseX, y] = chart.convertToPixel({gridIndex: 0}, [person.numCommits, 1]);
-            const x = baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
+            const [baseX, y] = chart.convertToPixel({gridIndex: 0}, [person.numCommits, person.yValue]);
+            const x = isStaggeredMode ? baseX : baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
             return {
                 type: 'group',
                 children: [
@@ -253,11 +309,12 @@
     }
 
     function setChartOptions() {
+        console.log('setChartOptions called. Staggered mode:', isStaggeredMode, 'Chart height:', chartHeight, 'Filtered people:', filteredPeople.length);
         const option = {
             backgroundColor: 'transparent',  //#222',
             grid: {
-                top: '50%',
-                bottom: 100,
+                top: 175, // Provides enough space for top labels while keeping chart at top
+                bottom: isStaggeredMode ? 80 : 80, // Keep consistent bottom margin
                 left: 40,
                 right: 40,
                 containLabel: false
@@ -273,7 +330,7 @@
                     fontFamily: 'DM Sans, sans-serif',
                 },
                 nameLocation: 'middle',
-                nameGap: 60,
+                nameGap: 60, // Tighter gap for axis title
                 axisLine: {
                     lineStyle: {
                         color: '#fff',
@@ -298,19 +355,23 @@
             yAxis: {
                 show: false,
                 min: 0,
-                max: 2.5,
+                max: (() => {
+                    const maxY = isStaggeredMode ? Math.max(5 + ((filteredPeople.length - 1) * 1000) + 100, 2.5) : 2.5;
+                    console.log('Y-axis max set to:', maxY, 'for staggered mode:', isStaggeredMode);
+                    return maxY;
+                })(),
             },
             series: [
                 {
                     type: 'scatter',
-                    data: filteredPeople.map((p: any) => [p.numCommits, 1]),
+                    data: filteredPeople.map((p: any) => [p.numCommits, p.yValue]),
                     symbolSize: 0,
                     z: 3
                 },
                 {
                     name: 'hoverPoints',
                     type: 'scatter',
-                    data: filteredPeople.map((p: any) => [p.numCommits, 1, p.username]),
+                    data: filteredPeople.map((p: any) => [p.numCommits, p.yValue, p.username]),
                     symbolSize: 32,
                     z: 10,
                     itemStyle: {
@@ -354,6 +415,26 @@
     onMount(() => {
         chart = echarts.init(chartContainer);
         setChartOptions();
+        
+        // Add click event listener to toggle staggered mode
+        chart.on('click', () => {
+            console.log('Graph clicked! Current mode:', isStaggeredMode);
+            isStaggeredMode = !isStaggeredMode;
+            console.log('New mode:', isStaggeredMode);
+            
+            // Clear any existing tooltip
+            chart.dispatchAction({
+                type: 'hideTip'
+            });
+            
+            // Manually trigger height update and data update
+            console.log('About to update data and height');
+            
+            // Let the height effect handle the resize and redraw
+            // Just clear tooltip and let the reactive effects do their work
+            console.log('Mode changed, letting effects handle the update');
+        });
+        
         resizeHandler = () => {
             chart.resize();
             updateGraphics();
@@ -366,12 +447,11 @@
     });
 </script>
 
-<div bind:this={chartContainer} class="chart-container"></div>
+<div bind:this={chartContainer} class="chart-container" style="height: {chartHeight}px; border: {isStaggeredMode ? '2px solid red' : '2px solid blue'}; transition: height 0.3s ease;"></div>
 
 <style>
     .chart-container {
         width: 100%;
-        height: 500px;
         font-family: 'DM Sans', sans-serif;
         padding-bottom: 2rem;
     }
