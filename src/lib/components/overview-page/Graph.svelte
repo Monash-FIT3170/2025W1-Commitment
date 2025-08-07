@@ -82,18 +82,34 @@
             // Use requestAnimationFrame to wait for DOM update
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    console.log('Executing delayed resize and redraw');
-                    console.log('Container dimensions:', chartContainer.clientWidth, 'x', chartContainer.clientHeight);
+                    console.log('Starting gradual chart updates');
+                    console.log('Initial container dimensions:', chartContainer.clientWidth, 'x', chartContainer.clientHeight);
+                    
+                    // First resize immediately
                     chart.resize();
                     
-                    // Wait for CSS transition to complete (300ms) before refreshing
-                    setTimeout(() => {
-                        console.log('Forcing complete chart refresh after transition');
-                        console.log('Container dimensions after transition:', chartContainer.clientWidth, 'x', chartContainer.clientHeight);
-                        chart.resize();
-                        chart.clear();
-                        setChartOptions();
-                    }, 350);
+                    // Multiple gradual updates during the transition (every 25ms)
+                    const updateIntervals = [];
+                    for (let i = 25; i <= 750; i += 25) {
+                        updateIntervals.push(i);
+                    }
+                    
+                    updateIntervals.forEach((delay, index) => {
+                        setTimeout(() => {
+                            console.log(`Update ${index + 1} at ${delay}ms:`, chartContainer.clientWidth, 'x', chartContainer.clientHeight);
+                            chart.resize();
+                            
+                            // Update graphics on every resize to maintain reference lines and colorings
+                            updateGraphics();
+                            
+                            // Only clear and reset options on the final update
+                            if (index === updateIntervals.length - 1) {
+                                console.log('Final refresh - clearing and resetting options');
+                                chart.clear();
+                                setChartOptions();
+                            }
+                        }, delay);
+                    });
                 });
             });
         }
@@ -153,11 +169,11 @@
 
     function updateGraphics() {
         if (!chart) return;
-        const gridTop = chart.convertToPixel({gridIndex: 0}, [0, 6])[1];
+        const gridTop = chart.convertToPixel({gridIndex: 0}, [0, isStaggeredMode ? Math.max(5 + ((filteredPeople.length - 1) * 1000) + 100, 2.5) : 2.5])[1];
         const xAxisY = chart.convertToPixel({gridIndex: 0}, [0, 0])[1];
 
-        const fullHeight = xAxisY - gridTop;
-        const tintHeight = fullHeight * 0.9;
+        const tintStartY = isStaggeredMode ? 40 : gridTop; // Start below text labels (40px from top in staggered mode)
+        const tintHeight = xAxisY - tintStartY;
 
         const marginLeft = 40; // px
         const marginRight = 40; // px
@@ -191,7 +207,7 @@
             type: 'rect',
             shape: {
                 x: middleTint.x,
-                y: xAxisY-tintHeight,
+                y: tintStartY, // Start below text labels
                 width: middleTint.width,
                 height: tintHeight
             },
@@ -206,7 +222,7 @@
             type: 'rect',
             shape: {
                 x: leftTint.x,
-                y: xAxisY-tintHeight,
+                y: tintStartY, // Start below text labels
                 width: leftTint.width,
                 height: tintHeight
             },
@@ -221,7 +237,7 @@
             type: 'rect',
             shape: {
                 x: rightTint.x,
-                y: xAxisY-tintHeight,
+                y: tintStartY, // Start below text labels
                 width: rightTint.width,
                 height: tintHeight
             },
@@ -241,7 +257,7 @@
                         type: 'line',
                         shape: {
                             x1: x,
-                            y1: gridTop,
+                            y1: isStaggeredMode ? 40 : gridTop, // Start below the text labels
                             x2: x,
                             y2: xAxisY
                         },
@@ -264,7 +280,7 @@
                             textVerticalAlign: 'bottom'
                         },
                         x: x,
-                        y: gridTop - 8,
+                        y: isStaggeredMode ? 20 : gridTop - 8, // Fixed position in staggered mode
                         z:2
                     }
                 ]
@@ -312,8 +328,12 @@
         console.log('setChartOptions called. Staggered mode:', isStaggeredMode, 'Chart height:', chartHeight, 'Filtered people:', filteredPeople.length);
         const option = {
             backgroundColor: 'transparent',  //#222',
+            animation: true,
+            animationDuration: 800,
+            animationEasing: 'cubicInOut',
+            animationDelay: 0,
             grid: {
-                top: 175, // Provides enough space for top labels while keeping chart at top
+                top: 30, // Provides enough space for top labels while keeping chart at top
                 bottom: isStaggeredMode ? 80 : 80, // Keep consistent bottom margin
                 left: 40,
                 right: 40,
@@ -366,7 +386,10 @@
                     type: 'scatter',
                     data: filteredPeople.map((p: any) => [p.numCommits, p.yValue]),
                     symbolSize: 0,
-                    z: 3
+                    z: 3,
+                    animation: true,
+                    animationDuration: 800,
+                    animationEasing: 'cubicInOut'
                 },
                 {
                     name: 'hoverPoints',
@@ -374,6 +397,9 @@
                     data: filteredPeople.map((p: any) => [p.numCommits, p.yValue, p.username]),
                     symbolSize: 32,
                     z: 10,
+                    animation: true,
+                    animationDuration: 800,
+                    animationEasing: 'cubicInOut',
                     itemStyle: {
                         color: 'transparent',
                     },
@@ -447,7 +473,7 @@
     });
 </script>
 
-<div bind:this={chartContainer} class="chart-container" style="height: {chartHeight}px; border: {isStaggeredMode ? '2px solid red' : '2px solid blue'}; transition: height 0.3s ease;"></div>
+<div bind:this={chartContainer} class="chart-container" style="height: {chartHeight}px; transition: height 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);"></div>
 
 <style>
     .chart-container {
