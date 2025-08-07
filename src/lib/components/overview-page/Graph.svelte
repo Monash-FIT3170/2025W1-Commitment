@@ -131,10 +131,10 @@
         const sortedCommits = userTotalCommits.sort((a, b) => a.numCommits - b.numCommits);
         
         if (isStaggeredMode) {
-            // In staggered mode, assign y-values progressively from left to right with more spacing
+            // In staggered mode, assign y-values progressively from left to right with reduced spacing
             return sortedCommits.map((user, index) => ({
                 ...user,
-                yValue: 75 + (index * 100)  // Start at 75 to ensure clearance above x-axis, much closer spacing
+                yValue: 30 + (index * 40)  // Start at 30 with 40px spacing
             }));
         } else {
             // Original mode with offsetIndex for same x-values
@@ -169,7 +169,7 @@
 
     function updateGraphics() {
         if (!chart) return;
-        const gridTop = chart.convertToPixel({gridIndex: 0}, [0, isStaggeredMode ? Math.max(75 + ((filteredPeople.length - 1) * 100) + 100, 2.5) : 2.5])[1];
+        const gridTop = chart.convertToPixel({gridIndex: 0}, [0, isStaggeredMode ? Math.max(30 + ((filteredPeople.length - 1) * 40) + 100, 2.5) : 2.5])[1];
         const xAxisY = chart.convertToPixel({gridIndex: 0}, [0, 0])[1];
 
         const tintStartY = isStaggeredMode ? 40 : gridTop; // Start below text labels (40px from top in staggered mode)
@@ -376,7 +376,7 @@
                 show: false,
                 min: 0,
                 max: (() => {
-                    const maxY = isStaggeredMode ? Math.max(75 + ((filteredPeople.length - 1) * 100) + 100, 2.5) : 2.5;
+                    const maxY = isStaggeredMode ? Math.max(30 + ((filteredPeople.length - 1) * 40) + 100, 2.5) : 2.5;
                     console.log('Y-axis max set to:', maxY, 'for staggered mode:', isStaggeredMode);
                     return maxY;
                 })(),
