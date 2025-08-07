@@ -93,6 +93,16 @@ export function get_average_commits(users: Contributor[]): number {
     return commit_mean;
 }
 
+// Calculate average size of commits
+export function get_average_commit_size(users: Contributor[]): number {
+    if (users.length === 0) return 0;
+    const size_mean: number = users.reduce((acc, curr) => {
+        return acc + (get_user_total_lines_of_code(curr))
+    }, 0) / users.length ;
+
+    return size_mean;
+}
+
 // Calculate standard deviation
 export function get_sd(users: Contributor[]): number {
     if (users.length === 0) return 0;
