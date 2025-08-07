@@ -330,14 +330,14 @@
             backgroundColor: 'transparent',  //#222',
             animation: true,
             animationDuration: 800,
-            animationEasing: 'cubicInOut',
+            animationEasing: 'cubicInOut' as const,
             animationDelay: 0,
             grid: {
                 top: 30, // Provides enough space for top labels while keeping chart at top
                 bottom: isStaggeredMode ? 80 : 80, // Keep consistent bottom margin
-                left: 40,
-                right: 40,
-                containLabel: false
+                left: '5%',
+                right: '5%',
+                containLabel: true
             },
             xAxis: {
                 type: 'value',
@@ -389,7 +389,7 @@
                     z: 3,
                     animation: true,
                     animationDuration: 800,
-                    animationEasing: 'cubicInOut'
+                    animationEasing: 'cubicInOut' as const
                 },
                 {
                     name: 'hoverPoints',
@@ -399,7 +399,7 @@
                     z: 10,
                     animation: true,
                     animationDuration: 800,
-                    animationEasing: 'cubicInOut',
+                    animationEasing: 'cubicInOut' as const,
                     itemStyle: {
                         color: 'transparent',
                     },
