@@ -3,13 +3,13 @@
     import * as echarts from "echarts";
     import {
         get_average_commits,
+        get_average_commit_size,
         get_sd,
         get_ref_points,
         type Contributor,
     } from "../../metrics";
 
-    let { contributors }: { contributors: Contributor[] } = $props();
-
+    let { contributors, metric }: { contributors: Contributor[], metric: string } = $props();
     let chart_container: HTMLElement;
     let chart: echarts.ECharts;
     let filtered_people: any[] = [];
@@ -17,7 +17,7 @@
     let max_commits: number = 1;
     let x_min: number = 0;
     let x_max: number = 1;
-    let commit_mean: number = 0;
+    let metric_mean: number = 0;
     let sd: number = 0;
     let ref_point_values: number[] = [];
     let ref_points: { label: string; value: number }[] = [];
@@ -45,13 +45,28 @@
         x_max = min_commits === max_commits ? max_commits + 1 : max_commits + 1;
     });
     $effect(() => {
-        commit_mean = get_average_commits(contributors);
+        switch (metric) {
+            case "commits": {
+                metric_mean = get_average_commits(contributors);
+                break;
+
+            }
+            case "commit_size": {
+                metric_mean = get_average_commit_size(contributors);
+                break;
+            }
+            default: {
+                metric_mean = get_average_commits(contributors);
+                break;
+            }
+        }
+        // metric_mean = get_average_commits(contributors);
     });
     $effect(() => {
-        sd = get_sd(contributors);
+        sd = get_sd(contributors, metric);
     });
     $effect(() => {
-        ref_point_values = get_ref_points(commit_mean, sd);
+        ref_point_values = get_ref_points(metric_mean, sd);
     });
     $effect(() => {
         ref_points =
