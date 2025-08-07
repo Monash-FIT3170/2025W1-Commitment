@@ -24,6 +24,7 @@
     let resizeHandler: () => void;
     let isStaggeredMode = $state(false);
     let chartHeight = $state(350);
+    let isTransitioning = $state(false);
 
     $effect(() => {
         filtered_people = get_user_commits(contributors);
@@ -104,14 +105,20 @@
                             console.log(`Update ${index + 1} at ${delay}ms:`, chartContainer.clientWidth, 'x', chartContainer.clientHeight);
                             chart.resize();
                             
-                            // Update graphics on every resize to maintain reference lines and colorings
-                            updateGraphics();
+                            // Update graphics only when not transitioning
+                            if (!isTransitioning) {
+                                updateGraphics();
+                            }
                             
                             // Only clear and reset options on the final update
                             if (index === updateIntervals.length - 1) {
                                 console.log('Final refresh - clearing and resetting options');
                                 chart.clear();
                                 setChartOptions();
+                                // Re-enable contributor icons after transition completes
+                                isTransitioning = false;
+                                // Call updateGraphics to render icons now that transition is complete
+                                updateGraphics();
                             }
                         }, delay);
                     });
@@ -172,8 +179,8 @@
         }
     }
 
-    function update_graphics() {
-        if (!chart) return;
+    function updateGraphics() {
+        if (!chart || isTransitioning) return;
         const gridTop = chart.convertToPixel({gridIndex: 0}, [0, isStaggeredMode ? Math.max(30 + ((filteredPeople.length - 1) * 40) + 100, 2.5) : 2.5])[1];
         const xAxisY = chart.convertToPixel({gridIndex: 0}, [0, 0])[1];
 
@@ -306,7 +313,7 @@
                 ]
             };
         });
-        const userGraphics = filteredPeople.map((person: any) => {
+        const userGraphics = isTransitioning ? [] : filteredPeople.map((person: any) => {
             const [baseX, y] = chart.convertToPixel({gridIndex: 0}, [person.numCommits, person.yValue]);
             const x = isStaggeredMode ? baseX : baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
             return {
@@ -469,20 +476,22 @@
         // Add click event listener to toggle staggered mode
         chart.on('click', () => {
             console.log('Graph clicked! Current mode:', isStaggeredMode);
-            isStaggeredMode = !isStaggeredMode;
-            console.log('New mode:', isStaggeredMode);
-            
+
             // Clear any existing tooltip
-            chart.dispatchAction({
-                type: 'hideTip'
+            chart.dispatchAction({ type: 'hideTip' });
+
+            // Mark transitioning and clear chart immediately so nothing is shown
+            isTransitioning = true;
+            chart.clear();
+
+            // Re-apply base axes immediately so the x-axis remains visible during transition
+            setChartOptions();
+
+            // Toggle mode on the next frame to ensure the clear is painted first
+            requestAnimationFrame(() => {
+                isStaggeredMode = !isStaggeredMode;
+                console.log('New mode (applied after clear):', isStaggeredMode);
             });
-            
-            // Manually trigger height update and data update
-            console.log('About to update data and height');
-            
-            // Let the height effect handle the resize and redraw
-            // Just clear tooltip and let the reactive effects do their work
-            console.log('Mode changed, letting effects handle the update');
         });
         
         resizeHandler = () => {
