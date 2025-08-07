@@ -104,7 +104,7 @@ export function get_average_commit_size(users: Contributor[]): number {
 }
 
 // Calculate standard deviation
-export function get_sd(users: Contributor[]): number {
+export function get_sd(users: Contributor[], metric: string): number {
     if (users.length === 0) return 0;
     let commits: number[] = [];
 
@@ -115,7 +115,25 @@ export function get_sd(users: Contributor[]): number {
 
     // Creating the mean with Array.reduce
     const n: number = users.length;
-    const mean = get_average_commits(users);
+
+    // Determine the mean of the given metric
+    let mean: number;
+    switch (metric) {
+
+        case 'commit_size': {
+            mean = get_average_commit_size(users);
+            break;
+        }
+        case 'commits': {
+            mean = get_average_commits(users);
+            break;
+        }
+        default: {
+            mean = get_average_commits(users);
+            break
+        }
+    }
+    
 
     const variance: number = commits.reduce((acc: number, val: number) => acc + Math.pow(val - mean, 2), 0) / n;
 
