@@ -10,6 +10,7 @@
     import RepoDropdown from "$lib/components/global/RepoDropdown.svelte";
     import type { RepoOption } from "$lib/stores/repo";
     import { repo_options } from "$lib/stores/repo";
+    import RepoSearchbar from "$lib/components/global/RepoSearchbar.svelte";
 
     interface RepoBookmark {
         repo_name: string;
@@ -45,7 +46,6 @@
     ];
 
     let selected: RepoOption = $state(repo_options[0]); // Default to GitHub
-    
     let repoUrlInput: string = $state("");
 
     let verification_message: string = $state("");
@@ -67,6 +67,7 @@
     }
 
     async function handleVerification() {
+        console.log("handleVerification called with:", repoUrlInput, selected);
         resetVerificationResult();
         
         if (!selected || !repoUrlInput.trim()) {
@@ -110,12 +111,6 @@
             verification_error = true
             verification_message = `${error.message || "Verification failed."}`
             console.error("Verification failed:", error);
-        }
-    }
-
-    function handleInputKeydown(event: KeyboardEvent) {
-        if (event.key === "Enter") {
-            handleVerification();
         }
     }
 
@@ -169,10 +164,11 @@
             </div>
 
             <!-- Repo dropdown -->
-            <RepoDropdown selected={selected} action={resetVerificationResult}/>
+            <RepoDropdown bind:selected={selected} action={resetVerificationResult}/>
         
             <!-- Repo link -->
-            <div class="repo-link">
+             <RepoSearchbar onSubmit={handleVerification} bind:repoUrlInput={repoUrlInput}></RepoSearchbar>
+            <!-- <div class="repo-link">
                 <input
                     class="repo-textbox display-body"
                     type="text"
@@ -187,7 +183,7 @@
                         style="color: white"
                     />
                 </button>
-            </div>
+            </div> -->
     
             <div></div>
     
