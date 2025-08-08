@@ -6,6 +6,10 @@
     import { redirect } from "@sveltejs/kit";
     import { goto } from "$app/navigation";
     import { setRepoUrl } from "$lib/stores/repo";
+    import RepoDropdown from "$lib/components/global/RepoDropdown.svelte";
+    import type { RepoOption } from "$lib/stores/repo";
+    import { repo_options } from "$lib/stores/repo";
+
     interface RepoBookmark {
         repo_name: string;
         repo_url: string;
@@ -39,20 +43,8 @@
 
     ];
 
-    //
-    interface RepoOption {
-        label: string;
-        icon: string;
-    }
-    let dropdownOpen = false;
-
-    const options: RepoOption[] = [
-        { label: "GitHub", icon: "brand-github" },
-        { label: "GitLab", icon: "brand-gitlab" },
-        { label: "Local", icon: "folder-code" },
-    ];
-    let selected: RepoOption = options[0]; // Default to GitHub
-
+    let selected: RepoOption = repo_options[0]; // Default to GitHub
+    
     let repoUrlInput: string = "";
     let verificationResult: { owner: string; repo: string } | null = null;
     let verificationError: string | null = null;
@@ -68,41 +60,29 @@
     }
 
     async function handleVerification() {
+        verificationResult = null;
+        verificationError = null;
+        
         if (!selected || !repoUrlInput.trim()) {
             verificationError =
                 "Please select a source type and enter a URL/path.";
-            verificationResult = null;
-            return;
-        }
-
-        let sourceType: 0 | 1 | 2;
-        if (selected.label === "GitHub") {
-            sourceType = 0;
-        } else if (selected.label === "GitLab") {
-            sourceType = 1;
-        } else if (selected.label === "Local") {
-            sourceType = 2;
-        } else {
-            verificationError = "Invalid source type selected.";
-            verificationResult = null;
             return;
         }
 
         try {
             // Try frontend validation first
-            const result = verifyAndExtractSourceInfo(repoUrlInput, sourceType);
+            const result = verifyAndExtractSourceInfo(repoUrlInput, selected.source_type);
             const backendResult = await invoke<BackendVerificationResult>(
                 "verify_and_extract_source_info",
                 {
                     urlStr: repoUrlInput,
-                    sourceType: sourceType,
+                    sourceType: selected.source_type,
                 },
             );
             verificationResult = {
                 owner: backendResult.owner,
                 repo: backendResult.repo,
             };
-            verificationError = null;
 
             // Update the repo store with the new URL
             setRepoUrl(repoUrlInput);
@@ -121,21 +101,8 @@
             });
         } catch (error: any) {
             verificationError = error.message || "Verification failed.";
-            verificationResult = null;
             console.error("Verification failed:", error);
         }
-    }
-
-    function selectOption(option: RepoOption) {
-        selected = option;
-        dropdownOpen = false;
-        // Reset verification status when option changes
-        verificationResult = null;
-        verificationError = null;
-    }
-
-    function toggleDropdown() {
-        dropdownOpen = !dropdownOpen;
     }
 
     function handleInputKeydown(event: KeyboardEvent) {
@@ -143,6 +110,12 @@
             handleVerification();
         }
     }
+
+    function clearVerificationResult() {
+        verificationResult = null;
+        verificationError = null;
+    }
+
 </script>
 <div class="page">
 
@@ -181,55 +154,9 @@
     
     <main class="main">
         <div class="repo-start">
+
             <!-- Repo dropdown -->
-            <div class="dropdown">
-                <button
-                    type="button"
-                    class={`dropdown-btn ${dropdownOpen ? "show" : "hide"}`}
-                    on:click={toggleDropdown}
-                >
-                    {#if selected}
-                        <div class="dropdown-show">
-                            <Icon
-                                icon={`tabler:${selected.icon}`}
-                                class="icon-medium"
-                                style="color: white"
-                            />
-                            <h6 class="display-body white dropdown-text">
-                                {selected.label}
-                            </h6>
-                        </div>
-                    {:else}
-                        <!-- This case should not happen with a default selected value -->
-                        <h6 class="display-body white">Select an option</h6>
-                    {/if}
-                        <Icon
-                            icon={`tabler:chevron-down`}
-                            class="icon-medium"
-                            style="color: white"
-                        />
-                </button>
-    
-                {#if dropdownOpen}
-                    <div class="dropdown-content">
-                        {#each options as option}
-                            <button
-                                class="dropdown-option"
-                                on:click={() => selectOption(option)}
-                            >
-                                <Icon
-                                    icon={`tabler:${option.icon}`}
-                                    class="icon-medium"
-                                    style="color: white"
-                                />
-                                <h6 class="display-body white dropdown-text">
-                                    {option.label}
-                                </h6>
-                            </button>
-                        {/each}
-                    </div>
-                {/if}
-            </div>
+             <RepoDropdown bind:selected={selected} action={clearVerificationResult}/>
     
             <!-- Repo link -->
             <div class="repo-link">
@@ -266,7 +193,7 @@
             <div class="repo-bookmark-list">
                 {#each bookmarked_repo as bookmark (bookmark.repo_url)}
                     <button class="repo-list-btn" type="button" on:click={() => bookmarkedRepo(bookmark.repo_url)}>
-                        <h6 class="display-body repo-list-text white">
+                        <h6 class="display-body repo-list-text">
                             {bookmark.repo_url}
                         </h6>
                     </button>
@@ -365,12 +292,6 @@
         justify-content: space-between;
         padding-top: 8px;
         padding-bottom: 8px;
-        z-index: 500;
-
-    }
-
-    .white {
-        color: var(--white);
         z-index: 500;
 
     }
@@ -502,76 +423,6 @@
         row-gap: 10px;
     }
 
-    /* REPO DROPDOWN */
-    .dropdown {
-        position: relative;
-        width: 13rem;
-        height: 2.625em;
-        border-top-left-radius: 12px;
-        border-top-right-radius: 12px;
-    }
-
-    .dropdown-btn {
-        width: 100%;
-        height: inherit;
-        padding: 0.625rem 0.75rem 0.625rem 1rem;
-        background: #222;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .dropdown-btn.hide {
-        border-radius: 12px;
-    }
-
-    .dropdown-btn.show {
-        border-top-left-radius: 12px;
-        border-top-right-radius: 12px;
-    }
-
-    .dropdown-btn.show::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: 1px;
-        background-color: #fff;
-    }
-
-    .dropdown-show {
-        display: flex;
-        align-items: center;
-    }
-
-    .dropdown-content {
-        width: inherit;
-        background-color: #222;
-        border-bottom-left-radius: 12px;
-        border-bottom-right-radius: 12px;
-    }
-
-    .dropdown-option {
-        width: inherit;
-        height: 42px;
-        padding: 0.625rem 0.75rem 0.625rem 1rem;
-        background: #222;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: start;
-        border-bottom-left-radius: 12px;
-        border-bottom-right-radius: 12px;
-    }
-
-    .dropdown-text {
-        margin-left: 0.5rem;
-    }
-
     /* REPO TEXTBOX */
     .repo-link {
         height: 1.5rem;
@@ -669,6 +520,7 @@
     .repo-list-text {
         height: inherit;
         margin: 0px;
+        color: var(--label-primary);
     }
 
     .verification-feedback {
