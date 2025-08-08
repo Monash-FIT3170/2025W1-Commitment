@@ -6,6 +6,7 @@
     import DropdownTintedMedium from "$lib/components/global/dropdown-tinted-medium.svelte"
     import { createDropdownSelection } from "$lib/stores/dropdown";
     import ButtonTintedMedium from "../global/button-tinted-medium.svelte";
+    import { writable } from "svelte/store";
 
     // Initialize from $page.state
     let contributors: Contributor[] = $state(($page.state as any).commitData || []);
@@ -15,8 +16,8 @@
     //     selected_branch = "all";
     // }
 
-    let criteria: string[] = ["total commits", "average commit size"];
-    let selectedCriteria = criteria[0];
+    let criteria: string[] = ["commits", "commit_size"];
+    let selectedCriteria = $state(writable(criteria[0]));
 
     let sidebar_open = $state(false);
     let bookmarked_repo: { repo_name: string; repo_url: string }[] = [];
@@ -24,7 +25,7 @@
     function toggleSidebar() {
         sidebar_open = !sidebar_open;
     }
-    import ButtonTintedMedium from "../global/ButtonTintedMedium.svelte";
+
     import type { Contributor } from "$lib/metrics";
 
     let {
@@ -35,21 +36,12 @@
 
 <main class="container">
     <div class="header-row">
-        <!-- faking the dropdown button -->
-        <!-- <ButtonTintedMedium
-            label="commits"
-            label_class="body"
-            icon_first={false}
-            icon="chevron-down"
-<<<<<<< HEAD
-            width="12rem"
-=======
-            width=12rem
-        /> -->
+        <!-- Removed branch select dropdown -->
+
 
         <DropdownTintedMedium
             options={criteria}
->>>>>>> 4fc209e (wip: Refactoring existing code to work with multiple metrics)
+            bind:selected={selectedCriteria}
         />
 
         <ButtonTintedMedium
@@ -59,13 +51,14 @@
             icon="chevron-down"
             width="12rem"
         />
+
     </div>
 <<<<<<< HEAD
     <Graph {contributors} />
     <ContributorCards users={contributors} selected_branch={""} />
 =======
 
-    <Graph contributors={contributors} metric={"commit_size"} />
+    <Graph contributors={contributors} metric={$selectedCriteria} />
     <ContributorCards users={contributors} />
 >>>>>>> 4fc209e (wip: Refactoring existing code to work with multiple metrics)
 </main>

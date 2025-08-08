@@ -4,6 +4,7 @@
     import {
         get_average_commits,
         get_average_commit_size,
+        get_metric_min_max,
         get_sd,
         get_ref_points,
         type Contributor,
@@ -13,43 +14,27 @@
     let chart_container: HTMLElement;
     let chart: echarts.ECharts;
     let filtered_people: any[] = [];
-    let min_commits: number = 0;
-    let max_commits: number = 1;
-    let x_min: number = 0;
-    let x_max: number = 1;
-    let metric_mean: number = 0;
-    let sd: number = 0;
-    let ref_point_values: number[] = [];
-    let ref_points: { label: string; value: number }[] = [];
+    let x_min: number = $state(0);
+    let x_max: number = $state(1);
+    let metric_mean: number = $state(0);
+    let sd: number = $state(0);
+    let ref_point_values: number[] = $state([]);
+    let ref_points: { label: string, value: number }[] = $state([]);
     let resize_handler: () => void;
 
     $effect(() => {
         filtered_people = get_user_commits(contributors);
     });
     $effect(() => {
-        min_commits =
-            filtered_people.length > 0
-                ? Math.min(...filtered_people.map((p: any) => p.num_commits))
-                : 0;
-    });
-    $effect(() => {
-        max_commits =
-            filtered_people.length > 0
-                ? Math.max(...filtered_people.map((p: any) => p.num_commits))
-                : 1;
-    });
-    $effect(() => {
-        x_min = min_commits === max_commits ? min_commits - 1 : min_commits - 1;
-    });
-    $effect(() => {
-        x_max = min_commits === max_commits ? max_commits + 1 : max_commits + 1;
+        let min_max: {min: number, max: number} = get_metric_min_max(contributors, metric);
+        x_min = min_max.min;
+        x_max = min_max.max;
     });
     $effect(() => {
         switch (metric) {
             case "commits": {
                 metric_mean = get_average_commits(contributors);
                 break;
-
             }
             case "commit_size": {
                 metric_mean = get_average_commit_size(contributors);
@@ -60,7 +45,6 @@
                 break;
             }
         }
-        // metric_mean = get_average_commits(contributors);
     });
     $effect(() => {
         sd = get_sd(contributors, metric);
@@ -81,7 +65,10 @@
                   ];
     });
     $effect(() => {
-        if (chart) set_chart_options();
+        metric;
+        if (chart) {
+            set_chart_options();
+        }
     });
 
     function get_user_commits(users: Contributor[]) {
@@ -309,10 +296,10 @@
                 containLabel: false,
             },
             xAxis: {
-                type: "value",
-                min: x_min,
+                type: 'value',
+                min: x_min - 1 < 0 ? 0 : x_min,
                 max: x_max,
-                name: "Total Commits",
+                name: metric,
                 nameTextStyle: {
                     fontSize: 20,
                     fontWeight: "bold",

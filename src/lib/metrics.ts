@@ -169,3 +169,32 @@ export function calculate_scaling_factor(numCommits: number, mean: number, sd: n
         return z_score < 0 ? 0.8 : 1.2;
     }
 } 
+
+
+export function get_metric_min_max(users: Contributor[], metric: string): {
+    min: number,
+    max: number
+    } {
+    if (users.length === 0) return { min: 0, max: 0 };
+
+    let result: {min: number, max: number};
+    switch (metric) {
+        case 'commits': {
+            const minCommits: number = users.reduce((min, user) => Math.min(min, user.total_commits), 0);
+            const maxCommits: number = users.reduce((max, user) => Math.max(max, user.total_commits), 0);
+            result = {min: minCommits, max: maxCommits};
+        }
+        case 'commit_size': {
+            const minSize: number = users.reduce((min, user) => Math.min(min, get_user_total_lines_of_code(user)), 0);
+            const maxSize: number = users.reduce((max, user) => Math.max(max, get_user_total_lines_of_code(user)), 0);
+            result = {min: minSize, max: maxSize};
+        }
+        default: {
+            const minCommits: number = users.reduce((min, user) => Math.min(min, user.total_commits), 0);
+            const maxCommits: number = users.reduce((max, user) => Math.max(max, user.total_commits), 0);
+            result =  {min: minCommits, max: maxCommits};
+        }
+    }
+
+    return result;
+}
