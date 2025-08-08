@@ -168,23 +168,7 @@
         
             <!-- Repo link -->
              <RepoSearchbar onSubmit={handleVerification} bind:repoUrlInput={repoUrlInput}></RepoSearchbar>
-            <!-- <div class="repo-link">
-                <input
-                    class="repo-textbox display-body"
-                    type="text"
-                    placeholder="enter a git repo..."
-                    bind:value={repoUrlInput}
-                    onkeydown={handleInputKeydown}
-                />
-                <button class="repo-button" onclick={handleVerification}>
-                    <Icon
-                        icon={"tabler:circle-arrow-right"}
-                        class="icon-medium"
-                        style="color: white"
-                    />
-                </button>
-            </div> -->
-    
+
             <div></div>
     
             <!-- Repo link list -->

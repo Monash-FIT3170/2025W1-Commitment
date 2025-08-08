@@ -22,7 +22,6 @@
 </script>
 
 {#snippet dropdownItem(repoOption: RepoOption)}
-<div class="dropdown-item">
     <Icon
         icon={`tabler:${repoOption.icon}`}
         class="icon-medium"
@@ -31,7 +30,6 @@
     <h6 class="display-body dropdown-text">
         {repoOption.label}
     </h6>
-</div>
 {/snippet}
 
 <div class="dropdown">
@@ -41,7 +39,9 @@
         onclick={toggleDropdown}
     >
         {#if selected}
-            {@render dropdownItem(selected)}
+            <div class="dropdown-option">
+                {@render dropdownItem(selected)}
+            </div>
         {:else}
             <!-- This case should not happen with a default selected value -->
             <h6 class="display-body">Select an option</h6>
@@ -120,7 +120,8 @@
     .dropdown-item {
         display: flex;
         align-items: center;
-        padding: 0.625rem 0.75rem 0.625rem 1rem;
+        padding-right: 0.75rem;
+        padding-left: 1rem;
         color: white;
     }
 
@@ -134,14 +135,13 @@
     .dropdown-option {
         width: inherit;
         height: 42px;
-        padding: 0.625rem 0.75rem 0.625rem 0rem;
+        padding: 0.625rem 0.75rem 0.625rem 1rem;
         background: none;
         border: none;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: start;
-        
         color: unset;
     }
 
