@@ -1,5 +1,6 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
+    import ErrorMessage from "$lib/components/global/ErrorMessage.svelte";
     import { verifyAndExtractSourceInfo } from "$lib/githubUrlVerifier.js";
     import Icon from "@iconify/svelte";
     import { load_branches, load_commit_data } from "$lib/metrics";
@@ -15,7 +16,7 @@
         repo_url: string;
     }
 
-    let sidebarOpen = false;
+    let sidebarOpen = $state(false);
     let profileImageURL = "/mock_profile_img.png";
     let userName = "Baaset Moslih";
 
@@ -43,11 +44,17 @@
 
     ];
 
-    let selected: RepoOption = repo_options[0]; // Default to GitHub
+    let selected: RepoOption = $state(repo_options[0]); // Default to GitHub
     
-    let repoUrlInput: string = "";
-    let verificationResult: { owner: string; repo: string } | null = null;
-    let verificationError: string | null = null;
+    let repoUrlInput: string = $state("");
+
+    let verification_message: string = $state("");
+    let verification_error: boolean = $state(false);
+
+    function resetVerificationResult() {
+        verification_message = "";
+        verification_error = false;
+    }
 
     interface BackendVerificationResult {
         owner: string;
@@ -60,11 +67,11 @@
     }
 
     async function handleVerification() {
-        verificationResult = null;
-        verificationError = null;
+        resetVerificationResult();
         
         if (!selected || !repoUrlInput.trim()) {
-            verificationError =
+            verification_error = true;
+            verification_message =
                 "Please select a source type and enter a URL/path.";
             return;
         }
@@ -72,6 +79,7 @@
         try {
             // Try frontend validation first
             const result = verifyAndExtractSourceInfo(repoUrlInput, selected.source_type);
+
             const backendResult = await invoke<BackendVerificationResult>(
                 "verify_and_extract_source_info",
                 {
@@ -79,11 +87,10 @@
                     sourceType: selected.source_type,
                 },
             );
-            verificationResult = {
-                owner: backendResult.owner,
-                repo: backendResult.repo,
-            };
 
+            verification_message =
+                `Successfully verified! Owner: ${backendResult.owner}, Repo: ${backendResult.repo}`
+        
             // Update the repo store with the new URL
             setRepoUrl(repoUrlInput);
             // Call loadBranches and loadCommitData and wait for both to complete
@@ -100,7 +107,8 @@
                 },
             });
         } catch (error: any) {
-            verificationError = error.message || "Verification failed.";
+            verification_error = true
+            verification_message = `${error.message || "Verification failed."}`
             console.error("Verification failed:", error);
         }
     }
@@ -109,11 +117,6 @@
         if (event.key === "Enter") {
             handleVerification();
         }
-    }
-
-    function clearVerificationResult() {
-        verificationResult = null;
-        verificationError = null;
     }
 
 </script>
@@ -139,7 +142,7 @@
                     <button
                         type="button"
                         class="hamburger-btn"
-                        on:click={toggleSidebar}
+                        onclick={toggleSidebar}
                     >
                         <Icon
                             icon={"tabler:menu-2"}
@@ -153,11 +156,21 @@
     </header>
     
     <main class="main">
+
         <div class="repo-start">
+            <div></div>
+
+             <!-- Verification Feedback -->
+            <div class="align-with-searchbar">
+                <ErrorMessage
+                    verification_message={verification_message}
+                    error={verification_error}
+                />
+            </div>
 
             <!-- Repo dropdown -->
-             <RepoDropdown bind:selected={selected} action={clearVerificationResult}/>
-    
+            <RepoDropdown selected={selected} action={resetVerificationResult}/>
+        
             <!-- Repo link -->
             <div class="repo-link">
                 <input
@@ -165,9 +178,9 @@
                     type="text"
                     placeholder="enter a git repo..."
                     bind:value={repoUrlInput}
-                    on:keydown={handleInputKeydown}
+                    onkeydown={handleInputKeydown}
                 />
-                <button class="repo-button" on:click={handleVerification}>
+                <button class="repo-button" onclick={handleVerification}>
                     <Icon
                         icon={"tabler:circle-arrow-right"}
                         class="icon-medium"
@@ -176,23 +189,12 @@
                 </button>
             </div>
     
-            <!-- Verification Feedback -->
-            <div class="verification-feedback">
-                {#if verificationResult}
-                    <p class="success-message white">
-                        Successfully verified! Owner: {verificationResult.owner},
-                        Repo: {verificationResult.repo}
-                    </p>
-                {/if}
-                {#if verificationError}
-                    <p class="error-message white">{verificationError}</p>
-                {/if}
-            </div>
+            <div></div>
     
             <!-- Repo link list -->
-            <div class="repo-bookmark-list">
+            <div class="repo-bookmark-list align-with-searchbar">
                 {#each bookmarked_repo as bookmark (bookmark.repo_url)}
-                    <button class="repo-list-btn" type="button" on:click={() => bookmarkedRepo(bookmark.repo_url)}>
+                    <button class="repo-list-btn" type="button" onclick={() => bookmarkedRepo(bookmark.repo_url)}>
                         <h6 class="display-body repo-list-text">
                             {bookmark.repo_url}
                         </h6>
@@ -213,7 +215,7 @@
                 />
                 <h1 class="title sidebar-title-text white">settings</h1>
             </div>
-            <button class="close-button" on:click={toggleSidebar}>
+            <button class="close-button" onclick={toggleSidebar}>
                 <Icon icon={"tabler:x"} class="icon-medium" style="color: white" />
             </button>
         </div>
@@ -229,7 +231,7 @@
             </div>
     
             {#each bookmarked_repo as repo (repo.repo_url)}
-                <button class="bookmark-item" type="button" on:click={() => bookmarkedRepo(repo.repo_url)}>
+                <button class="bookmark-item" type="button" onclick={() => bookmarkedRepo(repo.repo_url)}>
                     <h6 class="heading-2 repo-name label-secondary">
                         {repo.repo_name}
                     </h6>
@@ -243,6 +245,10 @@
 </div>
 
 <style>
+    .align-with-searchbar {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
     /* MAIN PAGE CONTENT */
     .main {
         height: calc(100vh - 4.1875rem);
@@ -418,7 +424,6 @@
         /* width: ; */
         display: grid;
         grid-template-columns: 13rem 35.5rem; /* 2 columns */
-        grid-template-rows: auto auto auto; /* 3 rows for dropdown, input, feedback */
         column-gap: 1rem;
         row-gap: 10px;
     }
@@ -469,10 +474,6 @@
     /* Repo link list */
     .repo-bookmark-list {
         background: transparent;
-        grid-column: 2;
-        grid-row: 2;
-        padding-left: 1.5rem;
-        padding-right: 1.5rem;
         margin: 0px;
         /* width: 693px; */
         display: grid;
@@ -484,7 +485,6 @@
         max-height: 10.875rem; /* adjust height to fit your layout */
         overflow-y: auto; /* enables vertical scrolling */
         overflow-x: hidden;
-        /* padding-bottom: 84px;  */
         scroll-padding-bottom: 10.875rem;
 
         scrollbar-width: none;
@@ -511,32 +511,15 @@
         width: inherit;
         background-color: transparent; /*#181818; */
         border: none;
-        margin: none;
-        padding: 0.5rem;
         text-align: left;
         cursor: pointer;
+        padding: 0rem
     }
 
     .repo-list-text {
         height: inherit;
         margin: 0px;
         color: var(--label-primary);
-    }
-
-    .verification-feedback {
-        grid-column: 1 / -1; /* Span across both columns */
-        /* Add some margin or padding if needed */
-        margin-top: 5px;
-    }
-
-    .success-message {
-        color: var(--accent-primary); /* Or your desired success color */
-        font-size: 0.875rem;
-    }
-
-    .error-message {
-        color: var(--functional-red-100); /* Or your desired error color */
-        font-size: 0.875rem;
     }
 </style>
 
