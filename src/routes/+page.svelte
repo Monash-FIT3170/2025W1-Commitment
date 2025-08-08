@@ -4,7 +4,6 @@
     import { verifyAndExtractSourceInfo } from "$lib/githubUrlVerifier.js";
     import Icon from "@iconify/svelte";
     import { load_branches, load_commit_data } from "$lib/metrics";
-    import { redirect } from "@sveltejs/kit";
     import { goto } from "$app/navigation";
     import { setRepoUrl } from "$lib/stores/repo";
     import RepoDropdown from "$lib/components/global/RepoDropdown.svelte";
@@ -406,49 +405,6 @@
         grid-template-columns: 13rem 35.5rem; /* 2 columns */
         column-gap: 1rem;
         row-gap: 10px;
-    }
-
-    /* REPO TEXTBOX */
-    .repo-link {
-        height: 1.5rem;
-        width: 33rem;
-        display: flex;
-        justify-content: start;
-        align-items: center;
-        background-color: #222;
-        padding: 0.5625rem 1.125rem 0.5625rem 1.5rem;
-        border-radius: 12px;
-    }
-
-    .repo-textbox {
-        flex: 1;
-        margin-right: 0.5rem;
-        background-color: #222;
-        border: none;
-        height: 24px;
-        padding: 0px;
-        width: 350px;
-        color: white;
-    }
-
-    .repo-textbox::placeholder {
-        font-size: 1.063rem;
-        font-family: DM Sans;
-        font-weight: 400;
-        word-wrap: break-word;
-    }
-
-    .repo-textbox:focus {
-        outline: none;
-    }
-
-    .repo-button {
-        background-color: inherit;
-        border: none;
-        padding: 0px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
     }
 
     /* Repo link list */
