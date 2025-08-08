@@ -8,6 +8,16 @@
         contributors,
         branches,
     }: { contributors: Contributor[]; branches: String[] } = $props();
+
+    let criteria = ["total commits", "lines of code", "lines/commit"];
+    let selected_criteria = criteria[0];
+
+    let sidebar_open = $state(false);
+    let bookmarked_repo: { repo_name: string; repo_url: string }[] = [];
+
+    function toggle_sidebar() {
+        sidebar_open = !sidebar_open;
+    }
 </script>
 
 <main class="container">
@@ -30,7 +40,11 @@
         />
     </div>
     <Graph {contributors} />
+<<<<<<< HEAD
     <ContributorCards users={contributors} selected_branch={""} />
+=======
+    <ContributorCards users={contributors} />
+>>>>>>> 754a131 (Removed the additional branch drop down)
 </main>
 
 <style>
