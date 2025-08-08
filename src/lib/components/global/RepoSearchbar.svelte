@@ -3,7 +3,8 @@
     
     let {
         onSubmit = () => {},
-        repoUrlInput = $bindable<string>()
+        repoUrlInput = $bindable<string>(),
+        error = false,
     } = $props();
 
     function handleInputKeydown(event: KeyboardEvent) {
@@ -13,7 +14,7 @@
     }
 </script>
 
-<div class="repo-link">
+<div class={["repo-link", {error}]}>
     <input
         class="repo-textbox display-body"
         type="text"
@@ -32,20 +33,29 @@
 
 <style>
     .repo-link {
-        height: 1.5rem;
+        height: 1.25rem;
         width: 33rem;
         display: flex;
         justify-content: start;
         align-items: center;
-        background-color: #222;
+        background-color: var(--tint-00);
         padding: 0.5625rem 1.125rem 0.5625rem 1.5rem;
         border-radius: 12px;
+        border-style: ridge;
+        border-width: 0.125rem;
+        border-color: transparent;
+    }
+
+    .repo-link.error {
+        border-color: var(--wonderland--ff748b);
+        border-style: ridge;
+        border-width: 0.125rem;
     }
 
     .repo-textbox {
         flex: 1;
         margin-right: 0.5rem;
-        background-color: #222;
+        background-color: inherit;
         border: none;
         height: 24px;
         padding: 0px;

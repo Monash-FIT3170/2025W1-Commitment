@@ -11,7 +11,7 @@
 
 
 <style>
-            .verification-feedback {
+    .verification-feedback {
         height: 1rem;
     }
     .error {

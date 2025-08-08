@@ -166,7 +166,7 @@
             <RepoDropdown bind:selected={selected} action={resetVerificationResult}/>
         
             <!-- Repo link -->
-             <RepoSearchbar onSubmit={handleVerification} bind:repoUrlInput={repoUrlInput}></RepoSearchbar>
+             <RepoSearchbar onSubmit={handleVerification} bind:repoUrlInput={repoUrlInput} error={verification_error}></RepoSearchbar>
 
             <div></div>
     

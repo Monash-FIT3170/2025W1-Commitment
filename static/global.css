@@ -158,10 +158,14 @@
     color: var(--label-primary) !important;
 }
 .label-secondary {
-    color: var(--label-secondary);
+    color: var(--label-secondary) !important;
 }
 .label-tertiary {
-    color: var(--label-tertiary);
+    color: var(--label-tertiary) !important;
+}
+
+.error {
+    color: var(--wonderland--ff748b) !important;
 }
 
 html, body, #app {
