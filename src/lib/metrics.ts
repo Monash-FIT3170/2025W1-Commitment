@@ -26,12 +26,13 @@ export async function load_branches(repo: string): Promise<string[]> {
     }
 }
 
-export async function load_commit_data(owner: string, repo: string, branch?: string): Promise<Contributor[]> {
+export async function load_commit_data(owner: string, repo: string, source_type: 0 | 1 | 2, branch?: string): Promise<Contributor[]> {
     info(`Loading contributor data for ${owner}/${repo}...`);
 
     const repo_path = `../.gitgauge/repositories/${repo}`;
     try {
-        await invoke('bare_clone', { url: `https://github.com/${owner}/${repo}`, path: repo_path });
+        console.log(`Cloning repository ${owner}/${repo} to ${repo_path}`);
+        await invoke('bare_clone', { owner, repo, sourceType: source_type, path: repo_path });
         info(`Repository is cloned or already exists at ${repo_path}`);
     } catch (err) {
         info(`Failed to clone the repository: ${err}`);
