@@ -4,10 +4,12 @@
 		import type { Repo } from '$lib/repo';
 		import { getRepoType } from '$lib/repo';
 
-		export let repoUrl: string;
-		export let repoPath: string;
+		let {
+			repoUrl = null,
+			repoPath = null
+		} = $props();
 
-		let bookmarked = bookmarks.contains(repoUrl);
+		let bookmarked = $state(bookmarks.contains(repoUrl));
 
 		function toggleBookmark() {
 			bookmarked = !bookmarked;
@@ -21,30 +23,34 @@
 </script>
 
 <div class="topbar">
-	<!-- Logo / Home Link -->
-	<a href="/" class="logo-section">
-		<img src="/submark.png" alt="logo" class="logo-img" color=""/>
-	</a>
+	{#if repoUrl && repoPath}
+		<!-- Logo / Home Link -->
+		<a href="/" class="logo-section">
+			<img src="/submark.svg" alt="gitgauge logo" class="logo-img" color=""/>
+		</a>
 
-	<!-- repo pathway display -->
-	<div class="repo-pathway">
-			{repoPath}
-	</div>
+		<!-- repo display -->
+		<div class="repo-pathway">{repoPath}</div>
 
-	<!-- bookmark toggle -->
-	<button
-		type="button"
-		class="bookmark-btn"
-		on:click={toggleBookmark}
-		aria-pressed={bookmarked}
-	>
-		<Icon
-			icon={bookmarked ? 'tabler:star-filled' : 'tabler:star'}
-			class="icon-medium"
-		/>
-	</button>
+		<!-- bookmark toggle -->
+		<button
+			type="button"
+			class="bookmark-btn"
+			onclick={toggleBookmark}
+			aria-pressed={bookmarked}
+		>
+			<Icon
+				icon={bookmarked ? 'tabler:star-filled' : 'tabler:star'}
+				class="icon-medium"
+			/>
+		</button>
+	<!-- else show secondary logo-->
+	{:else}
+		<div class="logo-section">
+			<img src="/secondary_logo.svg" alt="gitgauge logo" class="logo-img" />
+		</div>
+	{/if}
 </div>
-
 
 
 <style>

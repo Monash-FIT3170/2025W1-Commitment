@@ -10,6 +10,9 @@
     import type { RepoOption } from "$lib/stores/repo";
     import { repo_options } from "$lib/stores/repo";
     import RepoSearchbar from "$lib/components/global/RepoSearchbar.svelte";
+    import Banner from "$lib/components/overview-page/Banner.svelte";
+    import UserMenu from "$lib/components/overview-page/UserMenu.svelte";
+    import Sidebar from "$lib/components/global/Sidebar.svelte";
 
     interface RepoBookmark {
         repo_name: string;
@@ -20,8 +23,20 @@
     let profileImageURL = "/mock_profile_img.png";
     let userName = "Baaset Moslih";
 
-    function toggleSidebar() {
-        sidebarOpen = !sidebarOpen;
+    let selected: RepoOption = $state(repo_options[0]); // Default to GitHub
+    let repoUrlInput: string = $state("");
+
+    let verification_message: string = $state("");
+    let verification_error: boolean = $state(false);
+
+    function resetVerificationResult() {
+        verification_message = "";
+        verification_error = false;
+    }
+
+    interface BackendVerificationResult {
+        owner: string;
+        repo: string;
     }
 
     let bookmarked_repo: RepoBookmark[] = [
@@ -43,23 +58,7 @@
         }
 
     ];
-
-    let selected: RepoOption = $state(repo_options[0]); // Default to GitHub
-    let repoUrlInput: string = $state("");
-
-    let verification_message: string = $state("");
-    let verification_error: boolean = $state(false);
-
-    function resetVerificationResult() {
-        verification_message = "";
-        verification_error = false;
-    }
-
-    interface BackendVerificationResult {
-        owner: string;
-        repo: string;
-    }
-
+    
     async function bookmarkedRepo(repoUrl: string) {
         repoUrlInput = repoUrl;
         handleVerification();
@@ -116,37 +115,9 @@
 </script>
 <div class="page">
 
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="logo-section">
-                    <a href="/" class="cursor-pointer">
-                        <img
-                            class="logo-img"
-                            src="/secondary_logo.png"
-                            alt="Your Company"
-                        />
-                    </a>
-                </div>
-    
-                <div class="user-section">
-                    <h6 class="white body-accent">{userName}</h6>
-                    <img src={profileImageURL} alt="Profile" class="profile-img" />
-    
-                    <button
-                        type="button"
-                        class="hamburger-btn"
-                        onclick={toggleSidebar}
-                    >
-                        <Icon
-                            icon={"tabler:menu-2"}
-                            class="icon-medium"
-                            style="color: white"
-                        />
-                    </button>
-                </div>
-            </div>
-        </div>
+    <header class="header">
+        <Banner/>
+        <UserMenu {userName} {profileImageURL} />
     </header>
     
     <main class="main">
@@ -182,45 +153,7 @@
             </div>
         </div>
     </main>
-    
-    <!-- Sidebar -->
-    <div class={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
-        <div class="sidebar-header">
-            <div class="sidebar-title">
-                <Icon
-                    icon={"tabler:chart-line"}
-                    class="icon-large"
-                    style="color: white"
-                />
-                <h1 class="title sidebar-title-text white">settings</h1>
-            </div>
-            <button class="close-button" onclick={toggleSidebar}>
-                <Icon icon={"tabler:x"} class="icon-medium" style="color: white" />
-            </button>
-        </div>
-    
-        <div class="bookmark-list">
-            <div class="bookmark-header">
-                <Icon
-                    icon={"tabler:star-filled"}
-                    class="icon-medium"
-                    style="color: white"
-                />
-                <h2 class="heading-1 bookmark-text white">bookmarks</h2>
-            </div>
-    
-            {#each bookmarked_repo as repo (repo.repo_url)}
-                <button class="bookmark-item" type="button" onclick={() => bookmarkedRepo(repo.repo_url)}>
-                    <h6 class="heading-2 repo-name label-secondary">
-                        {repo.repo_name}
-                    </h6>
-                    <h6 class="caption repo-url label-secondary">
-                        {repo.repo_url}
-                    </h6>
-                </button>
-            {/each}
-        </div>
-    </div>
+    <Sidebar/>
 </div>
 
 <style>
@@ -228,6 +161,17 @@
         padding-left: 1.5rem;
         padding-right: 1.5rem;
     }
+
+    .header {
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-top: 2rem;
+    margin-bottom: 0.8125rem;
+    height: 1.375rem;
+    display: flex;
+    justify-content: space-between;
+}
+
     /* MAIN PAGE CONTENT */
     .main {
         height: calc(100vh - 4.1875rem);
@@ -265,7 +209,7 @@
     }
 
     .logo-img {
-        height: 20px;
+        height: 0.9375rem;
         width: auto;
         z-index: 500;
 
