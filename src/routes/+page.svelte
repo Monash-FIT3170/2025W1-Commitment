@@ -18,26 +18,15 @@
         sidebar_open = !sidebar_open;
     }
 
-    let bookmarked_repos: RepoBookmark[] = [
-        {
-            repo_name: "GitGuage",
-            repo_url: "https://github.com/Monash-FIT3170/2025W1-Commitment",
-        },
-        {
-            repo_name: "QualAI",
-            repo_url: "https://github.com/Monash-FIT3170/2025W1-QualAI",
-        },
-        {
-            repo_name: "PressUp",
-            repo_url: "https://github.com/Monash-FIT3170/2025W1-PressUp",
-        },
-        {
-            repo_name: "FindingNibbles",
-            repo_url: "https://github.com/Monash-FIT3170/2025W1-FindingNibbles",
-        },
-    ];
+    let bookmarked_repos: RepoBookmark[] = [];
+    (async () => {
+        bookmarked_repos = await invoke<RepoBookmark[]>("get_bookmarked_repositories", {})
+            .catch((error) => {
+                console.error("Failed to fetch bookmarked repositories:", error);
+                return [];
+            });
+    })();
 
-    //
     interface RepoOption {
         label: string;
         icon: string;
@@ -61,6 +50,7 @@
     interface BackendVerificationResult {
         owner: string;
         repo: string;
+        source_type: 0 | 1 | 2;
     }
 
     async function bookmarked_repo(repo_url: string) {
@@ -110,7 +100,7 @@
             verification_error = null;
 
             // Call loadBranches and loadCommitData and wait for both to complete
-            const contributors = await load_commit_data(backend_result.owner, backend_result.repo);
+            const contributors = await load_commit_data(backend_result.owner, backend_result.repo, backend_result.source_type);
             const branches = await load_branches(backend_result.repo);
 
             // Navigate to the overview page
