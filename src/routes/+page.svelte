@@ -111,6 +111,7 @@
                     repo_url: repo_url_input,
                     repo_path: new URL(repo_url_input).pathname.slice(1),
                     repo_type: get_repo_type(repo_url_input),
+                    selected_branch: "",
                     branches: branches,
                     contributors: contributors,
                 },
