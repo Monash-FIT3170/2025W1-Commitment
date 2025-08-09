@@ -143,7 +143,7 @@ fn find_branch_oid(repo: &Repository, branch: &str) -> Result<Oid, String> {
         return branch_ref.get().target().ok_or("Invalid local branch target".to_string());
     }
     // Try remote branch (origin/<branch>)
-    let remote_branch_name = format!("refs/remotes/origin/{}", branch);
+    let remote_branch_name = format!("refs/remotes/{}", branch);
     if let Ok(reference) = repo.find_reference(&remote_branch_name) {
         return reference.target().ok_or("Invalid remote branch target".to_string());
     }
