@@ -7,7 +7,8 @@
     let {
         contributors,
         branches,
-    }: { contributors: Contributor[]; branches: String[] } = $props();
+        selected_branch
+    }: { contributors: Contributor[]; branches: String[]; selected_branch?: string } = $props();
 
     let criteria = ["total commits", "lines of code", "lines/commit"];
     let selected_criteria = criteria[0];
@@ -39,12 +40,8 @@
             width="12rem"
         />
     </div>
-    <Graph {contributors} />
-<<<<<<< HEAD
-    <ContributorCards users={contributors} selected_branch={""} />
-=======
-    <ContributorCards users={contributors} />
->>>>>>> 754a131 (Removed the additional branch drop down)
+    <Graph {contributors} selected_branch={selected_branch} />
+    <ContributorCards users={contributors} selected_branch={selected_branch ?? ""} />
 </main>
 
 <style>
