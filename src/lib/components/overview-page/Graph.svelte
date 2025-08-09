@@ -8,9 +8,9 @@
         type Contributor,
     } from "../../metrics";
 
-    let { contributors }: { contributors: Contributor[] } = $props();
+    let { contributors, selected_branch = $bindable("") }: { contributors: Contributor[]; selected_branch?: string } = $props();
 
-    let chart_container: HTMLElement;
+    let chart_container = $state<HTMLElement>();
     let chart: echarts.ECharts;
     let filtered_people: any[] = [];
     let min_commits: number = 0;
@@ -22,6 +22,18 @@
     let ref_point_values: number[] = [];
     let ref_points: { label: string, value: number }[] = [];
     let resize_handler: () => void;
+    let chart_key = $state("");
+
+    $effect(() => {
+    if (chart && chart_container) {
+        chart.dispose();
+        chart = echarts.init(chart_container);
+        set_chart_options();
+    }
+    });
+    $effect(() => {
+        chart_key = contributors.map(c => c.bitmap_hash).join(",") + selected_branch;
+    });
 
     $effect(() => {
         filtered_people = get_user_commits(contributors);
@@ -348,11 +360,14 @@
             },
             graphic: []
         };
+        chart.clear();
         chart.setOption(option, true);
+        chart.resize();
         update_graphics();
     }
 
-    onMount(() => {
+    $effect(() => {
+    if (chart_container) {
         chart = echarts.init(chart_container);
         set_chart_options();
         resize_handler = () => {
@@ -360,14 +375,23 @@
             update_graphics();
         };
         window.addEventListener('resize', resize_handler);
-    });
+    }
+    return () => {
+        if (chart) {
+            window.removeEventListener('resize', resize_handler);
+            chart.dispose();
+        }
+    };
+});
     onDestroy(() => {
         window.removeEventListener('resize', resize_handler);
         chart.dispose();
     });
 </script>
+{#key chart_key}
+    <div bind:this={chart_container} class="chart-container"></div>
+{/key}
 
-<div bind:this={chart_container} class="chart-container"></div>
 
 <style>
     .chart-container {
