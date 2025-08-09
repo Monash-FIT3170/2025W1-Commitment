@@ -9,9 +9,12 @@
         type Contributor,
     } from "../../metrics";
 
-    let { contributors }: { contributors: Contributor[] } = $props();
+    let {
+        contributors,
+        selected_branch = $bindable(""),
+    }: { contributors: Contributor[]; selected_branch?: string } = $props();
 
-    let chart_container: HTMLElement;
+    let chart_container = $state<HTMLElement>();
     let chart: echarts.ECharts;
     let filtered_people: any[] = [];
     let min_commits: number = 0;
@@ -26,6 +29,20 @@
     let is_staggered_mode = $state(false);
     let chart_height = $state(350);
     let is_transitioning = $state(false);
+    let chart_key = $state("");
+
+    $effect(() => {
+        if (chart && chart_container) {
+            chart.dispose();
+            chart = echarts.init(chart_container);
+            set_chart_options();
+        }
+    });
+
+    $effect(() => {
+        chart_key =
+            contributors.map((c) => c.bitmap_hash).join(",") + selected_branch;
+    });
 
     $effect(() => {
         filtered_people = get_user_commits(contributors);
@@ -40,33 +57,41 @@
             console.log("Forcing height recalculation due to mode change");
         }
     });
+
     $effect(() => {
         min_commits =
             filtered_people.length > 0
                 ? Math.min(...filtered_people.map((p: any) => p.num_commits))
                 : 0;
     });
+
     $effect(() => {
         max_commits =
             filtered_people.length > 0
                 ? Math.max(...filtered_people.map((p: any) => p.num_commits))
                 : 1;
     });
+
     $effect(() => {
         x_min = min_commits === max_commits ? min_commits - 1 : min_commits - 1;
     });
+
     $effect(() => {
         x_max = min_commits === max_commits ? max_commits + 1 : max_commits + 1;
     });
+
     $effect(() => {
         commit_mean = get_average_commits(contributors);
     });
+
     $effect(() => {
         sd = get_sd(contributors);
     });
+
     $effect(() => {
         ref_point_values = get_ref_points(commit_mean, sd);
     });
+
     $effect(() => {
         ref_points =
             sd === 0
@@ -79,6 +104,7 @@
                       { label: "+2σ", value: ref_point_values[4] },
                   ];
     });
+
     $effect(() => {
         // Update chart height based on mode and number of contributors
         const old_height = chart_height;
@@ -153,12 +179,14 @@
             });
         }
     });
+
     $effect(() => {
         if (chart) set_chart_options();
     });
 
     function get_user_commits(users: Contributor[]) {
         if (users.length === 0) return [];
+
         let user_total_commits: any[] = [];
         users.forEach((user) => {
             user_total_commits.push({
@@ -167,6 +195,7 @@
                 num_commits: user.total_commits,
             });
         });
+
         const sorted_commits = user_total_commits.sort(
             (a, b) => a.num_commits - b.num_commits
         );
@@ -186,6 +215,7 @@
                 }
                 groups.get(user.num_commits)!.push(user);
             });
+
             const result: any[] = [];
             groups.forEach((users, commits) => {
                 if (users.length === 1) {
@@ -210,6 +240,7 @@
 
     function update_graphics() {
         if (!chart || is_transitioning) return;
+
         const grid_top = chart.convertToPixel({ gridIndex: 0 }, [
             0,
             is_staggered_mode
@@ -563,6 +594,7 @@
                             (p: any) => p.username === username
                         );
                         if (!person) return username;
+
                         return `
                           <div style="text-align: left;">
                             <strong>${username}</strong><br/>
@@ -575,49 +607,64 @@
             },
             graphic: [],
         };
+        chart.clear();
         chart.setOption(option, true);
+        chart.resize();
         update_graphics();
     }
 
-    onMount(() => {
-        chart = echarts.init(chart_container);
-        set_chart_options();
-
-        // Add click event listener to toggle staggered mode
-        chart.on("click", () => {
-            console.log("Graph clicked! Current mode:", is_staggered_mode);
-
-            // Clear any existing tooltip
-            chart.dispatchAction({ type: "hideTip" });
-
-            // Mark transitioning and clear chart immediately so nothing is shown
-            is_transitioning = true;
-            chart.clear();
-
-            // Re-apply base axes immediately so the x-axis remains visible during transition
+    $effect(() => {
+        if (chart_container) {
+            chart = echarts.init(chart_container);
             set_chart_options();
 
-            // Toggle mode on the next frame to ensure the clear is painted first
-            requestAnimationFrame(() => {
-                is_staggered_mode = !is_staggered_mode;
-                console.log(
-                    "New mode (applied after clear):",
-                    is_staggered_mode
-                );
-            });
-        });
+            // Add click event listener to toggle staggered mode
+            chart.on("click", () => {
+                console.log("Graph clicked! Current mode:", is_staggered_mode);
 
-        resize_handler = () => {
-            chart.resize();
-            update_graphics();
+                // Clear any existing tooltip
+                chart.dispatchAction({ type: "hideTip" });
+
+                // Mark transitioning and clear chart immediately so nothing is shown
+                is_transitioning = true;
+                chart.clear();
+
+                // Re-apply base axes immediately so the x-axis remains visible during transition
+                set_chart_options();
+
+                // Toggle mode on the next frame to ensure the clear is painted first
+                requestAnimationFrame(() => {
+                    is_staggered_mode = !is_staggered_mode;
+                    console.log(
+                        "New mode (applied after clear):",
+                        is_staggered_mode
+                    );
+                });
+            });
+
+            resize_handler = () => {
+                chart.resize();
+                update_graphics();
+            };
+            window.addEventListener("resize", resize_handler);
+        }
+        return () => {
+            if (chart) {
+                window.removeEventListener("resize", resize_handler);
+                chart.dispose();
+            }
         };
-        window.addEventListener("resize", resize_handler);
     });
+
     onDestroy(() => {
         window.removeEventListener("resize", resize_handler);
         chart.dispose();
     });
 </script>
+
+{#key chart_key}
+    <div bind:this={chart_container} class="chart-container"></div>
+{/key}
 
 <div
     bind:this={chart_container}
