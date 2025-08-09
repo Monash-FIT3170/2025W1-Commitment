@@ -13,6 +13,14 @@ export type Contributor = Readonly<{
     bitmap: String,       // tmp use to store gravatar url
 }>;
 
+export type UserDisplayData = Readonly<{
+    username: string,
+    image: string,
+    data_to_display: number,
+    offsetIndex?: number
+}>;
+
+
 // Load branches for a repository
 export async function load_branches(repo: string): Promise<string[]> {
     const repo_path = `../.gitgauge/repositories/${repo}`;
@@ -97,7 +105,7 @@ export function get_average_commits(users: Contributor[]): number {
 export function get_average_commit_size(users: Contributor[]): number {
     if (users.length === 0) return 0;
     const size_mean: number = users.reduce((acc, curr) => {
-        return acc + (get_user_total_lines_of_code(curr))
+        return acc + (get_user_total_lines_of_code(curr)/curr.total_commits);
     }, 0) / users.length ;
 
     return size_mean;
@@ -179,22 +187,96 @@ export function get_metric_min_max(users: Contributor[], metric: string): {
 
     let result: {min: number, max: number};
     switch (metric) {
-        case 'commits': {
+        case "commits": {
             const minCommits: number = users.reduce((min, user) => Math.min(min, user.total_commits), 0);
             const maxCommits: number = users.reduce((max, user) => Math.max(max, user.total_commits), 0);
             result = {min: minCommits, max: maxCommits};
+            break;
         }
-        case 'commit_size': {
-            const minSize: number = users.reduce((min, user) => Math.min(min, get_user_total_lines_of_code(user)), 0);
-            const maxSize: number = users.reduce((max, user) => Math.max(max, get_user_total_lines_of_code(user)), 0);
+        case "commit_size": {
+            const minSize: number = users.reduce((min, user) => Math.min(min, get_user_total_lines_of_code(user)/user.total_commits), 0);
+            const maxSize: number = users.reduce((max, user) => Math.max(max, get_user_total_lines_of_code(user)/user.total_commits), 0);
             result = {min: minSize, max: maxSize};
+            break;
         }
         default: {
             const minCommits: number = users.reduce((min, user) => Math.min(min, user.total_commits), 0);
             const maxCommits: number = users.reduce((max, user) => Math.max(max, user.total_commits), 0);
             result =  {min: minCommits, max: maxCommits};
+            break;
         }
     }
 
+    return result;
+}
+
+
+export function get_users_total_commits(users: Contributor[]): UserDisplayData[] {
+        if (users.length === 0) return [];
+        let userTotalCommits: UserDisplayData[] = [];
+        users.forEach(user => {
+            userTotalCommits.push({
+                username: user.author.login,
+                image: user.author.avatar_url,
+                data_to_display: user.total_commits,
+            });
+        });
+        const sortedCommits = userTotalCommits.sort((a, b) => a.data_to_display - b.data_to_display);
+        const groups = new Map<number, any[]>();
+        sortedCommits.forEach(user => {
+            if (!groups.has(user.data_to_display)) {
+                groups.set(user.data_to_display, []);
+            }
+            groups.get(user.data_to_display)!.push(user);
+        });
+        const result: any[] = [];
+        groups.forEach((users, _) => {
+            if (users.length === 1) {
+                result.push(users[0]);
+            } else {
+                users.forEach((user, index) => {
+                    result.push({
+                        ...user,
+                        offsetIndex: index - (users.length - 1) / 2
+                    });
+                });
+            }
+        });
+        return result;
+    }
+
+export function get_users_avg_commit_size(users: Contributor[]): UserDisplayData[] {
+    if (users.length === 0) return [];
+    let userAvgCommitSize: UserDisplayData[] = [];
+    users.forEach(user => {
+        userAvgCommitSize.push({
+            username: user.author.login,
+            image: user.author.avatar_url,
+            data_to_display: Number((get_user_total_lines_of_code(user)/user.total_commits).toFixed(2)),
+        });
+    });
+
+    const sortedCommits = userAvgCommitSize.sort((a, b) => a.data_to_display - b.data_to_display);
+    const groups = new Map<number, any[]>();
+    sortedCommits.forEach(user => {
+            if (!groups.has(user.data_to_display)) {
+                groups.set(user.data_to_display, []);
+            }
+            groups.get(user.data_to_display)!.push(user);
+        });
+    const result: UserDisplayData[] = [];
+    
+    groups.forEach((users, _) => {
+            if (users.length === 1) {
+                result.push(users[0]);
+            } else {
+                users.forEach((user, index) => {
+                    result.push({
+                        ...user,
+                        offsetIndex: index - (users.length - 1) / 2
+                    });
+                });
+            }
+        });
     return result;
 }

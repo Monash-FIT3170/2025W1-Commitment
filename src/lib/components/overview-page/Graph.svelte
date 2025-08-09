@@ -7,13 +7,17 @@
         get_metric_min_max,
         get_sd,
         get_ref_points,
+        get_users_total_commits,
+        get_users_avg_commit_size,
         type Contributor,
+        type UserDisplayData
     } from "../../metrics";
 
     let { contributors, metric }: { contributors: Contributor[], metric: string } = $props();
+
     let chart_container: HTMLElement;
     let chart: echarts.ECharts;
-    let filtered_people: any[] = [];
+    let filtered_people: UserDisplayData[] = $state([]);
     let x_min: number = $state(0);
     let x_max: number = $state(1);
     let metric_mean: number = $state(0);
@@ -23,10 +27,27 @@
     let resize_handler: () => void;
 
     $effect(() => {
-        filtered_people = get_user_commits(contributors);
+
+        switch(metric) {
+            case "commits": {
+                filtered_people = get_users_total_commits(contributors);
+                break;
+            }
+            case "commit_size": {
+                filtered_people = get_users_avg_commit_size(contributors);
+                break;
+            }
+            default: {
+                filtered_people = get_users_total_commits(contributors);
+                break;
+            }
+            
+        }
+        
     });
     $effect(() => {
-        let min_max: {min: number, max: number} = get_metric_min_max(contributors, metric);
+        metric;
+        const min_max: {min: number, max: number} = get_metric_min_max(contributors, metric);
         x_min = min_max.min;
         x_max = min_max.max;
     });
@@ -71,41 +92,7 @@
         }
     });
 
-    function get_user_commits(users: Contributor[]) {
-        if (users.length === 0) return [];
-        let user_total_commits: any[] = [];
-        users.forEach((user) => {
-            user_total_commits.push({
-                username: user.bitmap_hash,
-                image: user.bitmap,
-                numCommits: user.total_commits,
-            });
-        });
-        const sorted_commits = user_total_commits.sort(
-            (a, b) => a.numCommits - b.numCommits,
-        );
-        const groups = new Map<number, any[]>();
-        sorted_commits.forEach((user) => {
-            if (!groups.has(user.numCommits)) {
-                groups.set(user.numCommits, []);
-            }
-            groups.get(user.numCommits)!.push(user);
-        });
-        const result: any[] = [];
-        groups.forEach((users, commits) => {
-            if (users.length === 1) {
-                result.push(users[0]);
-            } else {
-                users.forEach((user, index) => {
-                    result.push({
-                        ...user,
-                        offsetIndex: index - (users.length - 1) / 2,
-                    });
-                });
-            }
-        });
-        return result;
-    }
+
 
     function update_graphics() {
         if (!chart) return;
@@ -241,13 +228,9 @@
                 ],
             };
         });
-        const user_graphics = filtered_people.map((person: any) => {
-            const [baseX, y] = chart.convertToPixel({ gridIndex: 0 }, [
-                person.numCommits,
-                1,
-            ]);
-            const x =
-                baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
+        const user_graphics = filtered_people.map((person: UserDisplayData) => {
+            const [baseX, y] = chart.convertToPixel({gridIndex: 0}, [person.data_to_display, 1]);
+            const x = baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
             return {
                 type: "group",
                 children: [
@@ -335,19 +318,15 @@
             },
             series: [
                 {
-                    type: "scatter",
-                    data: filtered_people.map((p: any) => [p.numCommits, 1]),
+                    type: 'scatter',
+                    data: filtered_people.map((p: UserDisplayData) => [p.data_to_display, 1]),
                     symbolSize: 0,
                     z: 3,
                 },
                 {
-                    name: "hoverPoints",
-                    type: "scatter",
-                    data: filtered_people.map((p: any) => [
-                        p.numCommits,
-                        1,
-                        p.username,
-                    ]),
+                    name: 'hoverPoints',
+                    type: 'scatter',
+                    data: filtered_people.map((p: UserDisplayData) => [p.data_to_display, 1, p.username]),
                     symbolSize: 32,
                     z: 10,
                     itemStyle: {
