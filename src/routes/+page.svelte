@@ -56,6 +56,7 @@
     let repo_url_input: string = "";
     let verification_result: { owner: string; repo: string } | null = null;
     let verification_error: string | null = null;
+    let branch_selected: string | undefined = undefined;
 
     interface BackendVerificationResult {
         owner: string;
@@ -118,6 +119,7 @@
                     repo_url: repo_url_input,
                     repo_path: new URL(repo_url_input).pathname.slice(1),
                     repo_type: get_repo_type(repo_url_input),
+                    selected_branch: "",
                     branches: branches,
                     contributors: contributors,
                 },
