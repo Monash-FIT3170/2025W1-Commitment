@@ -37,7 +37,8 @@ export function verify_and_extract_source_info(url_string, source_type) {
                     repo = repo.slice(0, -4);
                 }
 
-                const owner_regex = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/;
+                const owner_regex =
+                    /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/;
                 const repo_regex = /^[a-zA-Z0-9_.-]+$/; // GitHub repos can have dots
                 const no_double_hyphen = /--/;
 
@@ -59,7 +60,10 @@ export function verify_and_extract_source_info(url_string, source_type) {
                 }
                 return { owner, repo };
             } catch (e) {
-                if (e instanceof TypeError && e.message.includes("Invalid URL")) {
+                if (
+                    e instanceof TypeError &&
+                    e.message.includes("Invalid URL")
+                ) {
                     // Catch URL constructor errors
                     throw new Error(`Invalid GitHub URL format: ${url_string}`);
                 }
@@ -125,7 +129,10 @@ export function verify_and_extract_source_info(url_string, source_type) {
                 }
                 return { owner, repo };
             } catch (e) {
-                if (e instanceof TypeError && e.message.includes("Invalid URL")) {
+                if (
+                    e instanceof TypeError &&
+                    e.message.includes("Invalid URL")
+                ) {
                     throw new Error(`Invalid GitLab URL format: ${url_string}`);
                 }
                 throw e;
@@ -136,11 +143,16 @@ export function verify_and_extract_source_info(url_string, source_type) {
             // More complex validation (e.g., existence) is out of scope for this client-side function.
             // For local paths, we'll treat the last segment as 'repo' and the preceding path as 'owner'.
             const normalized_path = url_string.replace(/\\\\/g, "/"); // Normalize backslashes to forward slashes
-            const segments = normalized_path.split("/").filter((s) => s.length > 0);
+            const segments = normalized_path
+                .split("/")
+                .filter((s) => s.length > 0);
 
             if (segments.length === 0) {
                 // Handle root paths like "/" or "C:/"
-                if (normalized_path === "/" || /^[a-zA-Z]:\/$/.test(normalized_path)) {
+                if (
+                    normalized_path === "/" ||
+                    /^[a-zA-Z]:\/$/.test(normalized_path)
+                ) {
                     return { owner: "", repo: normalized_path };
                 }
                 throw new Error("Local path is empty or invalid.");

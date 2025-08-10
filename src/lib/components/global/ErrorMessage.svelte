@@ -34,4 +34,3 @@ This is an error message component that displays user feedback.
         color: var(--wonderland--ff748b) !important;
     }
 </style>
-

@@ -31,13 +31,19 @@ function create_bookmarks() {
             }),
 
         remove: (repo_url: string) =>
-            update((bookmarks) => bookmarks.filter((b) => b.repo_url !== repo_url)),
+            update((bookmarks) =>
+                bookmarks.filter((b) => b.repo_url !== repo_url)
+            ),
 
         toggle: (bookmark: Repo) =>
             update((bookmarks) => {
-                const exists = bookmarks.find((b) => b.repo_url === bookmark.repo_url);
+                const exists = bookmarks.find(
+                    (b) => b.repo_url === bookmark.repo_url
+                );
                 if (exists) {
-                    return bookmarks.filter((b) => b.repo_url !== bookmark.repo_url);
+                    return bookmarks.filter(
+                        (b) => b.repo_url !== bookmark.repo_url
+                    );
                 } else {
                     return [...bookmarks, bookmark];
                 }

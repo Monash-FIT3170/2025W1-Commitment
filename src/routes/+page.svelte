@@ -65,12 +65,17 @@
     }
 
     async function handle_verification() {
-        console.log("handleVerification called with:", repo_url_input, selected);
+        console.log(
+            "handleVerification called with:",
+            repo_url_input,
+            selected
+        );
         reset_verification_result();
 
         if (!selected || !repo_url_input.trim()) {
             verification_error = true;
-            verification_message = "Please select a source type and enter a URL/path.";
+            verification_message =
+                "Please select a source type and enter a URL/path.";
             return;
         }
 
@@ -129,7 +134,10 @@
 
             <!-- Verification Feedback -->
             <div class="align-with-searchbar">
-                <ErrorMessage {verification_message} error={verification_error} />
+                <ErrorMessage
+                    {verification_message}
+                    error={verification_error}
+                />
             </div>
 
             <!-- Repo dropdown -->
@@ -145,7 +153,10 @@
             <div></div>
 
             <!-- Repo link list -->
-            <RepoBookmarkList {bookmarked_repos} onclick={select_bookmarked_repo} />
+            <RepoBookmarkList
+                {bookmarked_repos}
+                onclick={select_bookmarked_repo}
+            />
         </div>
     </main>
 </div>

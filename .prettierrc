@@ -1,7 +1,6 @@
 trailingComma: "es5"
 tabWidth: 4
 singleQuote: false
-printWidth: 90
 endOfLine: "lf"
 plugins:
   - "prettier-plugin-svelte"

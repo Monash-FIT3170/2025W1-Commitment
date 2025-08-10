@@ -47,10 +47,13 @@ export async function load_commit_data(
     }
 
     try {
-        const commit_data = await invoke<Contributor[]>("get_contributor_info", {
-            path: repo_path,
-            branch: branch,
-        });
+        const commit_data = await invoke<Contributor[]>(
+            "get_contributor_info",
+            {
+                path: repo_path,
+                branch: branch,
+            }
+        );
         const commit_array = Object.values(commit_data);
         return commit_array;
     } catch (err) {
@@ -120,8 +123,10 @@ export function get_sd(users: Contributor[]): number {
     const mean = get_average_commits(users);
 
     const variance: number =
-        commits.reduce((acc: number, val: number) => acc + Math.pow(val - mean, 2), 0) /
-        n;
+        commits.reduce(
+            (acc: number, val: number) => acc + Math.pow(val - mean, 2),
+            0
+        ) / n;
 
     return Math.sqrt(variance);
 }

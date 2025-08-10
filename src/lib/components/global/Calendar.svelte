@@ -41,7 +41,7 @@
             onClose: (selected_dates) => {
                 if (selected_dates.length === 2) {
                     const [s, e] = selected_dates.map((d) =>
-                        flatpickr.formatDate(d, date_format),
+                        flatpickr.formatDate(d, date_format)
                     );
                     start = s;
                     end = e;
