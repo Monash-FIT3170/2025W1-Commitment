@@ -4,37 +4,47 @@
 # [ $? -ne 0 ] && exit $?
 # exit 0
 
-# ==== check svelte, ts and js ====
+EX_CODE=0
+
+printf "==== checking format of svelte, ts, js etc. files with prettier ====\n"
 
 DIFF_FILES=$(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g')
 [ -z "$DIFF_FILES" ] && exit 0
 
 # Check if there are any non-compliant files
 PRETTIER_FILES=$(echo "$DIFF_FILES" | xargs npx prettier --ignore-unknown --list-different | sed 's| |\\ |g')
-[ -z "$PRETTIER_FILES" ] && exit 0
 
-printf "The following files are non-compliant to the prettier config.\n"
-echo $PRETTIER_FILES | sed -E 's|([^\\]) |\1\n|g'
+if [[ -n "$PRETTIER_FILES" ]]; then
+    printf "\nThe following files are non-compliant to the prettier config.\n\n\t"
+    echo $PRETTIER_FILES | sed -E 's|([^\\]) |\1\n\t|g'
 
-printf "Run \`npm run fmt\` to format all files automatically or use\n"
-printf "\`npm run fmt:check\` to see full list of unformatted files in\nproject root.\n"
+    printf "\nRun \`npm run fmt\` to format all files automatically or use\n"
+    printf "\`npm run fmt:check\` to see full list of unformatted files in\nproject root.\n\n"
 
-# ==== check rust ====
+    EX_CODE=1
+fi
+
+printf "==== checking format of rust files ====\n"
 
 # ---- fmt ----
-RUST_FMT_FILES=$(echo $FILES | xargs cargo fmt --check --manifest-path src-tauri/Cargo.toml -- --files-with-diff)
-[ -z $RUST_FMT_FILES ] && exit 0
+RS_FMT_FILES=$(echo $FILES | sed '/*\.rs/!d' | xargs cargo fmt --check --manifest-path src-tauri/Cargo.toml -- --files-with-diff)
 
-printf "The following files are non-compliant to the rustfmt config.\n"
-echo $PRETTIER_FILES | sed -E 's|([^\\]) |\1\n|g'
+if [[ -n "$RS_FMT_FILES" ]]; then
+    printf "\nThe following files are non-compliant to the rustfmt config.\n\n\t"
+    echo $RS_FMT_FILES | sed -E 's|([^\\]) |\1\n\t|g'
 
-printf "Run \`npm run rs-fmt\` to format all files automatically or use\n"
-printf "\`npm run rs-fmt:check\` to see full list of unformatted files in\nproject root.\n"
+    printf "\nRun \`npm run rs-fmt\` to format all files automatically or use\n"
+    printf "\`npm run rs-fmt:check\` to see full list of unformatted files in\nproject root.\n\n"
 
+    EX_CODE=1
+fi
+
+printf "==== checking rust files with linter ====\n"
 # ---- lint ----
 
 
+printf "==== checking rust files with clippy ====\n"
 # ---- clippy ----
 
-exit 1
+exit $EX_CODE
 

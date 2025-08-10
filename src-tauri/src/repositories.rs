@@ -5,7 +5,9 @@ fn clone_progress(cur_progress: usize, total_progress: usize) {
 }
 
 #[tauri::command]
-pub fn is_repo_cloned(path: &str) -> bool { std::path::Path::new(path).exists() }
+pub fn is_repo_cloned(path: &str) -> bool {
+    std::path::Path::new(path).exists()
+}
 
 #[tauri::command]
 pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
