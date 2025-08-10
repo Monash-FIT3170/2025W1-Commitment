@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "fmt": "npx prettier . --write",
+    "fmt:check": "npx prettier . --check"
   },
   "license": "MIT",
   "dependencies": {
@@ -26,6 +28,7 @@
     "@sveltejs/kit": "^2.9.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "@tauri-apps/cli": "^2",
+    "prettier": "3.6.2",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",
     "svelte-echarts": "^1.0.0",
