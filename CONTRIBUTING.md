@@ -34,6 +34,14 @@ A component should determine its own styling, such as width, height. Apart from 
 location, a parent component should not control the style of its children components
 (e.g. height, widths, etc.) 
 
+We use Prettier to check code style consistency and compliance for the svelte frontend.
+You can format or check for style compliance using the `npm run fmt` or
+`npm run fmt:check` scripts respectively which will only check the `src/` directory per
+the `.prettierignore` setup
+
+Additionally, a Git hook has been setup to fail a commit if there are non-comforming
+files, also using Prettier.
+
 ### Rust
 
 Rust code should be styled according to the [Rust Style Guide](https://doc.rust-lang.org/nightly/style-guide/)

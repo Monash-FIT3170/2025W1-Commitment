@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# npx prettier -c $(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g' 2>&1 >/dev/null)
+# [ $? -ne 0 ] && exit $?
+# exit 0
+
+FILES=$(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g')
+[ -z "$FILES" ] && exit 0
+
+# Check if there are any non-conforming files
+FILES=$(echo "$FILES" | xargs npx prettier --ignore-unknown --list-different | sed 's| |\\ |g')
+[ -z "$FILES" ] && exit 0
+
+printf "The following files are non-conformant to the prettier config.\n"
+echo $FILES | sed -E 's|([^\\]) |\1\n|g'
+
+printf "Run \`npm run fmt\` to format all files automatically or use\n"
+printf "\`npm run fmt:check\` to see full list of unformatted files in\nproject root.\n"
+
+exit 1
+

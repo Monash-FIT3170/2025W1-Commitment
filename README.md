@@ -47,6 +47,12 @@ npm i
 npm run tauri dev
 ```
 
+## Contributing and Licensing
+
+Make sure to read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how you can
+contribute to the project. This project is licensed under GPLv3 with a copy of the
+license located in the root of the project called [LICENSE](./LICENSE).
+
 ## Team Information
 
 | Name                   | Email                       | Role             |
