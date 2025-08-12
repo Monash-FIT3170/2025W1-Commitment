@@ -5,6 +5,7 @@
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import DropdownTintedMedium from "../global/DropdownTintedMedium.svelte";
     import Tab from "../global/Tab.svelte";
+    import Modal from "../global/Modal.svelte";
 
     let { repo_path: repo_path, repo_type: repo_type = "github" } = $props();
 
@@ -26,9 +27,7 @@
         selected_view = id;
     }
 
-    function open_config() {
-        //config logic
-    }
+    let showModal = $state(false);
 
     function open_calendar() {
         //calendar logic
@@ -55,7 +54,39 @@
                 label_class="body-accent"
                 icon_first={true}
                 width="4rem"
-            />
+				        on:click={() => (showModal = true)}
+			      />
+
+            <!-- Modal -->
+            <Modal bind:showModal>
+                <h2 id="modal-title" slot="header">
+                    Upload config file
+                </h2>
+                <p>Upload a config file to group email addresses to contributors, in format</p>
+                    <textarea
+                      id="formatInput"
+                      rows="4"
+                      placeholder="add format here"
+                      class="format-box"
+                    />
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <ButtonTintedMedium
+                            label="Cancel"
+                            label_class="body"
+                            icon_first={true}
+                            width="4rem"
+                            on:click={() => showModal = false}
+                        />
+                        <ButtonTintedMedium
+                            label="Upload"
+                            icon="upload"
+                            label_class="body-accent"
+                            icon_first={true}
+                            width="4rem"
+                            on:click={() => {/* handle upload logic here */}}
+                        />
+                    </div>
+            </Modal>
 
             <!-- branch dropdown btn -->
             <DropdownTintedMedium
@@ -131,4 +162,18 @@
         padding-top: 2rem;
         z-index: 110;
     }
+
+    .format-box {
+	      width: 95%;
+        padding: 1em;
+        border-radius: 0.5em;
+        border: 1px solid #555;
+        background-color: #1e1e1e;
+        color: #fff;
+        font-size: 1em;
+        margin-top: 1em;
+        resize: vertical;
+      }
+
+
 </style>
