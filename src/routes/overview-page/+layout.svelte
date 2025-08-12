@@ -1,4 +1,13 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    import { installGlobalDnDGuards } from "$lib/dnd_guards";
+
+    onMount(() => {
+        const cleanup = installGlobalDnDGuards();
+        console.log("[DnD] global guards installed");
+        return cleanup;
+    });
+
     import { page } from "$app/state";
     import Banner from "$lib/components/overview-page/Banner.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
@@ -19,4 +28,3 @@
     {@render children()}
 </main>
 <Sidebar />
-
