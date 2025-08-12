@@ -1,7 +1,6 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
     import { verify_and_extract_source_info } from "$lib/github_url_verifier.js";
-    import Icon from "@iconify/svelte";
     import { load_branches, load_commit_data } from "$lib/metrics";
     import { goto } from "$app/navigation";
     import { get_repo_type } from "$lib/repo";
@@ -14,6 +13,21 @@
     import Banner from "$lib/components/overview-page/Banner.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
     import RepoBookmarkList from "$lib/components/global/RepoBookmarkList.svelte";
+    
+    import { onMount } from "svelte";
+    import { manifestStore, type ManifestSchema } from "$lib/stores/manifest";
+
+    // only run on the browser
+    onMount(async () => {
+        try {
+            let data = await invoke<ManifestSchema[]>('read_manifest');
+            manifestStore.set(data);
+            console.log(data);
+        } catch (e: any) {
+            let err = typeof e === 'string' ? e : e?.message ?? String(e);
+            console.error('read_manifest failed', e);
+        }
+    });
 
     interface RepoBookmark {
         repo_name: string;
