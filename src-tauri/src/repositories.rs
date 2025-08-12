@@ -31,6 +31,7 @@ pub async fn bare_clone(
         log::info!("Local repository path created at: {}", path);
         return create_repository(&format!("{}/{}", owner, repo), path, true).await;
     }
+
     let url_base = if source_type == 0 {
         "https://github.com"
     } else if source_type == 1 {
@@ -38,10 +39,12 @@ pub async fn bare_clone(
     } else {
         return Err("Invalid source type".to_string());
     };
+
     let url = format!("{}/{}/{}", url_base, owner, repo);
     create_repository(&url, path, false).await?;
 
     let mut callbacks = RemoteCallbacks::new();
+
     callbacks.transfer_progress(|progress| {
         clone_progress(progress.received_objects(), progress.total_objects());
         true

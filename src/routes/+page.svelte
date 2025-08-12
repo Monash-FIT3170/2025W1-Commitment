@@ -94,12 +94,14 @@
 
             // Update the repo store with the new URL
             set_repo_url(repo_url_input);
+
             // Call loadBranches and loadCommitData and wait for both to complete
             const contributors = await load_commit_data(
                 backend_result.owner,
                 backend_result.repo,
                 backend_result.source_type
             );
+
             const branches = await load_branches(backend_result.repo);
 
             // Navigate to the overview page
