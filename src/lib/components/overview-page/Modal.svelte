@@ -7,10 +7,10 @@
     <div class="backdrop" onclick={close}>
         <div class="modal" onclick={(e) => e.stopPropagation()}>
         <div class="row">
-            <strong>Modal placeholder</strong>
+            <slot name="header"><strong></strong></slot>
             <button class="x" onclick={close} aria-label="Close">✕</button>
         </div>
-        <p>This is a minimal modal. We’ll add real content next.</p>
+        <slot name="body"></slot>
         </div>
     </div>
 {/if}

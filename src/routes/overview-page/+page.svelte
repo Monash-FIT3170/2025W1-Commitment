@@ -3,7 +3,7 @@
     import Heading from "$lib/components/overview-page/Heading.svelte";
     import CommitGraph from "$lib/components/overview-page/CommitGraph.svelte";
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
-    import Modal from  "$lib/components/overview-page/Modal.svelte";
+    import UploadFileModal from  "$lib/components/overview-page/UploadFileModal.svelte";
 
     let repo_path = $derived(page.state.repo_path);
     let repo_type = $derived(page.state.repo_type);
@@ -11,8 +11,13 @@
     let contributors = $derived(page.state.contributors);
 
     let showModal = $state(false);
-    function openModal() { showModal = true; }
-    
+    const openModal = () => ( showModal = true); 
+
+    function handleSelect(file) {
+        console.log("Selected file:", file);
+        showModal = false;
+    }
+
 </script>
 
 <div class="main">
@@ -30,7 +35,7 @@
             label="Download Marking Sheet"
         />
     </div>
-    <Modal bind:showModal />
+    <UploadFileModal bind:showModal onselect={handleSelect} />
 </div>
 
 
