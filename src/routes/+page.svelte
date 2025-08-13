@@ -3,7 +3,7 @@
     import { verify_and_extract_source_info } from "$lib/github_url_verifier.js";
     import { load_branches, load_commit_data } from "$lib/metrics";
     import { goto } from "$app/navigation";
-    import { get_repo_type, get_repo_name } from "$lib/repo";
+    import { get_repo_type, get_repo_name } from "$lib/stores/repo";
     import RepoDropdown from "$lib/components/global/RepoDropdown.svelte";
     import { repo_options } from "$lib/stores/repo";
     import type { RepoOption } from "$lib/stores/repo";
@@ -28,14 +28,14 @@
             console.error('read_manifest failed', e);
         }
     });
-
+    
+    let profile_image_url = "/mock_profile_img.png";
+    let username = "Baaset Moslih";
+    
     interface RepoBookmark {
         repo_name: string;
         repo_url: string;
     }
-
-    let profile_image_url = "/mock_profile_img.png";
-    let username = "Baaset Moslih";
 
     let recent_repos: RepoBookmark[] = $manifest.map(
         (item) => {
@@ -55,7 +55,6 @@
                 }
             })
     )
-    console.log($bookmarks);
 
     let selected: RepoOption = $state(repo_options[0]); // Default to GitHub
 
