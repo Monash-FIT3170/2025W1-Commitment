@@ -23,8 +23,8 @@ The following files are non-compliant to the prettier config.
     echo $PRETTIER_FILES | sed -E 's|([^\\]) |\1\n\t|g'
 
     printf "
-Run \`npm run fmt:check\` to see full list of unformatted files in
-project root or use \`npm run fmt\` to format files automatically.
+Run \`npm run fmt\` to see full list of unformatted files in project
+root or use \`npm run fmt:fix\` to format files automatically.
 
 "
 
@@ -38,7 +38,7 @@ printf "==== checking format of rust files ====\n"
 RS_FMT_FILES=$(echo $FILES \
              | sed '/*\.rs/!d' \
              | xargs cargo fmt --check --manifest-path src-tauri/Cargo.toml -- --files-with-diff \
-             | sed -E 's|.*/(src-tauri)/(.*)|\1/\2|g')
+             | sed -E 's|.*[\\\|/](src-tauri)([\\\|/])(.*)|\1\2\3|g')
 
 if [[ -n "$RS_FMT_FILES" ]]; then
     printf "
@@ -49,8 +49,8 @@ The following files are non-compliant to the rustfmt config.
     echo $RS_FMT_FILES | sed -E 's|([^\\]) |\1\n\t|g'
 
     printf "
-Run \`npm run rs-fmt:check\` to see full list of unformatted files in
-rust crate or use \`npm run rs-fmt\` to format files automatically.
+Run \`npm run rs-fmt\` to see full list of unformatted files in rust
+crate or use \`npm run rs-fmt:fix\` to format files automatically.
 
 "
 

@@ -8,8 +8,8 @@ param (
 
 if ($Link){
     # Create symbolic links for Git hooks
-    New-Item -ItemType SymbolicLink -Path ".git/hooks/prepare-commit-msg" -Target "../../.githooks/prepare-commit-msg" -Force
-    New-Item -ItemType SymbolicLink -Path ".git/hooks/pre-commit" -Target "../../.githooks/pre-commit" -Force
+    New-Item -ItemType SymbolicLink -Path ".git/hooks/prepare-commit-msg" -Target ".githooks/prepare-commit-msg" -Force
+    New-Item -ItemType SymbolicLink -Path ".git/hooks/pre-commit" -Target ".githooks/pre-commit" -Force
 }
 elseif ($Delink){
     # Remove Git hooks

@@ -16,7 +16,7 @@ Check out our official releases on the releases tab of GitHub!
 - Rust v1.84.0
 - Tauri v2.4.0 ([Tauri prereqs](https://v2.tauri.app/start/prerequisites/))
 
-To setup your device for developing gitgauge you will need clone the repo to your device
+To set up your device for developing gitgauge you will need clone the repo to your device
 and change into the newly created directory.
 
 ```sh
@@ -25,7 +25,7 @@ cd gitgauge
 ```
 
 Then you can run the `git-hooks.sh` shell script on macOS and Linux or the
-`git-hooks.ps1` PowerShell script on Windows to setup the Git Hooks.
+`git-hooks.ps1` PowerShell script on Windows to set up the Git Hooks.
 
 macOS and Linux:
 
@@ -39,7 +39,10 @@ Windows PowerShell
 .\git-hooks.ps1
 ```
 
-Once you have done that you can setup and run the project up by changing to the repo
+> Note: The PowerShell script may need to run in an Admin shell or with elevated
+> privileges.
+
+Once you have done that you can set up and run the project up by changing to the repo
 directory and running the following commands.
 
 ```sh
