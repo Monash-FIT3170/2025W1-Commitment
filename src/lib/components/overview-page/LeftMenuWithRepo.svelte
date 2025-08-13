@@ -2,8 +2,7 @@
     import Icon from "@iconify/svelte";
     import { bookmarks } from "$lib/stores/bookmarks";
     import LeftMenu from "./LeftMenu.svelte";
-    import type { Repo } from "$lib/repo";
-    import { get_repo_type } from "$lib/repo";
+    import { type Repo, get_repo_type } from "$lib/stores/repo";
 
     let {
         repo_url,
