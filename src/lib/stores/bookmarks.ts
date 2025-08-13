@@ -1,5 +1,6 @@
 import { writable, get } from 'svelte/store';
 import type { Repo } from '$lib/repo';
+import { invoke } from "@tauri-apps/api/core";
 
 function create_bookmarks() {
     const { subscribe, set, update } = writable<Repo[]>([

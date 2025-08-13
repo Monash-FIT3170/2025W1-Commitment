@@ -48,10 +48,12 @@
 
     let verification_message: string = $state("");
     let verification_error: boolean = $state(false);
+    let branch_selected: string | undefined = undefined;
 
     interface BackendVerificationResult {
         owner: string;
         repo: string;
+        source_type: 0 | 1 | 2;
     }
 
     async function select_bookmarked_repo(repo_url: string) {
@@ -99,10 +101,7 @@
             // Update the repo store with the new URL
             set_repo_url(repo_url_input);
             // Call loadBranches and loadCommitData and wait for both to complete
-            const contributors = await load_commit_data(
-                backend_result.owner,
-                backend_result.repo,
-            );
+            const contributors = await load_commit_data(backend_result.owner, backend_result.repo, backend_result.source_type);
             const branches = await load_branches(backend_result.repo);
 
             // Navigate to the overview page
@@ -111,6 +110,7 @@
                     repo_url: repo_url_input,
                     repo_path: new URL(repo_url_input).pathname.slice(1),
                     repo_type: get_repo_type(repo_url_input),
+                    selected_branch: "",
                     branches: branches,
                     contributors: contributors,
                 },

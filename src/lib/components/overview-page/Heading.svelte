@@ -1,17 +1,15 @@
 <script lang="ts">
     import { page } from "$app/state";
-    import { create_dropdown_selection } from "$lib/stores/dropdown";
     import Icon from "@iconify/svelte";
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import DropdownTintedMedium from "../global/DropdownTintedMedium.svelte";
     import Tab from "../global/Tab.svelte";
+  import { get } from "svelte/store";
+  import { load_commit_data, type Contributor } from "$lib/metrics";
 
-    let { repo_path: repo_path, repo_type: repo_type = "github" } = $props();
+    let { repo_path: repo_path, repo_type: repo_type = "github", branches = [], branch_selection = $bindable() } = $props();
 
-    let branches: string[] = $derived(page.state.branches || []);
-    let branch_selection = $derived(
-        create_dropdown_selection(branches[0] || "All"),
-    );
+    let contributors: Contributor[] = [];
 
     let start_date = $state("01-01-25");
     let end_date = $state("20-01-25");
@@ -60,7 +58,7 @@
             <!-- branch dropdown btn -->
             <DropdownTintedMedium
                 options={branches}
-                selected={branch_selection.selected}
+                bind:selected={branch_selection}
                 disabled={false}
             />
 

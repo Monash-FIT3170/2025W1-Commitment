@@ -1,17 +1,16 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
-    import type { Writable } from "svelte/store";
     import Icon from "@iconify/svelte";
 
     let {
         options = [],
-        selected = null,
+        selected = $bindable(),
         disabled = false,
         get_label = (opt: any) =>
             typeof opt === "string" ? opt : (opt.label ?? String(opt)),
     }: {
         options: any[];
-        selected: Writable<any> | null;
+        selected: string;
         disabled: boolean;
         get_label?: (opt: any) => string;
     } = $props();
@@ -23,7 +22,7 @@
     }
 
     function select_option(option: any) {
-        if (selected) selected.set(option);
+        selected = option;            
         open = false;
     }
 
@@ -54,8 +53,8 @@
         onclick={toggle_dropdown}
         {disabled}
     >
-        <span class="selected-label body"
-            >{selected ? get_label($selected) : "Select an option"}</span
+    <span class="selected-label body"
+            >{selected ? get_label(selected) : "Select an option"}</span
         >
         <Icon
             icon={open ? "tabler:chevron-up" : "tabler:chevron-down"}
@@ -69,8 +68,8 @@
             {#each options as option (get_label(option))}
                 <li
                     role="option"
-                    aria-selected={selected && option === $selected}
-                    class="dropdown-item body {selected && option === $selected
+                    aria-selected={option === selected}
+                    class="dropdown-item body {selected && option === selected
                         ? 'selected'
                         : ''}"
                     onclick={() => select_option(option)}
