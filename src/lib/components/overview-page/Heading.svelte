@@ -29,6 +29,27 @@
 
     let showModal = $state(false);
 
+    let files;
+    let fileInput: HTMLInputElement;
+
+    function triggerFileInput() {
+        fileInput.click();
+    }
+
+    function handleFileChange(event: Event) {
+        const selectedFiles = (event.target as HTMLInputElement).files;
+        if (selectedFiles && selectedFiles.length > 0) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target?.result;
+                console.log("File contents:", text);
+                // Send `text` to your backend or process it
+            };
+            reader.readAsText(selectedFiles[0]);
+            showModal = false;
+        }
+    }
+
     function open_calendar() {
         //calendar logic
         //task for future sprint
@@ -66,8 +87,14 @@
                     <textarea
                       id="formatInput"
                       rows="4"
-                      placeholder="add format here"
+                      placeholder="&#123;   add format here    &#125;"
                       class="format-box"
+                    />
+                    <input
+                        type="file"
+                        bind:this={fileInput}
+                        style="display: none;"
+                        on:change={handleFileChange}
                     />
                     <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                         <ButtonTintedMedium
@@ -83,7 +110,7 @@
                             label_class="body-accent"
                             icon_first={true}
                             width="4rem"
-                            on:click={() => {/* handle upload logic here */}}
+                            on:click={triggerFileInput}
                         />
                     </div>
             </Modal>
