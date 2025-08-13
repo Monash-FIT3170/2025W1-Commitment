@@ -1,86 +1,60 @@
 <script lang="ts">
-    import Icon from '@iconify/svelte';
-    import { bookmarks } from '$lib/stores/bookmarks';
-    import type { Repo } from '$lib/repo';
-    import { getRepoType } from '$lib/repo';
+    import LeftMenu from "./LeftMenu.svelte";
+    import LeftMenuWithRepo from "./LeftMenuWithRepo.svelte";
+    import UserMenu from "$lib/components/overview-page/UserMenu.svelte";
 
-    export let repoUrl: string;
-    export let repoPath: string;
-
-    let bookmarked = bookmarks.contains(repoUrl);
-
-    function toggleBookmark() {
-      bookmarked = !bookmarked;
-      const bookmark: Repo = {
-        "repoPath": repoUrl.split('/').pop()?.replace('.git', '') || repoUrl,
-        "repoUrl": repoUrl,
-        "repoType": getRepoType(repoUrl)
-      }
-      bookmarks.toggle(bookmark);
-    }
+    let {
+        repo_url,
+        repo_path,
+        username = "Baaset Moslih",
+        profile_image_url = "/mock_profile_img.png",
+    }: {
+        repo_url?: string;
+        repo_path?: string;
+        username?: string;
+        profile_image_url?: string;
+    } = $props();
 </script>
 
-<div class="topbar">
-  <!-- Logo / Home Link -->
-  <a href="/" class="logo-section">
-    <img src="/submark.png" alt="logo" class="logo-img" color=""/>
-  </a>
+<!--
+@component
+This is the header component that contains the left menu and user menu.
 
-  <!-- repo pathway display -->
-  <div class="repo-pathway">
-      {repoPath}
-  </div>
+This component displays a left menu containing a title for the repository
+where relevant, and otherwise displays the full app logo. The user menu
+contains the user's name and profile image.
 
-  <!-- bookmark toggle -->
-  <button
-    type="button"
-    class="bookmark-btn"
-    on:click={toggleBookmark}
-    aria-pressed={bookmarked}
-  >
-    <Icon
-      icon={bookmarked ? 'tabler:star-filled' : 'tabler:star'}
-      class="icon-medium"
+- Usage:
+  ```svelte
+    <Banner
+        repo_url={repo_url}
+        repo_path={repo_path}
+        username={username}
+        profile_image_url={profile_image_url}
     />
-  </button>
+  ```
+- Props:
+    - `repo_url`: The URL of the repository (optional).
+    - `repo_path`: The path of the repository (optional).
+    - `username`: The name of the user.
+    - `profile_image_url`: The URL of the user's profile image.
+-->
+
+<div class="header">
+    {#if repo_url && repo_path}
+        <LeftMenuWithRepo {repo_url} {repo_path} />
+    {:else}
+        <LeftMenu />
+    {/if}
+    <UserMenu {username} {profile_image_url} />
 </div>
 
-
-
 <style>
-  /* topbar wrapper fixed at top-left */
-  .topbar {
-    display: flex;
-    align-items: center;
-    height: inherit;
-  }
-
-  .logo-section {
-    display: flex;
-    align-items: center;
-    margin-right: 0.8125rem;
-  }
-
-  .logo-img {
-    height: 0.9375rem;
-    /* margin-top: 2px; */
-
-  }
-
-  .repo-pathway {
-    font-family: 'DM Mono', monospace;
-    font-size: 1rem;
-    color: var(--label-primary);
-    white-space: nowrap;
-    margin-right: 0.5rem;
-  }
-
-  .bookmark-btn {
-    background: none;
-    border: none;
-    padding: 0px;
-    cursor: pointer;
-    display: flex;
-    color: var(--label-primary)
-  }
+    .header {
+        padding: 2rem 2rem 0rem 2rem;
+        height: 1.375rem;
+        display: flex;
+        justify-content: space-between;
+    }
 </style>
+

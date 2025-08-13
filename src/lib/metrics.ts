@@ -1,27 +1,25 @@
-//import type { User } from '../data/dummyData';
 import { invoke } from "@tauri-apps/api/core";
 import { info } from "@tauri-apps/plugin-log";
 
-export type Author = Readonly<{
-    login: string,
-    avatar_url: string
-}>;
+export type Contacts = Readonly<String | String[]>;
 
 export type Contributor = Readonly<{
-    author: Author,
+    username: String,
+    contacts: Contacts,
     total_commits: number,
     additions: number,
-    deletions: number
+    deletions: number,
+    bitmap_hash: String,  // tmp use to store gravatar login
+    bitmap: String,       // tmp use to store gravatar url
 }>;
 
-
 // Load branches for a repository
-export async function load_branches(owner: string, repo: string): Promise<string[]> {
-    info(`Loading branches for ${owner}/${repo}...`);
+export async function load_branches(repo: string): Promise<string[]> {
+    const repo_path = `../.gitgauge/repositories/${repo}`;
     try {
-        const real_branches = await invoke<string[]>('get_branch_names', { owner, repo });
-        info(`Done branches for ${owner}/${repo}...`);
+        const real_branches = await invoke<string[]>('get_branch_names', { path: repo_path });
         return ['All', ...real_branches];
+
     } catch (err) {
         console.error('Failed to load branches: ', err);
         return ['All'];
@@ -31,13 +29,21 @@ export async function load_branches(owner: string, repo: string): Promise<string
 export async function load_commit_data(owner: string, repo: string, branch?: string): Promise<Contributor[]> {
     info(`Loading contributor data for ${owner}/${repo}...`);
 
+    const repo_path = `../.gitgauge/repositories/${repo}`;
     try {
-        const commit_data = await invoke<Contributor[]>('get_contributor_info', { owner, repo });
-        info(`Done contributor data for ${owner}/${repo}...`);
-        return commit_data;
+        await invoke('bare_clone', { url: `https://github.com/${owner}/${repo}`, path: repo_path });
+        info(`Repository is cloned or already exists at ${repo_path}`);
+    } catch (err) {
+        info(`Failed to clone the repository: ${err}`);
+        return [];
+    }
+
+    try {
+        const commit_data = await invoke<Contributor[]>('get_contributor_info', { path: repo_path, branch: branch });
+        const commit_array = Object.values(commit_data);
+        return commit_array;
     } catch (err) {
         info(`Failed to get contributor data`)
-        console.error('Failed to load contributor data: ', err);
         return [];
     }
 }

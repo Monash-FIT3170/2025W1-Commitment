@@ -1,15 +1,15 @@
 import { writable } from 'svelte/store';
 
-export const sidebarOpen = writable(false);
+export const sidebar_open = writable(false);
 
-export function toggleSidebar() {
-  sidebarOpen.update(open => !open);
+export function toggle_sidebar() {
+    sidebar_open.update(open => !open);
 }
 
-export function openSidebar() {
-  sidebarOpen.set(true);
+export function open_sidebar() {
+    sidebar_open.set(true);
 }
 
-export function closeSidebar() {
-  sidebarOpen.set(false);
+export function close_sidebar() {
+    sidebar_open.set(false);
 }

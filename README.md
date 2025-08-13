@@ -24,19 +24,19 @@ git clone https://github.com/Monash-FIT3170/2025W1-Commitment.git gitgauge
 cd gitgauge
 ```
 
-Then you can run the `git-setup.sh` shell script on macOS and Linux or the
-`git-setup.ps1` PowerShell script on Windows to setup the Git Hooks.
+Then you can run the `git-hooks.sh` shell script on macOS and Linux or the
+`git-hooks.ps1` PowerShell script on Windows to setup the Git Hooks.
 
 macOS and Linux:
 
 ```sh
-sh git-setup.sh
+sh git-hooks.sh
 ```
 
 Windows PowerShell
 
 ```ps
-.\git-setup.ps1
+.\git-hooks.ps1
 ```
 
 Once you have done that you can setup and run the project up by changing to the repo

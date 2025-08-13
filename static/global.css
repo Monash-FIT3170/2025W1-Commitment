@@ -154,6 +154,20 @@
     --tint-03: rgba(209, 209, 209, 0.7); /* #D1D1D1 */
 }
 
+.label-primary {
+    color: var(--label-primary) !important;
+}
+.label-secondary {
+    color: var(--label-secondary) !important;
+}
+.label-tertiary {
+    color: var(--label-tertiary) !important;
+}
+
+.error {
+    color: var(--wonderland--ff748b) !important;
+}
+
 html, body, #app {
     height: 100%;
     margin: 0;

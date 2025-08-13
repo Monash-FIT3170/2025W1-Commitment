@@ -1,5 +1,51 @@
 # Contributing Guidelines
 
+## Coding Style
+
+### Svelte
+
+For this project only Svelte 5 concepts should be used. This includes the use of
+[Runes](https://svelte.dev/docs/svelte/what-are-runes) instead of Svelte 4's (and lower)
+reactive statements with `$:`.
+
+This project will use the [prescribed project layout for a SvelteKit project](https://svelte.dev/docs/kit/project-structure)
+as recommend by the Svelte developers.
+
+Svelte components and TypeScript types and named objects should be in _Pascal Case_ with
+functions, type methods and variables being in _snake\_case_, imports should be ordered
+alphabetically and code should have 4 space indenting.
+
+### HTML and CSS
+
+Although we use `.svelte` files in this project, we still write HTML-like mark-ups. Hence
+HTML guidelines can be followed in this case.
+
+HTML and CSS code should follow the
+[Google HTML/CSS Style Guide](https://google.github.io/styleguide/htmlcssguide.html#CSS_Style_Rules).
+
+For a responsive design, the CSS unit is `rem`, with the ratio between `rem` and `px`
+being: `1rem = 16px`.
+
+The `global.css` file is located under `static\` defining the fonts and colour theme used
+in the project. Any styling relating colour and fonts should follow these pre-defined CSS
+classes.
+
+A component should determine its own styling, such as width, height. Apart from the
+location, a parent component should not control the style of its children components
+(e.g. height, widths, etc.) 
+
+### Rust
+
+Rust code should be styled according to the [Rust Style Guide](https://doc.rust-lang.org/nightly/style-guide/)
+but the TL;DR is as follows:
+
+Variables, functions and associated methods of structs should be in _snake\_case_ with
+trait and struct names being in _Pascal Case_.
+
+You can run `cargo fmt` to format the project correctly when in the `src-tauri` directory.
+
+## Git Tracking
+
 This document outlines the rules for contributing to the project. It covers the
 required commit message format, how to name branches and how to create PRs.
 
@@ -29,7 +75,7 @@ developing and contributing to the project.
 
 3. Make your changes, ensuring to commit frequently
 4. When committing, add/stage your changes using `git add .` You can then make a commit
-   using `git commit`. This will open the default editor setup for Git allowing you to
+   using `git commit`. This will open the default editor set-up for Git allowing you to
    write your commit message. The `git-setup.sh` script will have injected a hook that
    provides a custom template for commit messages. The template is based on the below
    [guidelines](#commit-message-guidelines), which will help you to
@@ -139,7 +185,7 @@ the change to aid in the lookup of the commit it relation to the scope. A scope 
 like a tag where it has to be one of a specific value but should be a single word or
 short phrase to indicate what aspect of the project was changed ie. ui
 
-> The scope word/phrase **must** be lowercase.
+> The scope word/phrase **must** be lower-case.
 
 You can also reference a ClickUp task-ID in the `refs: ` line. Each task-ID **must** be
 prefixed by `CU-` ie. `CU-abc123xyz` with multiple IDs being separated by a comma-space.
