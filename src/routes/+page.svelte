@@ -13,7 +13,6 @@
     import Banner from "$lib/components/overview-page/Banner.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
     import RepoBookmarkList from "$lib/components/global/RepoBookmarkList.svelte";
-    import { bookmarks } from "$lib/stores/bookmarks";
 
     import { onMount } from "svelte";
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
@@ -42,19 +41,6 @@
             return {repo_name: item.name, repo_url: item.path}
         }
     );
-
-
-    bookmarks.set(
-        $manifest
-            .filter((item) => item.bookmarked)
-            .map((item) => {
-                return {
-                    repo_name: get_repo_name(item.path),
-                    repo_url: item.path,
-                    repo_type: get_repo_type(item.path)
-                }
-            })
-    )
 
     let selected: RepoOption = $state(repo_options[0]); // Default to GitHub
 
