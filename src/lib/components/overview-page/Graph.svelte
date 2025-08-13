@@ -5,6 +5,7 @@
         get_average_commits,
         get_sd,
         get_ref_points,
+        calculate_scaling_factor,
         type Contributor,
     } from "../../metrics";
 
@@ -296,6 +297,8 @@
         const userGraphics = isTransitioning ? [] : filteredPeople.map((person: any) => {
             const [baseX, y] = chart.convertToPixel({gridIndex: 0}, [person.numCommits, person.yValue]);
             const x = isStaggeredMode ? baseX : baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
+            const scalingFactor = calculate_scaling_factor(person.numCommits, commit_mean, sd);
+            const isRightmost = person.numCommits === maxCommits;
             return {
                 type: 'group',
                 children: [
@@ -327,10 +330,10 @@
                             fontWeight: '900',
                             fill: '#fff',
                             font: 'bold 16px "DM Sans ExtraBold", sans-serif',
-                            textAlign: 'left',
+                            textAlign: isRightmost ? 'right' : 'left',
                             textVerticalAlign: 'top'
                         },
-                        x: x + 40, // Position to the right of the image
+                        x: isRightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
                         y: y - 15, 
                         z: 2
                     },
@@ -338,14 +341,14 @@
                     {
                         type: 'text',
                         style: {
-                            text: `Scaling Factor: 1.5`,
+                            text: `Scaling Factor: ${scalingFactor.toFixed(1)}`,
                             fontSize: 14,
                             fill: '#fff',
                             font: 'bold 16px "DM Sans", sans-serif',
-                            textAlign: 'left',
+                            textAlign: isRightmost ? 'right' : 'left',
                             textVerticalAlign: 'top'
                         },
-                        x: x + 40, // Position to the right of the image
+                        x: isRightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
                         y: y + 5, 
                         z: 2
                     }
