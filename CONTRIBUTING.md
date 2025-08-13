@@ -35,9 +35,9 @@ location, a parent component should not control the style of its children compon
 (e.g. height, widths, etc.) 
 
 We use Prettier to check code style consistency and compliance for the svelte frontend.
-You can format or check for style compliance using the `npm run fmt` or
-`npm run fmt:check` scripts respectively which will only check the `src/` directory per
-the `.prettierignore` setup
+You can check or auto format the codebase using the `npm run fmt` or `npm run fmt:fix`
+scripts respectively which will only check the `src/` directory per the `.prettierignore`
+setup.
 
 Additionally, a Git hook has been setup to fail a commit if there are non-comforming
 files, also using Prettier.
@@ -50,7 +50,12 @@ but the TL;DR is as follows:
 Variables, functions and associated methods of structs should be in _snake\_case_ with
 trait and struct names being in _Pascal Case_.
 
-You can run `cargo fmt` to format the project correctly when in the `src-tauri` directory.
+You can run `npm run rs-fmt` and `npm run rs-fmt:fix` to check and auto format the code
+in the rust crate contained in `src-tauri/`. Additionally, you can lint the rust crate
+using `npm run clippy` and auto accept lint suggestions with `npm run clippy:fix`.
+
+These checks are also run with a pre-commit hook which aborts the commit if either
+formatter or clippy detect incorrect styling and/or errors.
 
 ## Git Tracking
 
