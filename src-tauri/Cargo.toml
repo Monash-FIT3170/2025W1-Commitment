@@ -1,8 +1,21 @@
 [package]
 name = "gitgauge"
-version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+version = "0.2.0"
+description = "pretty gui for git contribution stats"
+authors = [
+    "Harshath Muruganantham",
+    "James Nguyen",
+    "Georgia Kanellis",
+    "Ayani Wickramaratne",
+    "Tyler Swann",
+    "Darcy Bystersky",
+    "Yali John Lin",
+    "Audrey Phommasone",
+    "Jamie Nguyen",
+    "Massimo Nodin",
+    "Prisha Verma",
+    "Mai Thao Hoang"
+]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
