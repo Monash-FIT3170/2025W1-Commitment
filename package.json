@@ -14,7 +14,8 @@
     "fmt:check": "npx prettier --check .",
     "rs-fmt": "cargo fmt --manifest-path src-tauri/Cargo.toml",
     "rs-fmt:check": "cargo fmt --check --manifest-path src-tauri/Cargo.toml",
-    "clippy:check": "cargo clippy --manifest-path src-tauri/Cargo.toml"
+    "clippy": "cargo clippy --manifest-path src-tauri/Cargo.toml",
+    "clippy:fix": "cargo clippy --manifest-path src-tauri/Cargo.toml --fix"
   },
   "license": "MIT",
   "dependencies": {

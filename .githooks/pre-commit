@@ -15,36 +15,67 @@ DIFF_FILES=$(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g')
 PRETTIER_FILES=$(echo "$DIFF_FILES" | xargs npx prettier --ignore-unknown --list-different | sed 's| |\\ |g')
 
 if [[ -n "$PRETTIER_FILES" ]]; then
-    printf "\nThe following files are non-compliant to the prettier config.\n\n\t"
+    printf "
+The following files are non-compliant to the prettier config.
+
+\t"
+
     echo $PRETTIER_FILES | sed -E 's|([^\\]) |\1\n\t|g'
 
-    printf "\nRun \`npm run fmt\` to format all files automatically or use\n"
-    printf "\`npm run fmt:check\` to see full list of unformatted files in\nproject root.\n\n"
+    printf "
+Run \`npm run fmt:check\` to see full list of unformatted files in
+project root or use \`npm run fmt\` to format files automatically.
+
+"
 
     EX_CODE=1
+else
+    echo "==== [PASS] ===="
 fi
-
-printf "==== checking format of rust files ====\n"
 
 # ---- fmt ----
-RS_FMT_FILES=$(echo $FILES | sed '/*\.rs/!d' | xargs cargo fmt --check --manifest-path src-tauri/Cargo.toml -- --files-with-diff)
+printf "==== checking format of rust files ====\n"
+RS_FMT_FILES=$(echo $FILES \
+             | sed '/*\.rs/!d' \
+             | xargs cargo fmt --check --manifest-path src-tauri/Cargo.toml -- --files-with-diff \
+             | sed -E 's|.*/(src-tauri)/(.*)|\1/\2|g')
 
 if [[ -n "$RS_FMT_FILES" ]]; then
-    printf "\nThe following files are non-compliant to the rustfmt config.\n\n\t"
+    printf "
+The following files are non-compliant to the rustfmt config.
+
+\t"
+
     echo $RS_FMT_FILES | sed -E 's|([^\\]) |\1\n\t|g'
 
-    printf "\nRun \`npm run rs-fmt\` to format all files automatically or use\n"
-    printf "\`npm run rs-fmt:check\` to see full list of unformatted files in\nproject root.\n\n"
+    printf "
+Run \`npm run rs-fmt:check\` to see full list of unformatted files in
+rust crate or use \`npm run rs-fmt\` to format files automatically.
+
+"
 
     EX_CODE=1
+else
+    echo "==== [PASS] ===="
 fi
 
-printf "==== checking rust files with linter ====\n"
-# ---- lint ----
-
-
-printf "==== checking rust files with clippy ====\n"
 # ---- clippy ----
+printf "==== linting rust files with clippy ====\n"
+cargo clippy --manifest-path src-tauri/Cargo.toml -- -Dwarnings 2> /dev/null
+
+if [[ $? -eq 101 ]]; then
+    printf "\nLint errors/warnings found in rust code.\n"
+
+    printf "
+Run \`npm run rs-lint\` to see lint suggestions or use \`npm run rs-lint:fix\` to
+apply lint suggestions to rust crate automatically.
+
+"
+
+    EX_CODE=1
+else
+    echo "==== [PASS] ===="
+fi
 
 exit $EX_CODE
 
