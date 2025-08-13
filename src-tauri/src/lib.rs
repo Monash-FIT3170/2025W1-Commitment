@@ -2,6 +2,7 @@ mod branches;
 mod contributor;
 mod repositories;
 mod url_verifier;
+mod bookmark;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -13,7 +14,8 @@ pub fn run() {
             contributor::get_contributor_info,
             repositories::bare_clone,
             repositories::is_repo_cloned,
-            url_verifier::verify_and_extract_source_info
+            url_verifier::verify_and_extract_source_info,
+            bookmark::read_manifest
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
