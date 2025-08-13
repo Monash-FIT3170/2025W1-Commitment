@@ -1,7 +1,12 @@
 <script lang="ts">
     import { sidebar_open, close_sidebar } from "$lib/stores/sidebar";
-    import { bookmarks } from "$lib/stores/bookmarks";
+    import { manifest } from "$lib/stores/manifest";
     import Icon from "@iconify/svelte";
+    import { type ManifestSchema } from "$lib/stores/manifest";
+
+    let bookmarked: ManifestSchema[] = $derived($manifest.filter(
+        (item) => item.bookmarked
+    ));
 </script>
 
 <div class={`sidebar ${$sidebar_open ? "open" : "closed"}`}>
@@ -33,13 +38,13 @@
             <h2 class="heading-1 bookmark-text white">Bookmarks</h2>
         </div>
 
-        {#each $bookmarks as repo (repo.repo_path)}
+        {#each bookmarked as repo (repo.name)}
             <button class="bookmark-item" type="button">
                 <h6 class="heading-2 repo-name label-secondary">
-                    {repo.repo_path}
+                    {repo.name}
                 </h6>
                 <h6 class="caption repo-url label-secondary">
-                    {repo.repo_url}
+                    {repo.path}
                 </h6>
             </button>
         {/each}

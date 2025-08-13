@@ -3,7 +3,7 @@
     import { verify_and_extract_source_info } from "$lib/github_url_verifier.js";
     import { load_branches, load_commit_data } from "$lib/metrics";
     import { goto } from "$app/navigation";
-    import { get_repo_type } from "$lib/repo";
+    import { get_repo_type, get_repo_name } from "$lib/repo";
     import RepoDropdown from "$lib/components/global/RepoDropdown.svelte";
     import { repo_options } from "$lib/stores/repo";
     import type { RepoOption } from "$lib/stores/repo";
@@ -13,16 +13,16 @@
     import Banner from "$lib/components/overview-page/Banner.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
     import RepoBookmarkList from "$lib/components/global/RepoBookmarkList.svelte";
-    
+    import { bookmarks } from "$lib/stores/bookmarks";
+
     import { onMount } from "svelte";
-    import { manifestStore, type ManifestSchema } from "$lib/stores/manifest";
+    import { manifest, type ManifestSchema } from "$lib/stores/manifest";
 
     // only run on the browser
     onMount(async () => {
         try {
             let data = await invoke<ManifestSchema[]>('read_manifest');
-            manifestStore.set(data);
-            console.log(data);
+            manifest.set(data);
         } catch (e: any) {
             let err = typeof e === 'string' ? e : e?.message ?? String(e);
             console.error('read_manifest failed', e);
@@ -37,24 +37,25 @@
     let profile_image_url = "/mock_profile_img.png";
     let username = "Baaset Moslih";
 
-    let bookmarked_repos: RepoBookmark[] = [
-        {
-            repo_name: "GitGuage",
-            repo_url: "https://github.com/Monash-FIT3170/2025W1-Commitment",
-        },
-        {
-            repo_name: "QualAI",
-            repo_url: "https://github.com/Monash-FIT3170/2025W1-QualAI",
-        },
-        {
-            repo_name: "PressUp",
-            repo_url: "https://github.com/Monash-FIT3170/2025W1-PressUp",
-        },
-        {
-            repo_name: "FindingNibbles",
-            repo_url: "https://github.com/Monash-FIT3170/2025W1-FindingNibbles",
-        },
-    ];
+    let recent_repos: RepoBookmark[] = $manifest.map(
+        (item) => {
+            return {repo_name: item.name, repo_url: item.path}
+        }
+    );
+
+
+    bookmarks.set(
+        $manifest
+            .filter((item) => item.bookmarked)
+            .map((item) => {
+                return {
+                    repo_name: get_repo_name(item.path),
+                    repo_url: item.path,
+                    repo_type: get_repo_type(item.path)
+                }
+            })
+    )
+    console.log($bookmarks);
 
     let selected: RepoOption = $state(repo_options[0]); // Default to GitHub
 
@@ -168,7 +169,7 @@
 
             <!-- Repo link list -->
             <RepoBookmarkList
-                {bookmarked_repos}
+                bookmarked_repos={recent_repos}
                 onclick={select_bookmarked_repo}
             />
         </div>
