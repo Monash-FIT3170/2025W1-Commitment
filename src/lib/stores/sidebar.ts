@@ -1,9 +1,9 @@
-import { writable } from 'svelte/store';
+import { writable } from "svelte/store";
 
 export const sidebar_open = writable(false);
 
 export function toggle_sidebar() {
-    sidebar_open.update(open => !open);
+    sidebar_open.update((open) => !open);
 }
 
 export function open_sidebar() {
