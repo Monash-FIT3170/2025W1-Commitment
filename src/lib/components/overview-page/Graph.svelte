@@ -323,23 +323,55 @@
                         type: "image",
                         style: {
                             image: person.image,
-                            width: 40,
-                            height: 40,
+                            width: isStaggeredMode ? 50 : 40,
+                            height: isStaggeredMode ? 50 : 40
                         },
-                        x: x - 20,
-                        y: y - 20,
+                        x: x - (isStaggeredMode ? 25 : 20),
+                        y: y - (isStaggeredMode ? 25 : 20),
                         z: 3,
                         silent: false,
                         clipPath: {
                             type: "circle",
                             shape: {
-                                cx: 20,
-                                cy: 20,
-                                r: 20,
-                            },
-                        },
+                                cx: isStaggeredMode ? 25 : 20,
+                                cy: isStaggeredMode ? 25 : 20,
+                                r: isStaggeredMode ? 25 : 20
+                            }
+                        }
                     },
-                ],
+                        ...(isStaggeredMode ?[{
+                            type: 'text',
+                        style: {
+                            text: person.username,
+                            fontSize: 14,
+                            fontWeight: '900',
+                            fill: '#fff',
+                            font: 'bold 16px "DM Sans ExtraBold", sans-serif',
+                            textAlign: 'left',
+                            textVerticalAlign: 'top'
+                        },
+                        x: x + 40, // Position to the right of the image
+                        y: y - 15, 
+                        z: 2
+                    },
+                    
+                    {
+                        type: 'text',
+                        style: {
+                            text: `Scaling Factor: 1.5`,
+                            fontSize: 14,
+                            fill: '#fff',
+                            font: 'bold 16px "DM Sans", sans-serif',
+                            textAlign: 'left',
+                            textVerticalAlign: 'top'
+                        },
+                        x: x + 40, // Position to the right of the image
+                        y: y + 5, 
+                        z: 2
+                    }
+                ]: [])
+                    
+                ]
             };
         });
         chart.setOption({
