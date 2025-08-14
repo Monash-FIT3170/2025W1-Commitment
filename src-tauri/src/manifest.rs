@@ -28,7 +28,7 @@ manifest.json is this format
     */
 
 async fn get_manifest_path() -> PathBuf {
-    let path = PathBuf::from("../.gitgauge/repositories/manifest.json");
+    let path = PathBuf::from("../.gitgauge/manifest.json");
     path
 }
 
