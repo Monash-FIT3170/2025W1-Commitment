@@ -3,7 +3,6 @@ mod contributor;
 mod repositories;
 mod url_verifier;
 mod manifest;
-mod bookmark;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
