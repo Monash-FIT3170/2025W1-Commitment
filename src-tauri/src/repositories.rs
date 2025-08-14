@@ -10,7 +10,7 @@ pub fn is_repo_cloned(path: &str) -> bool {
 }
 
 #[tauri::command]
-pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
+pub async fn bare_clone(url: &str, path: &str, access_token: Option<&str>) -> Result<(), String> {
     // Check if path is a valid directory
     if is_repo_cloned(path) {
         log::info!("Repository already exists at: {path}");
@@ -24,6 +24,17 @@ pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
         clone_progress(progress.received_objects(), progress.total_objects());
         true
     });
+
+    // Set up authentication if access token is provided
+    if let Some(token) = access_token {
+        callbacks.credentials(|_url, username_from_url, _allowed_types| {
+            log::info!("Using access token for authentication");
+            git2::Cred::userpass_plaintext(
+                username_from_url.unwrap_or("git"),
+                token,
+            )
+        });
+    }
 
     let mut fetch_opts = git2::FetchOptions::new();
     fetch_opts.remote_callbacks(callbacks);
