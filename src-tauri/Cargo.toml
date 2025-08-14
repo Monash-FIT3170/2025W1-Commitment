@@ -46,3 +46,4 @@ git2 = { version = "0.18" }
 md5 = "0.8"
 url = { version = "2", features = ["serde"] }
 regex = { version = "1", features = ["unicode"] }
+dotenvy = "0.15"
