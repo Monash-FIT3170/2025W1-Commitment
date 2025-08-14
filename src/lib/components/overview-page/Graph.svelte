@@ -356,7 +356,7 @@
                         return `
                           <div style="text-align: left;">
                             <strong>${username}</strong><br/>
-                            Total Commits: ${params.data[0]}
+                            ${metric}: ${params.data[0]}
                           </div>
                         `;
                     }

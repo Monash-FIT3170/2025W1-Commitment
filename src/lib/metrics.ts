@@ -9,8 +9,8 @@ export type Contributor = Readonly<{
     total_commits: number,
     additions: number,
     deletions: number,
-    bitmap_hash: String,  // tmp use to store gravatar login
-    bitmap: String,       // tmp use to store gravatar url
+    bitmap_hash: string,  // tmp use to store gravatar login
+    bitmap: string,       // tmp use to store gravatar url
 }>;
 
 export type UserDisplayData = Readonly<{
@@ -216,8 +216,8 @@ export function get_users_total_commits(users: Contributor[]): UserDisplayData[]
         let userTotalCommits: UserDisplayData[] = [];
         users.forEach(user => {
             userTotalCommits.push({
-                username: user.author.login,
-                image: user.author.avatar_url,
+                username: user.bitmap_hash,
+                image: user.bitmap,
                 data_to_display: user.total_commits,
             });
         });
@@ -250,8 +250,8 @@ export function get_users_avg_commit_size(users: Contributor[]): UserDisplayData
     let userAvgCommitSize: UserDisplayData[] = [];
     users.forEach(user => {
         userAvgCommitSize.push({
-            username: user.author.login,
-            image: user.author.avatar_url,
+            username: user.bitmap_hash,
+            image: user.bitmap,
             data_to_display: Number((get_user_total_lines_of_code(user)/user.total_commits).toFixed(2)),
         });
     });

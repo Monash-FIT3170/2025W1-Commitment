@@ -3,13 +3,14 @@
     import ContributorCards from "$lib/components/overview-page/ContributorCards.svelte";
     import { info } from "@tauri-apps/plugin-log";
     import { page } from "$app/stores"; // Import the $page store
-    import DropdownTintedMedium from "$lib/components/global/dropdown-tinted-medium.svelte"
-    import { createDropdownSelection } from "$lib/stores/dropdown";
-    import ButtonTintedMedium from "../global/button-tinted-medium.svelte";
+    import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte"
+    import { create_dropdown_selection } from "$lib/stores/dropdown";
+    import ButtonTintedMedium from "../global/ButtonTintedMedium.svelte";
     import { writable } from "svelte/store";
+    import type { Contributor } from "$lib/metrics";
 
     // Initialize from $page.state
-    let contributors: Contributor[] = $state(($page.state as any).commitData || []);
+    // let contributors: Contributor[] = $state(($page.state as any).commitData || []);
     // let branches: string[] = $state(($page.state as any).branches || []);
     // let selected_branch = $state("all");
     // if (branches.length > 0 && !branches.includes(selected_branch)) {
@@ -26,7 +27,7 @@
         sidebar_open = !sidebar_open;
     }
 
-    import type { Contributor } from "$lib/metrics";
+    
 
     let {
         contributors,
@@ -36,12 +37,12 @@
 
 <main class="container">
     <div class="header-row">
-        <!-- Removed branch select dropdown -->
 
 
         <DropdownTintedMedium
             options={criteria}
             bind:selected={selectedCriteria}
+            disabled={false}
         />
 
         <ButtonTintedMedium
@@ -53,14 +54,11 @@
         />
 
     </div>
-<<<<<<< HEAD
-    <Graph {contributors} />
-    <ContributorCards users={contributors} selected_branch={""} />
-=======
+
 
     <Graph contributors={contributors} metric={$selectedCriteria} />
     <ContributorCards users={contributors} />
->>>>>>> 4fc209e (wip: Refactoring existing code to work with multiple metrics)
+
 </main>
 
 <style>
