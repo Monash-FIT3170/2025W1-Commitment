@@ -32,7 +32,8 @@ async fn get_manifest_path() -> PathBuf {
     path
 }
 
-async fn read_manifest() -> Result<serde_json::Value, String> {
+#[tauri::command]
+pub async fn read_manifest() -> Result<serde_json::Value, String> {
     let path = get_manifest_path().await;
     if !path.exists() {
         return Err("Manifest file does not exist".to_string());

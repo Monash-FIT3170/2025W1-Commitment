@@ -15,18 +15,17 @@
     import RepoBookmarkList from "$lib/components/global/RepoBookmarkList.svelte";
 
     import { onMount } from "svelte";
-    import { manifest, type ManifestSchema } from "$lib/stores/manifest";
 
-    // only run on the browser
-    onMount(async () => {
-        try {
-            let data = await invoke<ManifestSchema[]>('read_manifest');
-            manifest.set(data);
-        } catch (e: any) {
-            let err = typeof e === 'string' ? e : e?.message ?? String(e);
-            console.error('read_manifest failed', e);
-        }
-    });
+    // // only run on the browser
+    // onMount(async () => {
+    //     try {
+    //         let data = await invoke<ManifestSchema[]>('read_manifest');
+    //         manifest.set(data);
+    //     } catch (e: any) {
+    //         let err = typeof e === 'string' ? e : e?.message ?? String(e);
+    //         console.error('read_manifest failed', e);
+    //     }
+    // });
     
     let profile_image_url = "/mock_profile_img.png";
     let username = "Baaset Moslih";
@@ -36,11 +35,15 @@
         repo_url: string;
     }
 
-    let recent_repos: RepoBookmark[] = $manifest.map(
-        (item) => {
-            return {repo_name: item.name, repo_url: item.path}
-        }
-    );
+    let bookmarked_repos: RepoBookmark[] = [];
+    (async () => {
+        bookmarked_repos = await invoke<RepoBookmark[]>("get_bookmarked_repositories", {})
+            .catch((error) => {
+                console.error("Failed to fetch bookmarked repositories:", error);
+                return [];
+            });
+    })();
+
 
     let selected: RepoOption = $state(repo_options[0]); // Default to GitHub
 
@@ -154,7 +157,7 @@
 
             <!-- Repo link list -->
             <RepoBookmarkList
-                bookmarked_repos={recent_repos}
+                bookmarked_repos={bookmarked_repos}
                 onclick={select_bookmarked_repo}
             />
         </div>

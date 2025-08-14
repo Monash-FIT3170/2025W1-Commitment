@@ -26,7 +26,7 @@ pub fn run() {
             repositories::bare_clone,
             repositories::is_repo_cloned,
             url_verifier::verify_and_extract_source_info,
-            bookmark::read_manifest,
+            manifest::read_manifest,
             manifest::get_bookmarked_repositories,
             manifest::set_bookmarked_repository,
         ])
