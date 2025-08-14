@@ -48,3 +48,4 @@ regex = { version = "1", features = ["unicode"] }
 [target.'cfg(unix)'.dependencies]
 openssl-sys = { version = "0.9", features = ["vendored"] }
 
+dotenvy = "0.15"

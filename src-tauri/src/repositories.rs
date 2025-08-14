@@ -1,7 +1,37 @@
 use git2::{build::RepoBuilder, RemoteCallbacks};
+use std::env;
 
 fn clone_progress(cur_progress: usize, total_progress: usize) {
     println!("\rProgress: {cur_progress}/{total_progress}");
+}
+
+fn load_access_tokens_from_env() -> Vec<String> {
+    let mut tokens = Vec::new();
+    
+    // Load .env file if it exists
+    if let Err(e) = dotenvy::dotenv() {
+        log::warn!("Could not load .env file: {}", e);
+    }
+    
+    // Try to load multiple token environment variables
+    let token_vars = ["GITHUB_TOKEN", "GITLAB_TOKEN"];
+    
+    for var in token_vars.iter() {
+        if let Ok(token) = env::var(var) {
+            if !token.is_empty() {
+                log::info!("Loaded token from {}", var);
+                tokens.push(token);
+            }
+        }
+    }
+    
+    if tokens.is_empty() {
+        log::warn!("No access tokens found in environment variables");
+    } else {
+        log::info!("Loaded {} access token(s) from environment", tokens.len());
+    }
+    
+    tokens
 }
 
 #[tauri::command]
@@ -29,10 +59,7 @@ pub async fn bare_clone(url: &str, path: &str, access_token: Option<&str>) -> Re
     if let Some(token) = access_token {
         callbacks.credentials(|_url, username_from_url, _allowed_types| {
             log::info!("Using access token for authentication");
-            git2::Cred::userpass_plaintext(
-                username_from_url.unwrap_or("git"),
-                token,
-            )
+            git2::Cred::userpass_plaintext("git", token)
         });
     }
 
