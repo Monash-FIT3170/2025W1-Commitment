@@ -57,4 +57,3 @@ contains the user's name and profile image.
         justify-content: space-between;
     }
 </style>
-

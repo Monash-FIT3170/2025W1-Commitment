@@ -31,7 +31,7 @@
             const scaling_factor = calculate_scaling_factor(
                 num_commits,
                 commit_mean,
-                sd,
+                sd
             );
             return {
                 username: user.bitmap_hash,
@@ -43,7 +43,7 @@
                 total_deletions: get_user_total_deletions(user),
                 scaling_factor: scaling_factor.toFixed(1),
             };
-        }),
+        })
     );
 
     // Sort users by scaling factor in descending order

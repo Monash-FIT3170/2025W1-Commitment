@@ -1,7 +1,7 @@
 export type Repo = {
     repo_path: string;
     repo_url: string;
-    repo_type: string
+    repo_type: string;
 };
 
 export function get_repo_type(url: string) {

@@ -10,7 +10,7 @@
 
     let branches: string[] = $derived(page.state.branches || []);
     let branch_selection = $derived(
-        create_dropdown_selection(branches[0] || "All"),
+        create_dropdown_selection(branches[0] || "All")
     );
 
     let start_date = $state("01-01-25");

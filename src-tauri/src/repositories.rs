@@ -37,4 +37,3 @@ pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
     log::info!("Repository cloned successfully at: {}", path);
     Ok(())
 }
-
