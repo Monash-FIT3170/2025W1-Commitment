@@ -1,18 +1,17 @@
 export type Repo = {
-  repoPath: string;
-  repoUrl: string;
-  repoType: string
+    repo_path: string;
+    repo_url: string;
+    repo_type: string;
 };
 
+export function get_repo_type(url: string) {
+    const domain = new URL(url).hostname;
 
-export function getRepoType(url: string) {
-  const domain = new URL(url).hostname;
-
-  if (domain.includes("github.com")) {
-    return "github";
-  } else if (domain.includes("gitlab.com")) {
-    return "gitlab";
-  } else {
-    return "Unknown";
-  }
+    if (domain.includes("github.com")) {
+        return "github";
+    } else if (domain.includes("gitlab.com")) {
+        return "gitlab";
+    } else {
+        return "Unknown";
+    }
 }
