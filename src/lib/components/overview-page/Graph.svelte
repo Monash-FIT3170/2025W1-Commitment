@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { onMount, onDestroy } from "svelte";
-    import * as echarts from "echarts";
+    import { onMount, onDestroy } from 'svelte';
+    import * as echarts from 'echarts';
     import {
         get_average_commits,
         get_sd,
@@ -10,14 +10,13 @@
     } from "../../metrics";
 
     let { contributors }: { contributors: Contributor[] } = $props();
-
-    let chart_container: HTMLElement;
+    let chartContainer: HTMLElement;
     let chart: echarts.ECharts;
-    let filtered_people: any[] = [];
-    let min_commits: number = 0;
-    let max_commits: number = 1;
-    let x_min: number = 0;
-    let x_max: number = 1;
+    let filteredPeople: any[] = [];
+    let minCommits: number = 0;
+    let maxCommits: number = 1;
+    let xMin: number = 0;
+    let xMax: number = 1;
     let commit_mean: number = 0;
     let sd: number = 0;
     let ref_point_values: number[] = [];
@@ -28,7 +27,7 @@
     let isTransitioning = $state(false);
 
     $effect(() => {
-        filtered_people = get_user_commits(contributors);
+        filteredPeople = getUserCommits(contributors);
     });
     
     // Watch for staggered mode changes specifically
@@ -44,16 +43,13 @@
         minCommits = filteredPeople.length > 0 ? Math.min(...filteredPeople.map((p: any) => p.numCommits)) : 0;
     });
     $effect(() => {
-        max_commits =
-            filtered_people.length > 0
-                ? Math.max(...filtered_people.map((p: any) => p.num_commits))
-                : 1;
+        maxCommits = filteredPeople.length > 0 ? Math.max(...filteredPeople.map((p: any) => p.numCommits)) : 1;
     });
     $effect(() => {
-        x_min = min_commits === max_commits ? min_commits - 1 : min_commits - 1;
+        xMin = minCommits === maxCommits ? minCommits - 1 : minCommits - 1;
     });
     $effect(() => {
-        x_max = min_commits === max_commits ? max_commits + 1 : max_commits + 1;
+        xMax = minCommits === maxCommits ? maxCommits + 1 : maxCommits + 1;
     });
     $effect(() => {
         commit_mean = get_average_commits(contributors);
@@ -65,16 +61,15 @@
         ref_point_values = get_ref_points(commit_mean, sd);
     });
     $effect(() => {
-        ref_points =
-            sd === 0
-                ? [{ label: "mean", value: ref_point_values[2] }]
-                : [
-                      { label: "-2σ", value: ref_point_values[0] },
-                      { label: "-σ", value: ref_point_values[1] },
-                      { label: "mean", value: ref_point_values[2] },
-                      { label: "+σ", value: ref_point_values[3] },
-                      { label: "+2σ", value: ref_point_values[4] },
-                  ];
+        refPoints = sd === 0
+            ? [{ label: 'mean', value: ref_point_values[2] }]
+            : [
+                { label: '-2σ', value: ref_point_values[0] },
+                { label: '-σ', value: ref_point_values[1] },
+                { label: 'mean', value: ref_point_values[2] },
+                { label: '+σ', value: ref_point_values[3] },
+                { label: '+2σ', value: ref_point_values[4] }
+            ];
     });
     $effect(() => {
         // Update chart height based on mode and number of contributors
@@ -131,14 +126,14 @@
         if (chart) setChartOptions();
     });
 
-    function get_user_commits(users: Contributor[]) {
+    function getUserCommits(users: Contributor[]) {
         if (users.length === 0) return [];
-        let user_total_commits: any[] = [];
-        users.forEach((user) => {
-            user_total_commits.push({
-                username: user.bitmap_hash,
-                image: user.bitmap,
-                numCommits: user.total_commits,
+        let userTotalCommits: any[] = [];
+        users.forEach(user => {
+            userTotalCommits.push({
+                username: user.author.login,
+                image: user.author.avatar_url,
+                numCommits: user.total_commits
             });
         });
         const sortedCommits = userTotalCommits.sort((a, b) => a.numCommits - b.numCommits);
@@ -188,51 +183,36 @@
         const tintStartY = isStaggeredMode ? 40 : gridTop; // Start below text labels (40px from top in staggered mode)
         const tintHeight = xAxisY - tintStartY;
 
-        const margin_left = 40; // px
-        const margin_right = 40; // px
-        const container_width = chart_container.clientWidth;
-        const drawable_width = container_width - margin_left - margin_right;
+        const marginLeft = 40; // px
+        const marginRight = 40; // px
+        const containerWidth = chartContainer.clientWidth;
+        const drawableWidth = containerWidth - marginLeft - marginRight;
 
-        function x_scale(value: number) {
-            return (
-                margin_left +
-                ((value - x_min) / (x_max - x_min)) * drawable_width
-            );
-        }
+        function xScale(value: number) {
+            return marginLeft + ((value - xMin) / (xMax - xMin)) * drawableWidth;
+    }
 
         // Clamp function to ensure tints stay inside drawable area
-        function clamp_tint(x: number, width: number) {
-            const clampedX = Math.max(x, margin_left);
-            const maxWidth = Math.min(
-                width - (clampedX - x),
-                container_width - margin_right - clampedX
-            );
+        function clampTint(x: number, width: number) {
+            const clampedX = Math.max(x, marginLeft);
+            const maxWidth = Math.min(width - (clampedX - x), containerWidth - marginRight - clampedX);
             return { x: clampedX, width: maxWidth };
         }
 
         // Calculate pixel positions of ref points (commit counts)
-        const x_minus2sigma = x_scale(ref_point_values[0]);
-        const x_minus_sigma = x_scale(ref_point_values[1]);
-        const x_plus_sigma = x_scale(ref_point_values[3]);
-        const x_plus2sigma = x_scale(ref_point_values[4]);
+        const xMinus2Sigma = xScale(ref_point_values[0]);
+        const xMinusSigma = xScale(ref_point_values[1]);
+        const xPlusSigma = xScale(ref_point_values[3]);
+        const xPlus2Sigma = xScale(ref_point_values[4]);
 
         // Clamp tints within bounds
-        const left_tint = clamp_tint(
-            x_minus2sigma,
-            x_minus_sigma - x_minus2sigma
-        );
-        const middle_tint = clamp_tint(
-            x_minus_sigma,
-            x_plus_sigma - x_minus_sigma
-        );
-        const right_tint = clamp_tint(
-            x_plus_sigma,
-            x_plus2sigma - x_plus_sigma
-        );
+        const leftTint = clampTint(xMinus2Sigma, xMinusSigma - xMinus2Sigma);
+        const middleTint = clampTint(xMinusSigma, xPlusSigma - xMinusSigma);
+        const rightTint = clampTint(xPlusSigma, xPlus2Sigma - xPlusSigma);
 
         // White tint between -σ and +σ
-        const tint_between1sigma = {
-            type: "rect",
+        const tintBetween1Sigma = {
+            type: 'rect',
             shape: {
                 x: middleTint.x,
                 y: tintStartY, // Start below text labels
@@ -240,14 +220,14 @@
                 height: tintHeight
             },
             style: {
-                fill: "rgba(255, 255, 255, 0.20)",
+                fill: 'rgba(255, 255, 255, 0.20)'
             },
             silent: true,
-            z: 1,
+            z: 1
         };
 
-        const tint_between2sigma_left = {
-            type: "rect",
+        const tintBetween2SigmaLeft = {
+            type: 'rect',
             shape: {
                 x: leftTint.x,
                 y: tintStartY, // Start below text labels
@@ -255,14 +235,14 @@
                 height: tintHeight
             },
             style: {
-                fill: "rgba(255, 255, 255, 0.1)",
+                fill: 'rgba(255, 255, 255, 0.1)'
             },
             silent: true,
-            z: 1,
+            z: 1
         };
 
-        const tint_between2sigma_right = {
-            type: "rect",
+        const tintBetween2SigmaRight = {
+            type: 'rect',
             shape: {
                 x: rightTint.x,
                 y: tintStartY, // Start below text labels
@@ -270,42 +250,42 @@
                 height: tintHeight
             },
             style: {
-                fill: "rgba(255, 255, 255, 0.1)",
+                fill: 'rgba(255, 255, 255, 0.1)'
             },
             silent: true,
-            z: 1,
+            z: 1
         };
 
-        const ref_line_graphics = ref_points.map((ref) => {
-            const x = chart.convertToPixel({ gridIndex: 0 }, [ref.value, 0])[0];
+        const refLineGraphics = refPoints.map((ref) => {
+            const x = chart.convertToPixel({gridIndex: 0}, [ref.value, 0])[0];
             return {
-                type: "group",
+                type: 'group',
                 children: [
                     {
-                        type: "line",
+                        type: 'line',
                         shape: {
                             x1: x,
                             y1: isStaggeredMode ? 40 : gridTop, // Start below the text labels
                             x2: x,
-                            y2: x_axis_y,
+                            y2: xAxisY
                         },
                         style: {
-                            stroke: "#fff",
+                            stroke: '#fff',
                             lineDash: [4, 4],
                             lineWidth: 1,
-                            opacity: 0.5,
+                            opacity: 0.5
                         },
-                        silent: true,
+                        silent: true
                     },
                     {
-                        type: "text",
+                        type: 'text',
                         style: {
                             text: ref.label,
                             fontSize: 14,
-                            fill: "#fff",
+                            fill: '#fff',
                             font: 'bold 16px "DM Sans", sans-serif',
-                            textAlign: "center",
-                            textVerticalAlign: "bottom",
+                            textAlign: 'center',
+                            textVerticalAlign: 'bottom'
                         },
                         x: x,
                         y: isStaggeredMode ? 20 : gridTop - 8, // Fixed position in staggered mode
@@ -320,10 +300,10 @@
             const scalingFactor = calculate_scaling_factor(person.numCommits, commit_mean, sd);
             const isRightmost = person.numCommits === maxCommits;
             return {
-                type: "group",
+                type: 'group',
                 children: [
                     {
-                        type: "image",
+                        type: 'image',
                         style: {
                             image: person.image,
                             width: isStaggeredMode ? 50 : 40,
@@ -334,7 +314,7 @@
                         z: 3,
                         silent: false,
                         clipPath: {
-                            type: "circle",
+                            type: 'circle',
                             shape: {
                                 cx: isStaggeredMode ? 25 : 20,
                                 cy: isStaggeredMode ? 25 : 20,
@@ -377,15 +357,13 @@
                 ]
             };
         });
-        chart.setOption({
-            graphic: [
-                tint_between2sigma_left,
-                tint_between1sigma,
-                tint_between2sigma_right,
-                ...ref_line_graphics,
-                ...user_graphics,
-            ],
-        });
+        chart.setOption({ graphic: [
+            tintBetween2SigmaLeft,
+            tintBetween1Sigma,
+            tintBetween2SigmaRight, 
+            ...refLineGraphics, 
+            ...userGraphics
+        ] });
     }
 
     function setChartOptions() {
@@ -404,37 +382,37 @@
                 containLabel: true
             },
             xAxis: {
-                type: "value",
-                min: x_min,
-                max: x_max,
-                name: "Total Commits",
+                type: 'value',
+                min: xMin,
+                max: xMax,
+                name: 'Total Commits',
                 nameTextStyle: {
                     fontSize: 20,
-                    fontWeight: "bold",
-                    fontFamily: "DM Sans, sans-serif",
+                    fontWeight: 'bold',
+                    fontFamily: 'DM Sans, sans-serif',
                 },
                 nameLocation: 'middle',
                 nameGap: 60, // Tighter gap for axis title
                 axisLine: {
                     lineStyle: {
-                        color: "#fff",
-                        width: 2,
-                    },
+                        color: '#fff',
+                        width: 2
+                    }
                 },
                 axisLabel: {
-                    color: "#fff",
+                    color: '#fff',
                     fontSize: 15,
-                    margin: 30,
+                    margin: 30
                 },
                 splitLine: { show: false },
                 axisTick: {
                     length: 20,
                     lineStyle: {
-                        color: "#fff",
-                        width: 2,
-                    },
+                        color: '#fff',
+                        width: 2
+                    }
                 },
-                position: "bottom",
+                position: 'bottom'
             },
             yAxis: {
                 show: false,
@@ -465,28 +443,26 @@
                     animationDuration: 800,
                     animationEasing: 'cubicInOut' as const,
                     itemStyle: {
-                        color: "transparent",
+                        color: 'transparent',
                     },
                     emphasis: {
-                        focus: "series",
+                        focus: 'series',
                         itemStyle: {
-                            color: "transparent",
-                            borderColor: "#fff",
+                            color: 'transparent',
+                            borderColor: '#fff',
                             borderWidth: 2,
                             shadowBlur: 10,
-                            shadowColor: "rgba(255, 255, 255, 0.7)",
-                        },
-                    },
-                },
+                            shadowColor: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                }
             ],
             tooltip: {
-                trigger: "item",
+                trigger: 'item',
                 formatter: function (params: any) {
-                    if (params.seriesName === "hoverPoints") {
+                    if (params.seriesName === 'hoverPoints') {
                         const username = params.data[2];
-                        const person = filtered_people.find(
-                            (p: any) => p.username === username
-                        );
+                        const person = filteredPeople.find((p: any) => p.username === username);
                         if (!person) return username;
                         return `
                           <div style="text-align: left;">
@@ -495,13 +471,13 @@
                           </div>
                         `;
                     }
-                    return "";
-                },
+                    return '';
+                }
             },
-            graphic: [],
+            graphic: []
         };
         chart.setOption(option, true);
-        update_graphics();
+        updateGraphics();
     }
 
     onMount(() => {
@@ -531,12 +507,12 @@
         
         resizeHandler = () => {
             chart.resize();
-            update_graphics();
+            updateGraphics();
         };
-        window.addEventListener("resize", resize_handler);
+        window.addEventListener('resize', resizeHandler);
     });
     onDestroy(() => {
-        window.removeEventListener("resize", resize_handler);
+        window.removeEventListener('resize', resizeHandler);
         chart.dispose();
     });
 </script>
@@ -549,4 +525,6 @@
         font-family: 'DM Sans', sans-serif;
         padding-bottom: 2rem;
     }
+
 </style>
+

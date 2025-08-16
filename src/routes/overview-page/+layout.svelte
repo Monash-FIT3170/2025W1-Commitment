@@ -1,23 +1,31 @@
 <script lang="ts">
-    import { page } from "$app/state";
-    import Banner from "$lib/components/overview-page/Banner.svelte";
-    import Sidebar from "$lib/components/global/Sidebar.svelte";
 
-    let profile_image_url = "/mock_profile_img.png";
-    let username = "Baaset Moslih";
+    //import layout components
+    import Banner from '$lib/components/overview-page/Banner.svelte';
+    import UserMenu from '$lib/components/overview-page/UserMenu.svelte';
+    import Sidebar from '$lib/components/global/sidebar.svelte';
+    import ContributorGrid from '$lib/components/overview-page/ContributorGrid.svelte';
+    import Heading from '$lib/components/overview-page/Heading.svelte';
 
-    let { children } = $props();
+    //dummy data for demo
+    import { currentRepo } from '$lib/stores/repo';
 
-    let repo_url = $derived(page.state.repo_url);
-    let repo_path = $derived(page.state.repo_path);
+    let profileImageURL = '/mock_profile_img.png';
+    let userName = 'Baaset Moslih';
+
+
 </script>
 
-<main class="page">
-    <header class="header">
-        <Banner {repo_url} {repo_path} {username} {profile_image_url} />
-    </header>
-    {@render children()}
+<header class="header">
+    <Banner repoUrl={$currentRepo.repoUrl} repoPath={$currentRepo.repoPath}/>
+    <UserMenu {userName} {profileImageURL} />
+</header>
+
+<main class="body">
+    <slot />
+    
 </main>
+
 <Sidebar />
 
 <style>
