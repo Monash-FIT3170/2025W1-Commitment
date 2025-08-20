@@ -3,7 +3,7 @@ import type { Repo } from "$lib/repo";
 import { get_repo_type } from "$lib/repo";
 
 export const current_repo = writable<Repo>({
-    repo_url: "https://github.com/Monash/FIT3170/2025W1-Commitment.git",
+    repo_url: "https://github.com/Monash/FIT3170/2025W1-Commitment",
     repo_path: "Monash/FIT3170/2025W1-Commitment",
     repo_type: "github",
 });

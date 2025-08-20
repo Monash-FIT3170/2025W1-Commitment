@@ -108,8 +108,9 @@
             goto(`/overview-page`, {
                 state: {
                     repo_url: repo_url_input,
-                    repo_path: new URL(repo_url_input).pathname.slice(1),
-                    repo_type: get_repo_type(repo_url_input),
+                    owner: backend_result.owner,
+                    repo: backend_result.repo,
+                    repo_type: backend_result.source_type,
                     selected_branch: "",
                     branches: branches,
                     contributors: contributors,

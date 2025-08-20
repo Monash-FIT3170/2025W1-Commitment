@@ -18,6 +18,13 @@ pub async fn bare_clone(
     source_type: i32,
     path: &str,
 ) -> Result<(), String> {
+    crate::manifest::check_manifest().await?;
+
+    // Ensure parent directories exist
+    if let Some(parent) = std::path::Path::new(path).parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+
     // Check if path is a valid directory
     if is_repo_cloned(path) {
         log::info!("Repository already exists at: {}", path);

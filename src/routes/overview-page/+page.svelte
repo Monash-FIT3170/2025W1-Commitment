@@ -3,58 +3,52 @@
     import Heading from "$lib/components/overview-page/Heading.svelte";
     import CommitGraph from "$lib/components/overview-page/CommitGraph.svelte";
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
-    import { load_branches, load_commit_data } from "$lib/metrics";
+  import { load_branches, load_commit_data } from "$lib/metrics";
 
     let repo_path = $state(page.state.repo_path || "");
     let repo_type = $state(page.state.repo_type || "");
     let branches = $state(page.state.branches || []);
     let contributors = $state(page.state.contributors || []);
     let branch_selection = $state("");
+
     //let branch_selection = $bindable($state("#"));
     $effect(() => {
         console.log("EFFECT: branch_selection is", branch_selection);
         if (branch_selection && repo_path) {
             // Fetch new contributors for the selected branch
             (async () => {
-                console.log(
-                    "Calling load_commit_data with:",
-                    repo_path,
+                console.log("Calling load_commit_data with:", repo_path, branch_selection);
+                const new_contributors = await load_commit_data(
+                    repo_path.split('/')[0],
+                    repo_path.split('/')[1],
                     branch_selection
                 );
-                const newContributors = await load_commit_data(
-                    repo_path.split("/")[0],
-                    repo_path.split("/")[1],
-                    branch_selection
-                );
-                contributors = [...newContributors];
+                contributors = [...new_contributors];
             })();
         }
     });
-    $effect(() => {
-        if ((!branches || branches.length === 0) && repo_path) {
-            // You may need to adjust this to match your load_branches signature
-            (async () => {
-                branches = await load_branches(repo_path.split("/")[1]);
-                console.log("Fetched branches:", branches);
-            })();
-        }
-    });
+
+$effect(() => {
+    if ((!branches || branches.length === 0) && repo_path) {
+        // You may need to adjust this to match your load_branches signature
+        (async () => {
+            branches = await load_branches(repo_path.split('/')[1]);
+            console.log("Fetched branches:", branches);
+        })();
+    }
+});
     $effect(() => {
         console.log("Page branch_selection", branch_selection);
     });
+
     $effect(() => {
         console.log("Branches in +page.svelte:", branches);
     });
 </script>
 
 <div class="page">
-    <Heading
-        repo_path={repo_path.split("/")[1]}
-        {repo_type}
-        {branches}
-        bind:branch_selection
-    />
-    <CommitGraph {contributors} {branches} selected_branch={branch_selection} />
+    <Heading repo_path={repo_path.split("/")[1]} {repo_type} {branches} bind:branch_selection />
+    <CommitGraph {contributors} {branches} selected_branch={branch_selection}/>
     <div class="bottom-container">
         <ButtonPrimaryMedium icon="table-import" label="Upload Marking Sheet" />
 
