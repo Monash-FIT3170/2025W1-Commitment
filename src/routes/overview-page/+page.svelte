@@ -13,8 +13,7 @@
 
     //let branch_selection = $bindable($state("#"));
     $effect(() => {
-        console.log("EFFECT: branch_selection is", branch_selection);
-        if (branch_selection && repo_path) {
+        if (branch_selection && branch_selection !== "") {
             // Fetch new contributors for the selected branch
             (async () => {
                 console.log("Calling load_commit_data with:", repo_path, branch_selection);
