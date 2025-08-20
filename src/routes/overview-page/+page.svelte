@@ -12,7 +12,7 @@
     let repo = $state(page.state.repo || "");
     let branch_selection = $state("");
     $effect(() => {
-        if (branch_selection && owner && repo && repo_type) {
+        if (branch_selection && branch_selection !== "") {
             // Fetch new contributors for the selected branch
             (async () => {
                 const newContributors = await load_commit_data(
