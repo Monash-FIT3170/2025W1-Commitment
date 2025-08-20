@@ -5,21 +5,20 @@
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
   import { load_branches, load_commit_data } from "$lib/metrics";
 
-    let repo_path = $state(page.state.repo_path || "");
-    let repo_type = $state(page.state.repo_type || "");
+    let repo_type = $state(page.state.repo_type);
     let branches = $state(page.state.branches || []);
     let contributors = $state(page.state.contributors || []);
+    let owner = $state(page.state.owner || "");
+    let repo = $state(page.state.repo || "");
     let branch_selection = $state("");
-    //let branch_selection = $bindable($state("#"));
     $effect(() => {
-        console.log("EFFECT: branch_selection is", branch_selection);
-        if (branch_selection && repo_path) {
+        if (branch_selection && owner && repo && repo_type) {
             // Fetch new contributors for the selected branch
             (async () => {
-                console.log("Calling load_commit_data with:", repo_path, branch_selection);
                 const newContributors = await load_commit_data(
-                    repo_path.split('/')[0],
-                    repo_path.split('/')[1],
+                    owner,
+                    repo,
+                    repo_type,
                     branch_selection
                 );
                 contributors = [...newContributors];
@@ -27,24 +26,18 @@
         }
     });
 $effect(() => {
-    if ((!branches || branches.length === 0) && repo_path) {
-        // You may need to adjust this to match your load_branches signature
+    if ((!branches || branches.length === 0) && repo) {
+        // Fetch branches for the repository
         (async () => {
-            branches = await load_branches(repo_path.split('/')[1]);
-            console.log("Fetched branches:", branches);
+            branches = await load_branches(repo);
         })();
     }
 });
-    $effect(() => {
-        console.log("Page branch_selection", branch_selection);
-    });
-    $effect(() => {
-        console.log("Branches in +page.svelte:", branches);
-    });
+    
 </script>
 
 <div class="page">
-    <Heading repo_path={repo_path} {repo_type} {branches} bind:branch_selection />
+    <Heading repo={repo} {repo_type} {branches} bind:branch_selection />
     <CommitGraph {contributors} {branches} selected_branch={branch_selection}/>
     <div class="bottom-container">
         <ButtonPrimaryMedium icon="table-import" label="Upload Marking Sheet" />

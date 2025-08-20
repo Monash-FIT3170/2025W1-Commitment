@@ -7,7 +7,7 @@
   import { get } from "svelte/store";
   import { load_commit_data, type Contributor } from "$lib/metrics";
 
-    let { repo_path: repo_path, repo_type: repo_type = "github", branches = [], branch_selection = $bindable() } = $props();
+    let { repo: repo, repo_type: repo_type = "github", branches = [], branch_selection = $bindable() } = $props();
 
     let contributors: Contributor[] = [];
 
@@ -37,7 +37,7 @@
 <div class="page-heading">
     <div class="top-container">
         <div class="display-title">
-            {repo_path}
+            {repo}
             <Icon
                 icon={`tabler:brand-${repo_type}`}
                 class="icon-xlarge"
