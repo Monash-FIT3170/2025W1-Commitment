@@ -36,19 +36,22 @@
     }
 </script>
 
-<div class="page-heading">
+<div class="page-header">
     <div class="top-container">
-        <div class="display-title">
-            {repo_path}
+        <div class="repo-path-container">
+        <span class="repo-path display-title" title={repo_path}>{repo_path}</span>
+        <div class="repo-icon">
             <Icon
                 icon={`tabler:brand-${repo_type}`}
                 class="icon-xlarge"
                 style="color: white"
             />
         </div>
+        </div>
 
-        <div class="heading-btns">
-            <!-- config btn -->
+
+        <!-- config btn -->
+        <div class="config-btn heading-btn">
             <ButtonTintedMedium
                 label="Config"
                 icon="settings-2"
@@ -56,26 +59,33 @@
                 icon_first={true}
                 width="4rem"
             />
+        </div>
 
-            <!-- branch dropdown btn -->
+        <!-- branch dropdown btn -->
+        <div class="branch-dropdown heading-btn">
             <DropdownTintedMedium
                 options={branches}
                 selected={branch_selection.selected}
                 disabled={false}
             />
+        </div>
 
             <!-- calendar btn -->
+        <div class="calendar-btn heading-btn">
             <ButtonTintedMedium
                 label="{start_date}  →  {end_date}"
                 icon="calendar-month"
                 label_class="body"
                 icon_first={false}
-                width="16rem"
+                width="12rem"
             />
         </div>
+
+        <div class="heading-btn-spacer"></div>
+
+        <span class="subtitle display-subtitle">Contribution Statistics</span>
     </div>
 
-    <span class="display-subtitle">Contribution Statistics</span>
     <div class="page-select-btns">
         <!-- for each tab -->
         {#each tabs as tab}
@@ -83,52 +93,98 @@
                 label={tab.label}
                 icon={tab.icon}
                 selected={selected_view === tab.id}
-                width="20rem"
+                width="100%"
             />
         {/each}
     </div>
 </div>
 
 <style>
-    .page-heading {
+    .page-header {
         display: flex;
         flex-direction: column;
         padding: 2rem 4rem;
     }
 
     .top-container {
-        display: flex;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: 1fr auto auto auto;
+        grid-template-areas:
+            "repo-path config branch calendar"
+            "subtitle subtitle subtitle heading-btn-spacer";
         align-items: center;
-        width: 100%;
-        z-index: 2;
+        column-gap: 1rem;
     }
 
-    .display-title {
+    .repo-path-container {
+        grid-area: repo-path;
         display: flex;
-        flex-direction: row;
         align-items: center;
         gap: 1.5rem;
-        z-index: 1;
+        min-width: 0;
+    }
+
+    .repo-path {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+    }
+
+    .repo-icon {
+        flex-shrink: 0;
     }
 
     .display-subtitle {
         color: var(--label-secondary);
         padding: 0.6rem 0;
-        z-index: 1;
-    }
-
-    .heading-btns {
-        display: flex;
-        gap: 1rem;
-        justify-content: flex-end;
-        align-items: center;
-        padding: 0;
-        z-index: 1;
     }
 
     .page-select-btns {
+        display: grid;
+        grid-template-columns: 20rem 20rem;
+        column-gap: 1rem;
         padding-top: 2rem;
         z-index: 1;
+    }
+
+    .config-btn {
+        grid-area: config;
+    }
+
+    .branch-dropdown {
+        grid-area: branch;
+    }
+
+    .calendar-btn {
+        grid-area: calendar;
+    }
+
+    .subtitle {
+        grid-area: subtitle;
+    }
+
+    .heading-btn-spacer {
+        grid-area: heading-btn-spacer;
+        display: flex;
+    }
+
+    @media (max-width: 75rem) {
+        .top-container {
+            grid-template-columns: auto auto auto 1fr;
+            grid-template-areas: 
+                "repo-path repo-path repo-path repo-path"
+                "subtitle subtitle subtitle subtitle"
+                "config branch calendar heading-btn-spacer";
+        }
+
+        .heading-btn {
+            padding-top: 1rem;
+        }
+
+        .page-select-btns {
+            grid-template-columns: 16rem 16rem;
+            padding-top: 4rem;
+        }
     }
 </style>

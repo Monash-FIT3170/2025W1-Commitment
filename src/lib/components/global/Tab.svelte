@@ -12,11 +12,11 @@
 </script>
 
 <button
-    class="bottom-border-btn"
+    class="tab"
     class:active-style={selected}
     {disabled}
     style="
-		width: {width};
+        width: {width};
 		border-bottom: {selected
         ? '2px solid var(--label-primary)'
         : '1px solid var(--label-secondary)'};
@@ -53,7 +53,7 @@
 </button>
 
 <style>
-    .bottom-border-btn {
+    .tab {
         all: unset;
         display: inline-flex;
         align-items: center;
