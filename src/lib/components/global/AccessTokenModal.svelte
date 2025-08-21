@@ -2,7 +2,7 @@
     import ButtonPrimaryMedium from "./ButtonPrimaryMedium.svelte";
     import Modal from "./Modal.svelte";
 
-    let { show_modal = $bindable(), on_token_add } = $props();
+    let { show_modal = $bindable(), on_token_add, on_modal_close } = $props();
 
     let personal_access_token = $state("");
 

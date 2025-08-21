@@ -14,6 +14,8 @@
     import Banner from "$lib/components/overview-page/Banner.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
     import RepoBookmarkList from "$lib/components/global/RepoBookmarkList.svelte";
+    import AccessTokenModal from "$lib/components/global/AccessTokenModal.svelte";
+    import { auth_error, retry_clone_with_token } from "$lib/stores/auth";
 
     interface RepoBookmark {
         repo_name: string;
@@ -48,6 +50,7 @@
 
     let verification_message: string = $state("");
     let verification_error: boolean = $state(false);
+    let waiting_for_auth: boolean = $state(false);
 
     interface BackendVerificationResult {
         owner: string;
@@ -62,6 +65,36 @@
     function reset_verification_result() {
         verification_message = "";
         verification_error = false;
+    }
+
+    // Subscribe to auth errors to show modal when needed
+    let show_modal = $derived($auth_error.needs_token);
+
+    async function handle_token_add(token: string) {
+        // Validate that token is not empty
+        if (!token || token.trim().length === 0) {
+            console.log("No token entered, keeping modal open");
+            verification_message = "Please enter a Personal Access Token";
+            verification_error = true;
+            return;
+        }
+        
+        console.log("Authenticating with Personal Access Token...");
+        
+        // Attempt to clone with the provided token
+        const success = await retry_clone_with_token(token);
+        
+        if (success) {
+            console.log("Authentication successful, continuing repository loading...");
+            waiting_for_auth = false;
+            // The modal will be hidden automatically by the auth store
+            // The repository should now be accessible, so we can continue with the normal flow
+            // Re-trigger the verification process to load the now-accessible repository
+            await handle_verification();
+        } else {
+            console.log("Authentication failed, please check your token");
+            // Modal stays open with error message from the auth store
+        }
     }
 
     async function handle_verification() {
@@ -116,9 +149,22 @@
                 },
             });
         } catch (error: any) {
-            verification_error = true;
-            verification_message = `${error.message || "Verification failed."}`;
+            const error_message = error.message || "Verification failed.";
             console.error("Verification failed:", error);
+            
+            // Check if this is an authentication error that requires a token
+            if (error_message.includes("no access tokens found") || 
+                (error_message.includes("All") && error_message.includes("access tokens were tried"))) {
+                console.log("Authentication required, showing modal");
+                waiting_for_auth = true;
+                // The modal will show automatically via the auth store
+                // Don't set verification_error here - we're waiting for user input
+                return;
+            } else {
+                // This is a different kind of error
+                verification_error = true;
+                verification_message = error_message;
+            }
         }
     }
 </script>
@@ -161,6 +207,12 @@
     </main>
 </div>
 <Sidebar />
+
+<!-- Access Token Modal -->
+<AccessTokenModal 
+    bind:show_modal 
+    on_token_add={handle_token_add}
+/>
 
 <style>
     .align-with-searchbar {
