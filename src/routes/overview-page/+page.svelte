@@ -11,17 +11,18 @@
     let owner = $state(page.state.owner || "");
     let repo = $state(page.state.repo || "");
     let branch_selection = $state("");
-    let start_date = $state("01-01-25");
-    let end_date = $state("20-01-25");
+    let start_date = $state("");
+    let end_date = $state("");
     $effect(() => {
-        if (branch_selection && branch_selection !== "" || start_date && end_date) {
+        if ((branch_selection && branch_selection !== "") || (start_date && end_date)) {
             // Fetch new contributors for the selected branch
             (async () => {
+                const branchArg = branch_selection === "" ? undefined : branch_selection;
                 const newContributors = await load_commit_data(
                     owner,
                     repo,
                     repo_type,
-                    branch_selection,
+                    branchArg,
                     start_date,
                     end_date
                 );
