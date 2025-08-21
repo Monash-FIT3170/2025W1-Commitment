@@ -39,7 +39,7 @@
         //task for future sprint
     }
 
-    function handleDateChange(
+    function handle_date_change(
         event: CustomEvent<{ start: string; end: string }>
     ) {
         start_date = event.detail.start;
@@ -80,6 +80,20 @@
                 bind:selected={branch_selection}
                 disabled={false}
             />
+
+            <!-- calendar btn -->
+            <Calendar
+                initial_start={start_date}
+                initial_end={end_date}
+                date_format="d-m-Y"
+                icon="calendar"
+                icon_first={true}
+                label_class="body-accent"
+                label="Select Date Range"
+                disabled={false}
+                width="4rem"
+                on:change={handle_date_change}
+            />
         </div>
 
         <!-- calendar btn -->
@@ -93,7 +107,7 @@
             label="Select Date Range"
             disabled={false}
             width="4rem"
-            on:change={handleDateChange}
+            on:change={handle_date_change}
         />
     </div>
 

@@ -22,7 +22,7 @@
     } = $props();
 
     let chart_container = $state<HTMLElement>();
-    let chart: echarts.ECharts;
+    let chart: echarts.ECharts | undefined;
     let filtered_people: any[] = [];
     let min_commits: number = 0;
     let max_commits: number = 1;
@@ -202,6 +202,12 @@
     $effect(() => {
         if (chart) set_chart_options();
     });
+    function handleResize() {
+        if (chart) {
+            chart.resize();
+            update_graphics();
+        }
+    }
 
     function get_user_commits(users: Contributor[]) {
         if (users.length === 0) return [];
@@ -629,7 +635,9 @@
         chart.clear();
         chart.setOption(option, true);
         chart.resize();
-        update_graphics();
+        setTimeout(() => {
+            update_graphics();
+        }, 0);
     }
 
     $effect(() => {

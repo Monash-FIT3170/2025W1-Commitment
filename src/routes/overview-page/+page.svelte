@@ -31,6 +31,7 @@
                     end_date
                 );
 
+                console.log("New Contributors:", newContributors);
                 contributors = [...new_contributors];
             })();
         }
@@ -63,7 +64,7 @@
         bind:start_date
         bind:end_date
     />
-    <CommitGraph {contributors} {branches} selected_branch={branch_selection} />
+    <CommitGraph {contributors} {branches} selected_branch={branch_selection} start_date={start_date} end_date={end_date}/>
     <div class="bottom-container">
         <ButtonPrimaryMedium icon="table-import" label="Upload Marking Sheet" />
 

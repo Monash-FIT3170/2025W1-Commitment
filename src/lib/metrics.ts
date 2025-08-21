@@ -42,9 +42,11 @@ export async function load_commit_data(owner: string, repo: string, source_type:
     let date_range = undefined;
     if (start_date && end_date) {
         // Convert to UNIX timestamps (seconds)
-        const start_ts = Math.floor(new Date(start_date).getTime() / 1000);
-        const end_ts = Math.floor(new Date(end_date).getTime() / 1000);
+        const start_ts = Math.floor(parseDate(start_date).getTime() / 1000);
+        const end_ts = Math.floor(parseDate(end_date).getTime() / 1000);
+        
         date_range = [start_ts, end_ts];
+        console.log("start_date:", start_date, "end_date:", end_date, "start_ts:", start_ts, "end_ts:", end_ts);
     }
 
     try {
@@ -55,6 +57,13 @@ export async function load_commit_data(owner: string, repo: string, source_type:
         info(`Failed to get contributor data`);
         return [];
     }
+}
+function parseDate(dateStr: string): Date {
+    //date is "DD-MM-YY", convert to "YYYY-MM-DD"
+    const [day, month, year] = dateStr.split("-");
+    // Assume year is "25" for 2025
+    const fullYear = year.length === 2 ? "20" + year : year;
+    return new Date(`${fullYear}-${month}-${day}`);
 }
 
 // 1. Total Commits for a user
