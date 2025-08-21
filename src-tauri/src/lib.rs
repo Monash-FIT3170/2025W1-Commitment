@@ -12,6 +12,7 @@ pub fn run() {
             branches::get_branch_names,
             contributor::get_contributor_info,
             repositories::bare_clone,
+            repositories::try_clone_with_token,
             repositories::is_repo_cloned,
             url_verifier::verify_and_extract_source_info
         ])

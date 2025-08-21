@@ -34,7 +34,10 @@ fn load_access_tokens_from_env() -> Vec<String> {
     tokens
 }
 
-fn try_clone_with_token(url: &str, path: &str, token: Option<&str>) -> Result<(), git2::Error> {
+#[tauri::command]
+pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>) -> Result<(), String> {
+    log::info!("Starting try_clone_with_token: {} -> {}", url, path);
+    
     let mut callbacks = RemoteCallbacks::new();
     callbacks.transfer_progress(|progress| {
         clone_progress(progress.received_objects(), progress.total_objects());
@@ -53,17 +56,38 @@ fn try_clone_with_token(url: &str, path: &str, token: Option<&str>) -> Result<()
     let mut fetch_opts = git2::FetchOptions::new();
     fetch_opts.remote_callbacks(callbacks);
 
-    RepoBuilder::new()
+    log::info!("Starting clone operation...");
+    
+    let result = RepoBuilder::new()
         .bare(true)
         .fetch_options(fetch_opts)
-        .clone(url, std::path::Path::new(path))
-        .map(|_| ())
+        .clone(url, std::path::Path::new(path));
+    
+    match result {
+        Ok(_repo) => {
+            log::info!("Clone completed successfully to {}", path);
+            
+            // Verify the directory was created
+            if std::path::Path::new(path).exists() {
+                log::info!("Repository directory confirmed to exist at {}", path);
+            } else {
+                log::warn!("Repository directory does not exist after clone: {}", path);
+            }
+            
+            Ok(())
+        }
+        Err(e) => {
+            log::error!("Clone failed with error: {}", e);
+            Err(e.to_string())
+        }
+    }
 }
 
 #[tauri::command]
 pub fn is_repo_cloned(path: &str) -> bool {
     std::path::Path::new(path).exists()
 }
+
 
 #[tauri::command]
 pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
