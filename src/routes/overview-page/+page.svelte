@@ -10,18 +10,21 @@
     let branches = $state(page.state.branches || []);
     let contributors = $state(page.state.contributors || []);
     let branch_selection = $state("");
-
-    //let branch_selection = $bindable($state("#"));
+    let start_date = $state("01-01-25");
+    let end_date = $state("20-01-25");
     $effect(() => {
-        if (branch_selection && branch_selection !== "") {
+        if (branch_selection && branch_selection !== "" || start_date && end_date) {
             // Fetch new contributors for the selected branch
             (async () => {
-                console.log("Calling load_commit_data with:", repo_path, branch_selection);
                 const new_contributors = await load_commit_data(
-                    repo_path.split('/')[0],
-                    repo_path.split('/')[1],
-                    branch_selection
+                    owner,
+                    repo,
+                    repo_type,
+                    branch_selection,
+                    start_date,
+                    end_date
                 );
+
                 contributors = [...new_contributors];
             })();
         }
@@ -46,7 +49,7 @@ $effect(() => {
 </script>
 
 <div class="page">
-    <Heading repo_path={repo_path.split("/")[1]} {repo_type} {branches} bind:branch_selection />
+    <Heading repo={repo} {repo_type} {branches} bind:branch_selection bind:start_date bind:end_date />
     <CommitGraph {contributors} {branches} selected_branch={branch_selection}/>
     <div class="bottom-container">
         <ButtonPrimaryMedium icon="table-import" label="Upload Marking Sheet" />

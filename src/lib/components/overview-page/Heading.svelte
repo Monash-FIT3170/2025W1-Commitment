@@ -6,18 +6,19 @@
     import Tab from "../global/Tab.svelte";
     import { get } from "svelte/store";
     import { load_commit_data, type Contributor } from "$lib/metrics";
+    import Calendar from "../global/Calendar.svelte";
 
     let {
-        repo_path: repo_path,
+        repo: repo,
         repo_type: repo_type = "github",
         branches = [],
         branch_selection = $bindable(),
+        start_date = $bindable(),
+        end_date = $bindable(),
     } = $props();
 
     let contributors: Contributor[] = [];
 
-    let start_date = $state("01-01-25");
-    let end_date = $state("20-01-25");
     let selected_view: string = $state("overview");
 
     const tabs = [
@@ -36,6 +37,13 @@
     function open_calendar() {
         //calendar logic
         //task for future sprint
+    }
+
+    function handleDateChange(
+        event: CustomEvent<{ start: string; end: string }>
+    ) {
+        start_date = event.detail.start;
+        end_date = event.detail.end;
     }
 </script>
 
@@ -75,32 +83,35 @@
         </div>
 
         <!-- calendar btn -->
-        <div class="calendar-btn heading-btn">
-            <ButtonTintedMedium
-                label="{start_date}  →  {end_date}"
-                icon="calendar-month"
-                label_class="body"
-                icon_first={false}
-                width="12rem"
-            />
-        </div>
-
-        <div class="heading-btn-spacer"></div>
-
-        <span class="subtitle display-subtitle">Contribution Statistics</span>
+        <Calendar
+            initial_start={start_date}
+            initial_end={end_date}
+            date_format="DD-MM-YY"
+            icon="calendar"
+            icon_first={true}
+            label_class="body-accent"
+            label="Select Date Range"
+            disabled={false}
+            width="4rem"
+            on:change={handleDateChange}
+        />
     </div>
 
-    <div class="page-select-btns">
-        <!-- for each tab -->
-        {#each tabs as tab}
-            <Tab
-                label={tab.label}
-                icon={tab.icon}
-                selected={selected_view === tab.id}
-                width="100%"
-            />
-        {/each}
-    </div>
+    <div class="heading-btn-spacer"></div>
+
+    <span class="subtitle display-subtitle">Contribution Statistics</span>
+</div>
+
+<div class="page-select-btns">
+    <!-- for each tab -->
+    {#each tabs as tab}
+        <Tab
+            label={tab.label}
+            icon={tab.icon}
+            selected={selected_view === tab.id}
+            width="100%"
+        />
+    {/each}
 </div>
 
 <style>

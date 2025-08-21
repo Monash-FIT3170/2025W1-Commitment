@@ -27,7 +27,7 @@ export async function load_branches(repo: string): Promise<string[]> {
     }
 }
 
-export async function load_commit_data(owner: string, repo: string, source_type: 0 | 1 | 2, branch?: string): Promise<Contributor[]> {
+export async function load_commit_data(owner: string, repo: string, source_type: 0 | 1 | 2, branch?: string, start_date?: string, end_date?: string): Promise<Contributor[]> {
     info(`Loading contributor data for ${owner}/${repo}...`);
 
     const repo_path = `../.gitgauge/repositories/${repo}`;
@@ -39,15 +39,16 @@ export async function load_commit_data(owner: string, repo: string, source_type:
         info(`Failed to clone the repository: ${err}`);
         return [];
     }
+    let date_range = undefined;
+    if (start_date && end_date) {
+        // Convert to UNIX timestamps (seconds)
+        const start_ts = Math.floor(new Date(start_date).getTime() / 1000);
+        const end_ts = Math.floor(new Date(end_date).getTime() / 1000);
+        date_range = [start_ts, end_ts];
+    }
 
     try {
-        const commit_data = await invoke<Contributor[]>(
-            "get_contributor_info",
-            {
-                path: repo_path,
-                branch: branch,
-            }
-        );
+        const commit_data = await invoke<Contributor[]>('get_contributor_info', { path: repo_path, branch: branch, date_range: date_range });
         const commit_array = Object.values(commit_data);
         return commit_array;
     } catch (err) {
