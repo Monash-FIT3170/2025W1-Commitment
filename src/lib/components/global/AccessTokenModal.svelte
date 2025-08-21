@@ -7,7 +7,7 @@
     let personal_access_token = $state("");
 
     function handle_add_token() {
-        console.log("Personal Access Token:", personal_access_token);
+        console.log("Processing Personal Access Token...");
         
         // Call the parent's callback function if provided
         if (on_token_add) {
@@ -34,7 +34,7 @@
     <div style="display: flex; justify-content: center; margin-top: 1rem;">
         <ButtonPrimaryMedium
             label="Add"
-            on:click={handle_add_token}
+            onclick={handle_add_token}
         />
     </div>
 </Modal>

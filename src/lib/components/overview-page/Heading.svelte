@@ -6,6 +6,7 @@
     import AccessTokenModal from "../global/AccessTokenModal.svelte";
     import DropdownTintedMedium from "../global/DropdownTintedMedium.svelte";
     import Tab from "../global/Tab.svelte";
+    import { auth_error, retry_clone_with_token } from "$lib/stores/auth";
 
     let { repo_path: repo_path, repo_type: repo_type = "github" } = $props();
 
@@ -27,11 +28,22 @@
         selected_view = id;
     }
 
-    let show_modal = $state(true); // Show modal automatically on page load
+    // Subscribe to auth errors to show modal when needed
+    let show_modal = $derived($auth_error.needs_token);
 
-    function handle_token_add(token: string) {
-        console.log("Personal Access Token received:", token);
-        // Process the token here
+    async function handle_token_add(token: string) {
+        console.log("Authenticating with Personal Access Token...");
+        
+        // Attempt to clone with the provided token
+        const success = await retry_clone_with_token(token);
+        
+        if (success) {
+            console.log("Authentication successful, refreshing page...");
+            // Refresh the page to load the new repository data
+            window.location.reload();
+        } else {
+            console.log("Authentication failed, please check your token");
+        }
     }
 
     function open_calendar() {

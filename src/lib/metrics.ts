@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { info } from "@tauri-apps/plugin-log";
+import { show_token_modal } from "./stores/auth";
 
 export type Contacts = Readonly<String | String[]>;
 
@@ -35,14 +36,23 @@ export async function load_commit_data(
     info(`Loading contributor data for ${owner}/${repo}...`);
 
     const repo_path = `../.gitgauge/repositories/${repo}`;
+    const repo_url = `https://github.com/${owner}/${repo}`;
     try {
         await invoke("bare_clone", {
-            url: `https://github.com/${owner}/${repo}`,
+            url: repo_url,
             path: repo_path,
         });
         info(`Repository is cloned or already exists at ${repo_path}`);
     } catch (err) {
-        info(`Failed to clone the repository: ${err}`);
+        const error_message = String(err);
+        info(`Failed to clone the repository: ${error_message}`);
+        
+        // Check if this is an authentication error that requires a token
+        if (error_message.includes("no access tokens found") || 
+            error_message.includes("All") && error_message.includes("access tokens were tried")) {
+            show_token_modal(error_message, repo_url, repo_path);
+        }
+        
         return [];
     }
 
