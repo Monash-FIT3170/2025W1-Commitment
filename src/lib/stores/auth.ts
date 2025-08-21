@@ -19,6 +19,9 @@ export function show_token_modal(message: string, repo_url?: string, repo_path?:
         repo_url,
         repo_path,
     });
+    
+    // Throw an error to stop the current execution flow
+    throw new Error("AUTHENTICATION_REQUIRED: " + message);
 }
 
 export function hide_token_modal() {
