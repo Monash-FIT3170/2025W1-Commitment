@@ -2,20 +2,23 @@
 
 case "$1" in
     -l|--link)
-        ln -sf ../../.githooks/prepare-commit-msg .git/hooks/prepare-commit-msg
-        ln -sf ../../.githooks/pre-commit .git/hooks/pre-commit
+        cd .git/hooks
+        ln -sf ../../.githooks/prepare-commit-msg .
+        rm prepare-commit-msg.sample
+        cd ../../
         ;;
     -d|--delink)
-        rm .git/hooks/prepare-commit-msg
-        rm .git/hooks/pre-commit
+        cd .git/hooks
+        rm prepare-commit-msg
+        cd ../../
         ;;
     *)
         echo "
-    sh git-hooks.sh [[-l | --link] | [-d | --delink]]
+    sh git-hooks.sh [--link|--delink]
 
     Sets up Git Hooks for project workflow.
 
-    --link   - Links Git hooks to hooks in .git-hooks directory
+    --link - Links Git hooks to hooks in .git-hooks directory
     --delink - Unlinks it hooks, useful during a rebase
 "
         ;;

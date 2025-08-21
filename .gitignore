@@ -56,8 +56,3 @@ TODO.md
 # sveltekit
 .svelte-kit/*
 
-# Testing of cloning
-**/.gitgauge/
-
-# frontend build files
-build
