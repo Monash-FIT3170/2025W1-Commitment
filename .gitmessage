@@ -6,7 +6,6 @@
 # Second topic of longer description seperated by blank line....
 #
 # scope: <scope> eg. ui, server, routing
-# refs: CU-{clickup task-ID}, CU-{clickup task-ID}
 # BREAKING-CHANGE: breaking change line 1
 # breaking change line 2
 #

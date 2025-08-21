@@ -80,7 +80,7 @@
             });
         });
         const sorted_commits = user_total_commits.sort(
-            (a, b) => a.numCommits - b.numCommits,
+            (a, b) => a.numCommits - b.numCommits
         );
         const groups = new Map<number, any[]>();
         sorted_commits.forEach((user) => {
@@ -130,7 +130,7 @@
             const clampedX = Math.max(x, margin_left);
             const maxWidth = Math.min(
                 width - (clampedX - x),
-                container_width - margin_right - clampedX,
+                container_width - margin_right - clampedX
             );
             return { x: clampedX, width: maxWidth };
         }
@@ -144,15 +144,15 @@
         // Clamp tints within bounds
         const left_tint = clamp_tint(
             x_minus2sigma,
-            x_minus_sigma - x_minus2sigma,
+            x_minus_sigma - x_minus2sigma
         );
         const middle_tint = clamp_tint(
             x_minus_sigma,
-            x_plus_sigma - x_minus_sigma,
+            x_plus_sigma - x_minus_sigma
         );
         const right_tint = clamp_tint(
             x_plus_sigma,
-            x_plus2sigma - x_plus_sigma,
+            x_plus2sigma - x_plus_sigma
         );
 
         // White tint between -σ and +σ
@@ -369,7 +369,7 @@
                     if (params.seriesName === "hoverPoints") {
                         const username = params.data[2];
                         const person = filtered_people.find(
-                            (p: any) => p.username === username,
+                            (p: any) => p.username === username
                         );
                         if (!person) return username;
                         return `

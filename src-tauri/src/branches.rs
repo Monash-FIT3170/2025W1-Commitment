@@ -6,7 +6,7 @@ pub async fn get_branch_names(path: &str) -> Result<Vec<String>, String> {
         Ok(p) => {
             println!("{}", p.to_str().unwrap());
             p
-        },
+        }
         Err(e) => return Err(e.to_string()),
     };
 

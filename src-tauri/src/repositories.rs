@@ -129,4 +129,3 @@ pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
         last_error
     ))
 }
-

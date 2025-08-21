@@ -1,0 +1,10 @@
+trailingComma: "es5"
+tabWidth: 4
+singleQuote: false
+endOfLine: "lf"
+plugins:
+  - "prettier-plugin-svelte"
+overrides:
+  - files: "*.svelte"
+    options:
+      parser: "svelte"

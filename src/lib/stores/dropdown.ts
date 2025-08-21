@@ -1,6 +1,8 @@
 import { writable } from "svelte/store";
 
-export function create_dropdown_selection<T>(initial_selected: T | null = null) {
+export function create_dropdown_selection<T>(
+    initial_selected: T | null = null
+) {
     const selected = writable<T | null>(initial_selected);
 
     // Set selection function

@@ -72,4 +72,3 @@ This is a contributor card component that displays a user's profile information.
         align-items: flex-start;
     }
 </style>
-
