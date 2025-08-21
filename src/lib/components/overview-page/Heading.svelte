@@ -133,6 +133,7 @@
 
     .repo-icon {
         flex-shrink: 0;
+        padding-right: 4rem;
     }
 
     .display-subtitle {
