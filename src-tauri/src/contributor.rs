@@ -82,6 +82,7 @@ pub async fn get_contributor_info(
         let time = commit.time().seconds();
 
         if let Some((start, end)) = date_range {
+            log::info!("Filtering commits between {} and {}", start, end);
             if time < start || time > end {
                 continue; // Skip commits outside the date range
             }

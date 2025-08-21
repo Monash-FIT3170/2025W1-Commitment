@@ -69,7 +69,7 @@
             <Calendar
                 initial_start={start_date}
                 initial_end={end_date}
-                date_format="DD-MM-YY"
+                date_format="d-m-Y"
                 icon="calendar"
                 icon_first={true}
                 label_class="body-accent"

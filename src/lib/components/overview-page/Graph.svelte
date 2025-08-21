@@ -11,7 +11,7 @@
     let { contributors, selected_branch = $bindable(""), start_date = $bindable(""), end_date = $bindable("") }: { contributors: Contributor[]; selected_branch?: string; start_date?: string; end_date?: string } = $props();
 
     let chart_container = $state<HTMLElement>();
-    let chart: echarts.ECharts;
+    let chart: echarts.ECharts| undefined;
     let filtered_people: any[] = [];
     let min_commits: number = 0;
     let max_commits: number = 1;
@@ -26,25 +26,24 @@
 
     $effect(() => {
     if (chart_container) {
-            chart = echarts.init(chart_container);
-            set_chart_options();
-            window.addEventListener('resize', () => {
-                chart.resize();
-                update_graphics();
-        });
+        chart = echarts.init(chart_container);
+        set_chart_options();
+        window.addEventListener('resize', handleResize);
+    }
+    return () => {
+        window.removeEventListener('resize', handleResize);
+        if (chart) {
+            chart.dispose();
+            chart = undefined;
         }
-        return () => {
-            if (chart) {
-                window.removeEventListener('resize', () => {
-                    chart.resize();
-                    update_graphics();
-                });
-                chart.dispose();
-            }
-        };
-    });
+    };
+});
     $effect(() => {
-        chart_key = contributors.map(c => c.bitmap_hash).join(",") + selected_branch;
+    console.log("Graph.svelte update:", { contributors, selected_branch, start_date, end_date });
+});
+    $effect(() => {
+        chart_key = contributors.map(c => c.bitmap_hash).join(",") + selected_branch + start_date +
+        end_date;
     });
 
     $effect(() => {
@@ -85,6 +84,12 @@
     $effect(() => {
         if (chart) set_chart_options();
     });
+    function handleResize() {
+    if (chart) {
+        chart.resize();
+        update_graphics();
+    }
+}
 
     function get_user_commits(users: Contributor[]) {
         if (users.length === 0) return [];
@@ -122,9 +127,11 @@
 
     function update_graphics() {
         if (!chart) return;
-        const grid_top = chart.convertToPixel({gridIndex: 0}, [0, 6])[1];
-        const x_axis_y = chart.convertToPixel({gridIndex: 0}, [0, 0])[1];
-
+        const grid_top_arr = chart.convertToPixel({gridIndex: 0}, [0, 6]);
+        const x_axis_y_arr = chart.convertToPixel({gridIndex: 0}, [0, 0]);
+        if (!grid_top_arr || !x_axis_y_arr) return; // Chart not ready
+        const grid_top = grid_top_arr[1];
+        const x_axis_y = x_axis_y_arr[1];
         const full_height = x_axis_y - grid_top;
         const tint_height = full_height * 0.9;
 
@@ -375,30 +382,11 @@
         chart.clear();
         chart.setOption(option, true);
         chart.resize();
+        setTimeout(() => {
         update_graphics();
+    }, 0);
     }
 
-    $effect(() => {
-    if (chart_container) {
-        chart = echarts.init(chart_container);
-        set_chart_options();
-        resize_handler = () => {
-            chart.resize();
-            update_graphics();
-        };
-        window.addEventListener('resize', resize_handler);
-    }
-    return () => {
-        if (chart) {
-            window.removeEventListener('resize', resize_handler);
-            chart.dispose();
-        }
-    };
-});
-    onDestroy(() => {
-        window.removeEventListener('resize', resize_handler);
-        chart.dispose();
-    });
 </script>
 {#key chart_key}
     <div bind:this={chart_container} class="chart-container"></div>

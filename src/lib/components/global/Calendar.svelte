@@ -7,7 +7,7 @@
     let {
         initial_start = "",
         initial_end = "",
-        date_format = "d-m-y",
+        date_format = "d-m-Y",
         icon = "calendar-month",
         icon_first = false,
         label_class = "body",
