@@ -16,9 +16,13 @@
     let {
         users,
         selected_branch: selected_branch,
+        start_date: start_date,
+        end_date: end_date
     }: {
         users: Contributor[];
         selected_branch: string;
+        start_date: string;
+        end_date: string;
     } = $props();
 
     // Calculate metrics for each user

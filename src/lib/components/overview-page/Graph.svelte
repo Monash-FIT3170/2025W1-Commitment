@@ -12,7 +12,14 @@
     let {
         contributors,
         selected_branch = $bindable(""),
-    }: { contributors: Contributor[]; selected_branch?: string } = $props();
+        start_date = $bindable(""),
+        end_date = $bindable(""),
+    }: {
+        contributors: Contributor[];
+        selected_branch?: string;
+        start_date?: string;
+        end_date?: string;
+    } = $props();
 
     let chart_container = $state<HTMLElement>();
     let chart: echarts.ECharts;
@@ -32,11 +39,23 @@
     let chart_key = $state("");
 
     $effect(() => {
-        if (chart && chart_container) {
-            chart.dispose();
+        if (chart_container) {
             chart = echarts.init(chart_container);
             set_chart_options();
+            window.addEventListener("resize", () => {
+                chart.resize();
+                update_graphics();
+            });
         }
+        return () => {
+            if (chart) {
+                window.removeEventListener("resize", () => {
+                    chart.resize();
+                    update_graphics();
+                });
+                chart.dispose();
+            }
+        };
     });
 
     $effect(() => {
