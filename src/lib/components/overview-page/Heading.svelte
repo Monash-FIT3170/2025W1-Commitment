@@ -101,7 +101,7 @@
         justify-content: space-between;
         align-items: center;
         width: 100%;
-        z-index: 110;
+        z-index: 2;
     }
 
     .display-title {
@@ -109,13 +109,13 @@
         flex-direction: row;
         align-items: center;
         gap: 1.5rem;
-        z-index: 110;
+        z-index: 1;
     }
 
     .display-subtitle {
         color: var(--label-secondary);
         padding: 0.6rem 0;
-        z-index: 110;
+        z-index: 1;
     }
 
     .heading-btns {
@@ -124,11 +124,11 @@
         justify-content: flex-end;
         align-items: center;
         padding: 0;
-        z-index: 110;
+        z-index: 1;
     }
 
     .page-select-btns {
         padding-top: 2rem;
-        z-index: 110;
+        z-index: 1;
     }
 </style>
