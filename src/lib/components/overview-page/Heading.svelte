@@ -3,9 +3,9 @@
     import { create_dropdown_selection } from "$lib/stores/dropdown";
     import Icon from "@iconify/svelte";
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
+    import AccessTokenModal from "../global/AccessTokenModal.svelte";
     import DropdownTintedMedium from "../global/DropdownTintedMedium.svelte";
     import Tab from "../global/Tab.svelte";
-    import Modal from "../global/Modal.svelte";
 
     let { repo_path: repo_path, repo_type: repo_type = "github" } = $props();
 
@@ -27,27 +27,11 @@
         selected_view = id;
     }
 
-    let showModal = $state(true); // Show modal automatically on page load
+    let show_modal = $state(true); // Show modal automatically on page load
 
-    let files;
-    let fileInput: HTMLInputElement;
-
-    function triggerFileInput() {
-        fileInput.click();
-    }
-
-    function handleFileChange(event: Event) {
-        const selectedFiles = (event.target as HTMLInputElement).files;
-        if (selectedFiles && selectedFiles.length > 0) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const text = e.target?.result;
-                console.log("File contents:", text);
-                // Send `text` to your backend or process it
-            };
-            reader.readAsText(selectedFiles[0]);
-            showModal = false;
-        }
+    function handle_token_add(token: string) {
+        console.log("Personal Access Token received:", token);
+        // Process the token here
     }
 
     function open_calendar() {
@@ -79,46 +63,15 @@
                 label_class="body-accent"
                 icon_first={true}
                 width="4rem"
-				on:click={() => (showModal = true)}
+				on:click={() => (show_modal = true)}
             />
         </div>
 
-            <!-- Modal -->
-            <Modal bind:showModal>
-                <h2 id="modal-title" slot="header">
-                    Upload config file
-                </h2>
-                <p>Upload a config file to group email addresses to contributors, in format</p>
-                    <textarea
-                      id="formatInput"
-                      rows="4"
-                      placeholder="&#123;   add format here    &#125;"
-                      class="format-box"
-                    />
-                    <input
-                        type="file"
-                        bind:this={fileInput}
-                        style="display: none;"
-                        on:change={handleFileChange}
-                    />
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                        <ButtonTintedMedium
-                            label="Cancel"
-                            label_class="body"
-                            icon_first={true}
-                            width="4rem"
-                            on:click={() => showModal = false}
-                        />
-                        <ButtonTintedMedium
-                            label="Upload"
-                            icon="upload"
-                            label_class="body-accent"
-                            icon_first={true}
-                            width="4rem"
-                            on:click={triggerFileInput}
-                        />
-                    </div>
-            </Modal>
+            <!-- Access Token Modal -->
+            <AccessTokenModal 
+                bind:show_modal 
+                on_token_add={handle_token_add}
+            />
 
             <!-- branch dropdown btn -->
             <DropdownTintedMedium
@@ -247,15 +200,4 @@
         }
     }
 
-    .format-box {
-	      width: 95%;
-        padding: 1em;
-        border-radius: 0.5em;
-        border: 1px solid #555;
-        background-color: #1e1e1e;
-        color: #fff;
-        font-size: 1em;
-        margin-top: 1em;
-        resize: vertical;
-      }
 </style>
