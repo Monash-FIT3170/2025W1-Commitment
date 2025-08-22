@@ -6,12 +6,12 @@ fn clone_progress(cur_progress: usize, total_progress: usize) {
     println!("\rProgress: {cur_progress}/{total_progress}");
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub fn is_repo_cloned(path: &str) -> bool {
     std::path::Path::new(path).exists()
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn bare_clone(
     owner: &str,
     repo: &str,

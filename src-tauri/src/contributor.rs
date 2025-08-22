@@ -1,7 +1,7 @@
-use git2::{BranchType, Repository, Sort, Oid};
+use git2::{BranchType, Oid, Repository, Sort};
 use serde::{Deserialize, Serialize};
-
-use std::collections::HashMap;
+use serde_json::Value;
+use std::{collections::HashMap, ops::RangeToInclusive};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Contacts {
@@ -21,13 +21,21 @@ pub struct Contributor {
     pub bitmap: String, // tmp until using actual bitmap type
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DateRange {
+    pub start: i64,
+    pub end: i64,
+}
+
 // date_range: Option<(i64, i64)> - Optional date range in UNIX timestamp format
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn get_contributor_info(
     path: &str,
     branch: Option<&str>,
-    date_range: Option<(i64, i64)>,
+    date_range: Option<DateRange>,
 ) -> Result<HashMap<String, Contributor>, String> {
+    log::info!("Received date_range: {:?}", date_range);
+
     let canonical_path = std::path::Path::new(path)
         .canonicalize()
         .map_err(|e| e.to_string())?;
@@ -76,16 +84,22 @@ pub async fn get_contributor_info(
 
     let mut contributors: HashMap<String, Contributor> = HashMap::new();
 
+    // let custom_date_range = start_date.is_some() || end_date.is_some();
+
     for oid_result in revwalk {
         let oid = oid_result.map_err(|e| e.to_string())?;
         let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
         let time = commit.time().seconds();
 
-        if let Some((start, end)) = date_range {
-            log::info!("Filtering commits between {} and {}", start, end);
-            if time < start || time > end {
-                continue; // Skip commits outside the date range
+        log::info!("Commit time: {}", time);
+
+        if let Some(ref date_range) = date_range {
+            log::info!("Filtering commits between {} and {}", date_range.start, date_range.end);
+            if time < date_range.start || time > date_range.end {
+                log::info!("Skipped {:?}", &time);
+                continue;
             }
+            log::info!("Commit time: {}", time);
         }
 
         let author_signature = commit.author();
@@ -138,12 +152,17 @@ pub async fn get_contributor_info(
 fn find_branch_oid(repo: &Repository, branch: &str) -> Result<Oid, String> {
     // Try local branch first
     if let Ok(branch_ref) = repo.find_branch(branch, BranchType::Local) {
-        return branch_ref.get().target().ok_or("Invalid local branch target".to_string());
+        return branch_ref
+            .get()
+            .target()
+            .ok_or("Invalid local branch target".to_string());
     }
     // Try remote branch (origin/<branch>)
     let remote_branch_name = format!("refs/remotes/{}", branch);
     if let Ok(reference) = repo.find_reference(&remote_branch_name) {
-        return reference.target().ok_or("Invalid remote branch target".to_string());
+        return reference
+            .target()
+            .ok_or("Invalid remote branch target".to_string());
     }
     Err(format!("Branch '{}' not found as local or remote", branch))
 }

@@ -27,8 +27,15 @@ export async function load_branches(repo: string): Promise<string[]> {
     }
 }
 
+type DateRange = {
+    start: number;
+    end: number;
+};
+
 export async function load_commit_data(owner: string, repo: string, source_type: 0 | 1 | 2, branch?: string, start_date?: string, end_date?: string): Promise<Contributor[]> {
     info(`Loading contributor data for ${owner}/${repo}...`);
+
+    console.log(`start date: ${start_date}, end date: ${end_date}`);
 
     const repo_path = `../.gitgauge/repositories/${repo}`;
     try {
@@ -39,22 +46,22 @@ export async function load_commit_data(owner: string, repo: string, source_type:
         info(`Failed to clone the repository: ${err}`);
         return [];
     }
-    let date_range = undefined;
-    if (start_date && end_date) {
-        // Convert to UNIX timestamps (seconds)
-        const start_ts = Math.floor(parseDate(start_date).getTime() / 1000);
-        const end_ts = Math.floor(parseDate(end_date).getTime() / 1000);
-        
-        date_range = [start_ts, end_ts];
-        console.log("start_date:", start_date, "end_date:", end_date, "start_ts:", start_ts, "end_ts:", end_ts);
-    }
+    
 
     try {
+        let date_range: DateRange | undefined = undefined
+
+        if (start_date && end_date) {
+            const start_ts = Math.floor(parseDate(start_date).getTime() / 1000);
+            const end_ts = Math.floor(parseDate(end_date).getTime() / 1000);
+            date_range = { start: start_ts, end: end_ts }; // Send as object, not array
+        }
+
         const commit_data = await invoke<Contributor[]>('get_contributor_info', { path: repo_path, branch: branch, date_range: date_range });
         const commit_array = Object.values(commit_data);
         return commit_array;
     } catch (err) {
-        info(`Failed to get contributor data`);
+        info(`Failed to get contributor data: ${err}`)
         return [];
     }
 }

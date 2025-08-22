@@ -152,7 +152,7 @@ pub async fn update_repository_last_accessed(repo_name: &str) -> Result<(), Stri
     Err(format!("Repository {} not found", repo_name))
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn set_bookmarked_repository(repo_url: &str, bookmarked: bool) -> Result<(), String> {
     let mut manifest = read_manifest().await?;
     if let Some(repos) = manifest.get_mut("repository").and_then(|r| r.as_array_mut()) {
@@ -175,7 +175,7 @@ pub struct RepoBookmark {
     pub repo_url: String,
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn get_bookmarked_repositories() -> Result<Vec<RepoBookmark>, String> {
     let manifest = read_manifest().await?;
     let mut bookmarked_repos = Vec::new();

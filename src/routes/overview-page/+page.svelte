@@ -31,27 +31,19 @@
                     end_date
                 );
 
-                console.log("New Contributors:", newContributors);
+                console.log("New Contributors:", new_contributors);
                 contributors = [...new_contributors];
             })();
         }
     });
 
     $effect(() => {
-        if ((!branches || branches.length === 0) && repo_path) {
-            // You may need to adjust this to match your load_branches signature
+        if ((!branches || branches.length === 0) && repo) {
+            // Fetch branches for the repository
             (async () => {
-                branches = await load_branches(repo_path.split("/")[1]);
-                console.log("Fetched branches:", branches);
+                branches = await load_branches(repo);
             })();
         }
-    });
-    $effect(() => {
-        console.log("Page branch_selection", branch_selection);
-    });
-
-    $effect(() => {
-        console.log("Branches in +page.svelte:", branches);
     });
 </script>
 
@@ -64,7 +56,13 @@
         bind:start_date
         bind:end_date
     />
-    <CommitGraph {contributors} {branches} selected_branch={branch_selection} start_date={start_date} end_date={end_date}/>
+    <CommitGraph
+        {contributors}
+        {branches}
+        selected_branch={branch_selection}
+        {start_date}
+        {end_date}
+    />
     <div class="bottom-container">
         <ButtonPrimaryMedium icon="table-import" label="Upload Marking Sheet" />
 
