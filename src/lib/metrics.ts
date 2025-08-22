@@ -46,13 +46,16 @@ export async function load_commit_data(
     } catch (err) {
         const error_message = String(err);
         info(`Failed to clone the repository: ${error_message}`);
-        
+
         // Check if this is an authentication error that requires a token
-        if (error_message.includes("no access tokens found") || 
-            error_message.includes("All") && error_message.includes("access tokens were tried")) {
+        if (
+            error_message.includes("no access tokens found") ||
+            (error_message.includes("All") &&
+                error_message.includes("access tokens were tried"))
+        ) {
             show_token_modal(error_message, repo_url, repo_path);
         }
-        
+
         return [];
     }
 

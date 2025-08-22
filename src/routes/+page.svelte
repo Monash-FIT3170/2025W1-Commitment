@@ -78,14 +78,16 @@
             verification_error = true;
             return;
         }
-        
+
         console.log("Authenticating with Personal Access Token...");
-        
+
         // Attempt to clone with the provided token
         const success = await retry_clone_with_token(token);
-        
+
         if (success) {
-            console.log("Authentication successful, continuing repository loading...");
+            console.log(
+                "Authentication successful, continuing repository loading..."
+            );
             waiting_for_auth = false;
             // The modal will be hidden automatically by the auth store
             // The repository should now be accessible, so we can continue with the normal flow
@@ -93,7 +95,16 @@
             await handle_verification();
         } else {
             console.log("Authentication failed, please check your token");
-            // Modal stays open with error message from the auth store
+            // Show user-friendly error message above search bar and close modal
+            verification_message =
+                "Access token is invalid. Please check your token and try again.";
+            verification_error = true;
+            waiting_for_auth = false;
+            // Hide the modal since we're showing the error above the search bar
+            auth_error.set({
+                needs_token: false,
+                message: "",
+            });
         }
     }
 
@@ -151,10 +162,13 @@
         } catch (error: any) {
             const error_message = error.message || "Verification failed.";
             console.error("Verification failed:", error);
-            
+
             // Check if this is an authentication error that requires a token
-            if (error_message.includes("no access tokens found") || 
-                (error_message.includes("All") && error_message.includes("access tokens were tried"))) {
+            if (
+                error_message.includes("no access tokens found") ||
+                (error_message.includes("All") &&
+                    error_message.includes("access tokens were tried"))
+            ) {
                 console.log("Authentication required, showing modal");
                 waiting_for_auth = true;
                 // The modal will show automatically via the auth store
@@ -209,10 +223,7 @@
 <Sidebar />
 
 <!-- Access Token Modal -->
-<AccessTokenModal 
-    bind:show_modal 
-    on_token_add={handle_token_add}
-/>
+<AccessTokenModal bind:show_modal on_token_add={handle_token_add} />
 
 <style>
     .align-with-searchbar {

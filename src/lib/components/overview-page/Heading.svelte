@@ -26,7 +26,6 @@
         selected_view = id;
     }
 
-
     function open_calendar() {
         //calendar logic
         //task for future sprint
@@ -53,7 +52,6 @@
                 icon_first={true}
                 width="4rem"
             />
-
 
             <!-- branch dropdown btn -->
             <DropdownTintedMedium
@@ -129,5 +127,4 @@
         padding-top: 2rem;
         z-index: 110;
     }
-
 </style>
