@@ -40,7 +40,7 @@ export async function load_commit_data(owner: string, repo: string, source_type:
     const repo_path = `../.gitgauge/repositories/${repo}`;
     try {
         console.log(`Cloning repository ${owner}/${repo} to ${repo_path}`);
-        await invoke('bare_clone', { owner, repo, sourceType: source_type, path: repo_path });
+        await invoke('bare_clone', { owner, repo, source_type: source_type, path: repo_path });
         info(`Repository is cloned or already exists at ${repo_path}`);
     } catch (err) {
         info(`Failed to clone the repository: ${err}`);
