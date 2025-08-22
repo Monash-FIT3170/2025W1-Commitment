@@ -20,7 +20,7 @@ function create_bookmarks() {
 
   async function set_bookmark_state(repo: Repo, bookmarked: boolean) {
     try {
-      await invoke('set_bookmarked_repository', { repoUrl: repo.repo_url, bookmarked });
+      await invoke('set_bookmarked_repository', { repo_url: repo.repo_url, bookmarked });
       if (bookmarked) {
         update(bookmarks => {
           if (!bookmarks.find(b => b.repo_url === repo.repo_url)) {

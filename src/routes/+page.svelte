@@ -88,8 +88,8 @@
             const backend_result = await invoke<BackendVerificationResult>(
                 "verify_and_extract_source_info",
                 {
-                    urlStr: repo_url_input,
-                    sourceType: source_type,
+                    url_str: repo_url_input,
+                    source_type: source_type,
                 },
             );
             verification_result = {
