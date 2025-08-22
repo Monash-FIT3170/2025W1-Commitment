@@ -2,18 +2,18 @@
     import ButtonPrimaryMedium from "./ButtonPrimaryMedium.svelte";
     import Modal from "./Modal.svelte";
 
-    let { show_modal = $bindable(), on_token_add, on_modal_close } = $props();
+    let { show_modal = $bindable(), on_token_add } = $props();
 
     let personal_access_token = $state("");
 
     function handle_add_token() {
         console.log("Processing Personal Access Token...");
-        
+
         // Call the parent's callback function if provided
         if (on_token_add) {
             on_token_add(personal_access_token);
         }
-        
+
         // Close the modal
         show_modal = false;
     }
@@ -21,10 +21,11 @@
 
 <!-- Personal Access Token Modal -->
 <Modal bind:showModal={show_modal}>
-    <h2 id="modal-title" slot="header">
-        Add Personal Access Token
-    </h2>
-    <p>It seems that the repository you are trying to access is private. Please provide a Personal Access Token</p>
+    <h2 id="modal-title" slot="header">Add Personal Access Token</h2>
+    <p>
+        It seems that the repository you are trying to access is private. Please
+        provide a Personal Access Token
+    </p>
     <input
         type="password"
         bind:value={personal_access_token}
@@ -32,10 +33,7 @@
         class="token-input"
     />
     <div style="display: flex; justify-content: center; margin-top: 1rem;">
-        <ButtonPrimaryMedium
-            label="Add"
-            onclick={handle_add_token}
-        />
+        <ButtonPrimaryMedium label="Add" onclick={handle_add_token} />
     </div>
 </Modal>
 
