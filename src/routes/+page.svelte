@@ -70,6 +70,19 @@
     // Subscribe to auth errors to show modal when needed
     let show_modal = $derived($auth_error.needs_token);
 
+    // Track previous modal state to detect when modal closes
+    let previous_show_modal = $state(false);
+
+    // Clear verification message when modal closes without using Add button
+    $effect(() => {
+        if (previous_show_modal && !show_modal && !verification_error) {
+            // Modal was open and is now closed, and we don't have an error
+            // This means the user closed the modal by clicking outside
+            verification_message = "";
+        }
+        previous_show_modal = show_modal;
+    });
+
     async function handle_token_add(token: string) {
         // Validate that token is not empty
         if (!token || token.trim().length === 0) {
