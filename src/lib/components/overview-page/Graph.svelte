@@ -39,9 +39,6 @@
     };
 });
     $effect(() => {
-    console.log("Graph.svelte update:", { contributors, selected_branch, start_date, end_date });
-});
-    $effect(() => {
         chart_key = contributors.map(c => c.bitmap_hash).join(",") + selected_branch + start_date +
         end_date;
     });
