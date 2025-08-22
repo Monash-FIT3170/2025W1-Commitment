@@ -60,7 +60,10 @@
 
     $effect(() => {
         chart_key =
-            contributors.map((c) => c.bitmap_hash).join(",") + selected_branch;
+            contributors.map((c) => c.bitmap_hash).join(",") +
+            selected_branch +
+            start_date +
+            end_date;
     });
 
     $effect(() => {

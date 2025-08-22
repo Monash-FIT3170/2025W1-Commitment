@@ -31,7 +31,6 @@
                     end_date
                 );
 
-                console.log("New Contributors:", new_contributors);
                 contributors = [...new_contributors];
             })();
         }

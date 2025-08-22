@@ -1,7 +1,6 @@
 use git2::{BranchType, Oid, Repository, Sort};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::{collections::HashMap, ops::RangeToInclusive};
+use std::{collections::HashMap};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Contacts {
@@ -34,7 +33,6 @@ pub async fn get_contributor_info(
     branch: Option<&str>,
     date_range: Option<DateRange>,
 ) -> Result<HashMap<String, Contributor>, String> {
-    log::info!("Received date_range: {:?}", date_range);
 
     let canonical_path = std::path::Path::new(path)
         .canonicalize()
@@ -91,15 +89,12 @@ pub async fn get_contributor_info(
         let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
         let time = commit.time().seconds();
 
-        log::info!("Commit time: {}", time);
 
         if let Some(ref date_range) = date_range {
-            log::info!("Filtering commits between {} and {}", date_range.start, date_range.end);
+            // Check if commit time is within the specified date range
             if time < date_range.start || time > date_range.end {
-                log::info!("Skipped {:?}", &time);
                 continue;
             }
-            log::info!("Commit time: {}", time);
         }
 
         let author_signature = commit.author();

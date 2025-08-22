@@ -35,8 +35,6 @@ type DateRange = {
 export async function load_commit_data(owner: string, repo: string, source_type: 0 | 1 | 2, branch?: string, start_date?: string, end_date?: string): Promise<Contributor[]> {
     info(`Loading contributor data for ${owner}/${repo}...`);
 
-    console.log(`start date: ${start_date}, end date: ${end_date}`);
-
     const repo_path = `../.gitgauge/repositories/${repo}`;
     try {
         console.log(`Cloning repository ${owner}/${repo} to ${repo_path}`);
@@ -54,7 +52,7 @@ export async function load_commit_data(owner: string, repo: string, source_type:
         if (start_date && end_date) {
             const start_ts = Math.floor(parseDate(start_date).getTime() / 1000);
             const end_ts = Math.floor(parseDate(end_date).getTime() / 1000);
-            date_range = { start: start_ts, end: end_ts }; // Send as object, not array
+            date_range = { start: start_ts, end: end_ts }; // Send as object
         }
 
         const commit_data = await invoke<Contributor[]>('get_contributor_info', { path: repo_path, branch: branch, date_range: date_range });
