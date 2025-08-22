@@ -9,7 +9,7 @@ pub struct SourceInfo { // Renamed from GithubInfo
     pub source_type: i32, // 0 for GitHub, 1 for GitLab, 2 for Local File
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 // Renamed function and added source_type parameter
 pub fn verify_and_extract_source_info(url_str: &str, source_type: i32) -> Result<SourceInfo, String> {
     match source_type {

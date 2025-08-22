@@ -11,8 +11,9 @@
     let owner = $state(page.state.owner || "");
     let repo = $state(page.state.repo || "");
     let branch_selection = $state("");
-    let start_date = $state("");
-    let end_date = $state("");
+    let start_date = $derived("");
+    let end_date = $derived("");
+
     $effect(() => {
         if ((branch_selection && branch_selection !== "") || (start_date && end_date)) {
             // Fetch new contributors for the selected branch
@@ -31,6 +32,7 @@
             })();
         }
     });
+
 $effect(() => {
     if ((!branches || branches.length === 0) && repo) {
         // Fetch branches for the repository
