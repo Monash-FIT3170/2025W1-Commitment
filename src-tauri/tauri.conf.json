@@ -16,7 +16,7 @@
         "title": "gitgauge",
         "width": 1280,
         "height": 720,
-        "minWidth": 800,
+        "minWidth": 850,
         "minHeight": 480,
         "resizable": true
       }
