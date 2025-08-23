@@ -71,11 +71,11 @@
         text-align: left;
     }
 
-    .bottom-border-btn.active-style {
+    .tab.active-style {
         font-weight: 500;
     }
 
-    .bottom-border-btn:disabled {
+    .tab:disabled {
         cursor: not-allowed;
     }
 </style>
