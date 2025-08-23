@@ -39,16 +39,17 @@
 <div class="page-header">
     <div class="top-container">
         <div class="repo-path-container">
-        <span class="repo-path display-title" title={repo_path}>{repo_path}</span>
-        <div class="repo-icon">
-            <Icon
-                icon={`tabler:brand-${repo_type}`}
-                class="icon-xlarge"
-                style="color: white"
-            />
+            <span class="repo-path display-title" title={repo_path}
+                >{repo_path}</span
+            >
+            <div class="repo-icon">
+                <Icon
+                    icon={`tabler:brand-${repo_type}`}
+                    class="icon-xlarge"
+                    style="color: white"
+                />
+            </div>
         </div>
-        </div>
-
 
         <!-- config btn -->
         <div class="config-btn heading-btn">
@@ -70,7 +71,7 @@
             />
         </div>
 
-            <!-- calendar btn -->
+        <!-- calendar btn -->
         <div class="calendar-btn heading-btn">
             <ButtonTintedMedium
                 label="{start_date}  →  {end_date}"
@@ -173,7 +174,7 @@
     @media (max-width: 75rem) {
         .top-container {
             grid-template-columns: auto auto auto 1fr;
-            grid-template-areas: 
+            grid-template-areas:
                 "repo-path repo-path repo-path repo-path"
                 "subtitle subtitle subtitle subtitle"
                 "config branch calendar heading-btn-spacer";

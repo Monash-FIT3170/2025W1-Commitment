@@ -41,7 +41,7 @@ contains the user's name and profile image.
 -->
 
 <div class="header">
-    <div class="left-menu-container">    
+    <div class="left-menu-container">
         {#if repo_url && repo_path}
             <LeftMenuWithRepo {repo_url} {repo_path} />
         {:else}
