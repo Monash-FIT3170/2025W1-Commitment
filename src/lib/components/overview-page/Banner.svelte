@@ -41,12 +41,16 @@ contains the user's name and profile image.
 -->
 
 <div class="header">
-    {#if repo_url && repo_path}
-        <LeftMenuWithRepo {repo_url} {repo_path} />
-    {:else}
-        <LeftMenu />
-    {/if}
-    <UserMenu {username} {profile_image_url} />
+    <div class="left-menu-container">
+        {#if repo_url && repo_path}
+            <LeftMenuWithRepo {repo_url} {repo_path} />
+        {:else}
+            <LeftMenu />
+        {/if}
+    </div>
+    <div class="user-menu-container">
+        <UserMenu {username} {profile_image_url} />
+    </div>
 </div>
 
 <style>
@@ -55,5 +59,20 @@ contains the user's name and profile image.
         height: 1.375rem;
         display: flex;
         justify-content: space-between;
+        gap: 2rem;
+        min-width: 0;
+    }
+
+    .left-menu-container {
+        flex: 1;
+        min-width: 5rem;
+        overflow: hidden;
+    }
+
+    .user-menu-container {
+        display: flex;
+        align-items: center;
+        min-width: 5rem;
+        overflow: hidden;
     }
 </style>
