@@ -28,9 +28,13 @@
     // Calculate metrics for each user
     let commit_mean = get_average_commits(users);
     let sd = get_sd(users);
+    // Sort users by name (case-insensitive)
+    let sorted_users = $derived(
+        [...users].sort((a, b) => getDisplayName(a).localeCompare(getDisplayName(b)))
+    );
 
     let people_with_metrics = $derived(
-        users.map((user: Contributor) => {
+        sorted_users.map((user: Contributor) => {
             const num_commits = get_user_total_commits(user);
             const scaling_factor = calculate_scaling_factor(
                 num_commits,
@@ -38,7 +42,7 @@
                 sd,
             );
             return {
-                username: user.bitmap_hash,
+                username: getDisplayName(user),
                 image: user.bitmap,
                 num_commits: num_commits,
                 total_lines_of_code: get_user_total_lines_of_code(user),
@@ -49,6 +53,30 @@
             };
         }),
     );
+    function getDisplayName(user: Contributor): string {
+    let name = "";
+    if (user.username && user.username.trim() !== "") {
+        name = user.username;
+    } else if (
+        user.contacts &&
+        typeof user.contacts === "object" &&
+        "Email" in user.contacts &&
+        typeof (user.contacts as any).Email === "string"
+    ) {
+        name = (user.contacts as any).Email;
+    } else if (typeof user.contacts === "string") {
+        name = user.contacts;
+    } else if (Array.isArray(user.contacts) && user.contacts.length > 0) {
+        name = user.contacts[0];
+    }
+    // Extract username from GitHub noreply email if present
+    const githubNoreplyMatch = name.match(/^\d+\+([a-zA-Z0-9-]+)@users\.noreply\.github\.com$/);
+    if (githubNoreplyMatch) {
+        name = githubNoreplyMatch[1];
+    }
+    // Normalize quotes and trim
+    return name.replace(/["“”]/g, "").toLowerCase().trim();
+}
 </script>
 
 <div class="cards-row">

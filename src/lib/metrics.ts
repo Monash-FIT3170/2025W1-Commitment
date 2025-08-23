@@ -1,10 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import { info } from "@tauri-apps/plugin-log";
 
-export type Contacts = Readonly<String | String[]>;
+export type Contacts =
+    | string
+    | string[]
+    | { Email: string }
+    | { [key: string]: string };
 
 export type Contributor = Readonly<{
-    username: String,
+    username: string,
     contacts: Contacts,
     total_commits: number,
     additions: number,
