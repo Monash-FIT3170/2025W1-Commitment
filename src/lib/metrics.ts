@@ -1,16 +1,20 @@
 import { invoke } from "@tauri-apps/api/core";
 import { info } from "@tauri-apps/plugin-log";
 
-export type Contacts = Readonly<String | String[]>;
+export type Contacts =
+    | string
+    | string[]
+    | { Email: string }
+    | { [key: string]: string };
 
 export type Contributor = Readonly<{
-    username: String;
-    contacts: Contacts;
-    total_commits: number;
-    additions: number;
-    deletions: number;
-    bitmap_hash: String; // tmp use to store gravatar login
-    bitmap: String; // tmp use to store gravatar url
+    username: string,
+    contacts: Contacts,
+    total_commits: number,
+    additions: number,
+    deletions: number,
+    bitmap_hash: String,  // tmp use to store gravatar login
+    bitmap: String,       // tmp use to store gravatar url
 }>;
 
 // Load branches for a repository
@@ -44,7 +48,7 @@ export async function load_commit_data(owner: string, repo: string, source_type:
         info(`Failed to clone the repository: ${err}`);
         return [];
     }
-    
+
 
     try {
         let date_range: DateRange | undefined = undefined
