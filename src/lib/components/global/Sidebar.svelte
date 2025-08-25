@@ -1,21 +1,13 @@
 <script lang="ts">
-    import { invoke } from "@tauri-apps/api/core";
     import { sidebar_open, close_sidebar } from "$lib/stores/sidebar";
     import Icon from "@iconify/svelte";
+    import { manifest } from "$lib/stores/manifest";
 
     interface RepoBookmark {
         repo_name: string;
         repo_url: string;
     }
-    let bookmarked_repos: RepoBookmark[] = [];
-    (async () => {
-        bookmarked_repos = await invoke<RepoBookmark[]>("get_bookmarked_repositories", {})
-            .catch((error) => {
-                console.error("Failed to fetch bookmarked repositories:", error);
-                return [];
-            });
-    })();
-
+    let bookmarked_repos: RepoBookmark[] = $derived($manifest.repository.filter(r => r.bookmarked).map(r => ({repo_name: r.name, repo_url: r.url})));
 </script>
 
 <div class={`sidebar ${$sidebar_open ? "open" : "closed"}`}>
