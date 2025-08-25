@@ -5,8 +5,8 @@
     import DropdownTintedMedium from "../global/DropdownTintedMedium.svelte";
     import Tab from "../global/Tab.svelte";
     import Modal from "../global/Modal.svelte";
-  import { get } from "svelte/store";
-  import { load_commit_data, type Contributor } from "$lib/metrics";
+    import { get } from "svelte/store";
+    import { load_commit_data, type Contributor } from "$lib/metrics";
 
     let { repo_path: repo_path, repo_type: repo_type = "github", branches = [], branch_selection = $bindable() } = $props();
 
@@ -80,8 +80,8 @@
                 label_class="body-accent"
                 icon_first={true}
                 width="4rem"
-				        on:click={() => (showModal = true)}
-			      />
+                on:click={() => (showModal = true)}
+            />
 
             <!-- Modal -->
             <Modal bind:showModal>
@@ -93,7 +93,7 @@
                         type="file"
                         bind:this={fileInput}
                         style="display: none;"
-                        on:change={handleFileChange}
+                        onchange={handleFileChange}
                     />
                     <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                         <ButtonTintedMedium
