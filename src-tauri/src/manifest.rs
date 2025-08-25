@@ -11,7 +11,7 @@ manifest.json is this format
             "name": "<repository-name>",
             "url": "<repository-url>"
             "path": "<repository-path>"
-            "last-accessed": "<timestamp>",
+            "last_accessed": "<timestamp>",
             "cloned": true/false (Indicates if the repository is cloned or if its a local repository)
             "bookmarked": true/false
             "email_mapping": {
@@ -91,7 +91,7 @@ pub async fn check_manifest() -> Result<(), String> {
 
 async fn check_repository(repo: &serde_json::Value) -> Result<(), bool> {
     // Repositories which are not Bookmarked stay cloned for 30 days
-    if let Some(last_accessed) = repo.get("last-accessed").and_then(|l| l.as_str()) {
+    if let Some(last_accessed) = repo.get("last_accessed").and_then(|l| l.as_str()) {
         if let Ok(last_accessed_time) = chrono::DateTime::parse_from_rfc3339(last_accessed) {
             let now = chrono::Utc::now();
             if now.signed_duration_since(last_accessed_time).num_days() < 30 && repo.get("cloned").and_then(|c| c.as_bool()).unwrap_or(false) {
@@ -120,7 +120,7 @@ pub async fn create_repository(url: &str, path: &str, is_local: bool) -> Result<
         "name": format!("{}/{}", owner, repo),
         "url": url,
         "path": path,
-        "last-accessed": chrono::Utc::now().to_rfc3339(),
+        "last_accessed": chrono::Utc::now().to_rfc3339(),
         "cloned": !is_local,
         "bookmarked": false,
         "email_mapping": null,
@@ -144,7 +144,7 @@ pub async fn update_repository_last_accessed(repo_name: &str) -> Result<(), Stri
     if let Some(repos) = manifest.get_mut("repository").and_then(|r| r.as_array_mut()) {
         for repo in repos {
             if repo.get("name").and_then(|n| n.as_str()) == Some(repo_name) {
-                repo["last-accessed"] = chrono::Utc::now().to_rfc3339().into();
+                repo["last_accessed"] = chrono::Utc::now().to_rfc3339().into();
                 save_manifest(&manifest).await?;
                 return Ok(());
             }
