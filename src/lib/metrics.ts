@@ -279,4 +279,11 @@ export function get_users_avg_commit_size(users: Contributor[]): UserDisplayData
             }
         });
     return result;
+
+    
+}
+
+//Calculate absolute value of diff
+export function get_user_absolute_diff(user: Contributor): number {
+    return Math.abs(user.additions - user.deletions);
 }
