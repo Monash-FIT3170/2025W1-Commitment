@@ -36,14 +36,21 @@
         fileInput.click();
     }
 
+    let textareaValue = "";
     function handleFileChange(event: Event) {
         const selectedFiles = (event.target as HTMLInputElement).files;
         if (selectedFiles && selectedFiles.length > 0) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                const text = e.target?.result;
-                console.log("File contents:", text);
-                // Send `text` to your backend or process it
+                const text = e.target?.result as string;
+                try {
+                    const json = JSON.parse(text);
+                    textareaValue = JSON.stringify(json, null, 4);
+                } catch {
+                    // If not valid JSON, just show the raw text
+                    textareaValue = text;
+                }
+                console.log("File contents:", textareaValue);
             };
             reader.readAsText(selectedFiles[0]);
             showModal = false;
@@ -83,13 +90,7 @@
                 <h2 id="modal-title" slot="header">
                     Upload config file
                 </h2>
-                <p>Upload a config file to group email addresses to contributors, in format</p>
-                    <textarea
-                      id="formatInput"
-                      rows="4"
-                      placeholder="&#123;   add format here    &#125;"
-                      class="format-box"
-                    />
+                <p>Upload a config file to group email addresses to contributors</p>
                     <input
                         type="file"
                         bind:this={fileInput}
