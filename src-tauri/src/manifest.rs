@@ -36,7 +36,7 @@ async fn get_manifest_path() -> PathBuf {
 pub async fn read_manifest() -> Result<serde_json::Value, String> {
     let path = get_manifest_path().await;
     if !path.exists() {
-        return Err("Manifest file does not exist".to_string());
+        create_manifest().await?;
     }
     let content = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
     serde_json::from_str(&content).map_err(|e| e.to_string())
@@ -46,8 +46,11 @@ async fn create_manifest() -> Result<(), String> {
     let manifest = serde_json::json!({
         "repository": []
     });
-    println!("Creating new manifest at: {:?}", get_manifest_path().await);
+
     let path = get_manifest_path().await;
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
     std::fs::write(path, serde_json::to_string_pretty(&manifest).map_err(|e| e.to_string())?)
         .map_err(|e| e.to_string())?;
     Ok(())
