@@ -49,7 +49,6 @@
 
     let verification_message: string = $state("");
     let verification_error: boolean = $state(false);
-    let branch_selected: string | undefined = undefined;
 
     interface BackendVerificationResult {
         owner: string;
