@@ -21,18 +21,17 @@
 <Sidebar />
 
 <style>
+    .header {
+        padding-left: 2rem;
+        padding-right: 2rem;
+        padding-top: 2rem;
+        margin-bottom: 0.8125rem;
+        height: 1.375rem;
+        display: flex;
+        justify-content: space-between;
+    }
 
-.header {
-    padding-left: 2rem;
-    padding-right: 2rem;
-    padding-top: 2rem;
-    margin-bottom: 0.8125rem;
-    height: 1.375rem;
-    display: flex;
-    justify-content: space-between;
-}
-
-.body {
-    min-height: calc(100vh - 1.375rem)
-}
+    .body {
+        min-height: calc(100vh - 1.375rem);
+    }
 </style>

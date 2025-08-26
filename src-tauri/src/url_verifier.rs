@@ -100,7 +100,7 @@ pub fn verify_and_extract_source_info(
             // GitLab names: letters, digits, emojis (not handled by simple regex), '_', '.', '-', '+'.
             // Cannot start with '-' or end with '.', '.git', '.atom'.
             let gitlab_name_part_regex =
-                Regex::new(r"^[a-zA-Z0-9](?:[a-zA-Z0-9_.-+]*[a-zA-Z0-9])?$").unwrap();
+                Regex::new(r"^[a-zA-Z0-9](?:[a-zA-Z0-9_.+-]*[a-zA-Z0-9])?$").unwrap();
             let no_double_hyphen = Regex::new(r"--").unwrap();
 
             for segment in owner.split('/') {
