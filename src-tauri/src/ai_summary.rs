@@ -27,13 +27,11 @@ pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> 
     dotenvy::dotenv().ok();
     let api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY must be set");
     let url = format!(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={}",
-        api_key
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
     );
 
     let prompt = format!(
-        "Summarize the following commit messages in two sentences, under 20 words total. The summary should describe what this person has been working on. Do not use markdown.\n\nCommit messages:{}",
-        commits
+        "Summarize the following commit messages in two sentences, under 20 words total. The summary should describe what this person has been working on. Do not use markdown.\n\nCommit messages:{commits}"
     );
 
     let client = reqwest::Client::new();
@@ -55,7 +53,7 @@ pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> 
         }
     }
 
-    Ok("Could not generate a summary.".to_string())
+    Ok(String::from("Could not generate a summary."))
 }
 
 pub fn get_contributor_commits(
@@ -73,9 +71,11 @@ pub fn get_contributor_commits(
         if count >= 10 {
             break;
         }
+
         let oid = oid?;
         let commit = repo.find_commit(oid)?;
         let author_signature = commit.author();
+
         if let Some(author) = author_signature.name() {
             if author == contributor_name {
                 if let Some(message) = commit.summary() {
@@ -86,6 +86,7 @@ pub fn get_contributor_commits(
             }
         }
     }
+
     Ok(commits)
 }
 
@@ -100,10 +101,12 @@ pub fn get_all_contributors(repo_path: &str) -> Result<Vec<String>, git2::Error>
         let oid = oid?;
         let commit = repo.find_commit(oid)?;
         let author_signature = commit.author();
+
         if let Some(author) = author_signature.name() {
-            contributors.insert(author.to_string());
+            contributors.insert(String::from(author));
         }
     }
+
     Ok(contributors.into_iter().collect())
 }
 
@@ -112,11 +115,11 @@ pub async fn summarize_all_contributors(repo_path: &str) {
         for contributor in contributors {
             if let Ok(commits) = get_contributor_commits(repo_path, &contributor) {
                 if !commits.is_empty() {
-                    println!("--- Summarizing commits for {} ---", contributor);
+                    println!("--- Summarizing commits for {contributor} ---");
                     match summarize_commits(&commits).await {
-                        Ok(summary) => println!("{}", summary),
+                        Ok(summary) => println!("{summary}"),
                         Err(e) => {
-                            eprintln!("Failed to summarize commits for {}: {}", contributor, e)
+                            eprintln!("Failed to summarize commits for {contributor}: {e}")
                         }
                     }
                 }
