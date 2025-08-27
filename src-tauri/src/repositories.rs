@@ -1,7 +1,7 @@
 use git2::{build::RepoBuilder, RemoteCallbacks};
 
 fn clone_progress(cur_progress: usize, total_progress: usize) {
-    println!("\rProgress: {}/{}", cur_progress, total_progress);
+    println!("\rProgress: {cur_progress}/{total_progress}");
 }
 
 #[tauri::command]
@@ -13,11 +13,11 @@ pub fn is_repo_cloned(path: &str) -> bool {
 pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
     // Check if path is a valid directory
     if is_repo_cloned(path) {
-        log::info!("Repository already exists at: {}", path);
+        log::info!("Repository already exists at: {path}");
         return Ok(()); // Repository is already cloned, no need to clone again
     }
 
-    log::info!("Cloning repository from {} to {}", url, path);
+    log::info!("Cloning repository from {url} to {path}");
 
     let mut callbacks = RemoteCallbacks::new();
     callbacks.transfer_progress(|progress| {
@@ -34,6 +34,6 @@ pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
         .clone(url, std::path::Path::new(path))
         .map_err(|e| e.to_string())?;
 
-    log::info!("Repository cloned successfully at: {}", path);
+    log::info!("Repository cloned successfully at: {path}");
     Ok(())
 }

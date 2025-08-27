@@ -19,10 +19,12 @@ pub fn verify_and_extract_source_info(
     match source_type {
         0 => {
             // GitHub
-            let url = url::Url::parse(url_str).map_err(|e| format!("Invalid GitHub URL: {}", e))?;
+            let url = url::Url::parse(url_str).map_err(|e| format!("Invalid GitHub URL: {e}"))?;
             let host = url.host_str().unwrap_or_default();
             if host != "github.com" && host != "www.github.com" {
-                return Err("URL is not from GitHub (github.com or www.github.com)".to_string());
+                return Err(String::from(
+                    "URL is not from GitHub (github.com or www.github.com)",
+                ));
             }
 
             let mut path_segments: Vec<&str> =
@@ -31,9 +33,9 @@ pub fn verify_and_extract_source_info(
                 });
 
             if path_segments.len() < 2 {
-                return Err(
-                    "GitHub URL must contain at least an owner and a repository name.".to_string(),
-                );
+                return Err(String::from(
+                    "GitHub URL must contain at least an owner and a repository name.",
+                ));
             }
 
             let owner = path_segments.remove(0).to_string();
@@ -50,16 +52,22 @@ pub fn verify_and_extract_source_info(
             let no_double_hyphen = Regex::new(r"--").unwrap();
 
             if !owner_regex.is_match(&owner) || no_double_hyphen.is_match(&owner) {
-                return Err(format!("Invalid GitHub owner name: '{}'. Must be alphanumeric or single hyphens, not starting/ending with a hyphen, and no consecutive hyphens.", owner));
+                return Err(format!(
+                    "Invalid GitHub owner name: '{owner}'. Must be alphanumeric or single hyphens, not starting/ending with a hyphen, and no consecutive hyphens."
+                ));
             }
+
             if !repo_regex.is_match(&repo)
                 || repo.starts_with('-')
                 || repo.ends_with('-')
                 || repo.ends_with('.')
                 || no_double_hyphen.is_match(&repo)
             {
-                return Err(format!("Invalid GitHub repository name: '{}'. Contains invalid characters or patterns.", repo));
+                return Err(format!(
+                    "Invalid GitHub repository name: '{repo}'. Contains invalid characters or patterns."
+                ));
             }
+
             Ok(SourceInfo {
                 owner,
                 repo,
@@ -68,10 +76,13 @@ pub fn verify_and_extract_source_info(
         }
         1 => {
             // GitLab
-            let url = url::Url::parse(url_str).map_err(|e| format!("Invalid GitLab URL: {}", e))?;
+            let url = url::Url::parse(url_str).map_err(|e| format!("Invalid GitLab URL: {e}"))?;
             let host = url.host_str().unwrap_or_default();
+
             if host != "gitlab.com" && host != "www.gitlab.com" {
-                return Err("URL is not from GitLab (gitlab.com or www.gitlab.com)".to_string());
+                return Err(String::from(
+                    "URL is not from GitLab (gitlab.com or www.gitlab.com)",
+                ));
             }
 
             let mut path_segments: Vec<String> =
@@ -83,40 +94,38 @@ pub fn verify_and_extract_source_info(
                 });
 
             if path_segments.is_empty() {
-                return Err("GitLab URL path is empty.".to_string());
+                return Err(String::from("GitLab URL path is empty."));
             }
 
             let repo_name_with_git = path_segments.pop().unwrap_or_default();
             let repo = repo_name_with_git.trim_end_matches(".git").to_string();
 
             if path_segments.is_empty() {
-                return Err(
-                    "GitLab URL must contain at least a group/owner and a project name."
-                        .to_string(),
-                );
+                return Err(String::from(
+                    "GitLab URL must contain at least a group/owner and a project name.",
+                ));
             }
+
             let owner = path_segments.join("/");
 
             // GitLab names: letters, digits, emojis (not handled by simple regex), '_', '.', '-', '+'.
             // Cannot start with '-' or end with '.', '.git', '.atom'.
             let gitlab_name_part_regex =
-                Regex::new(r"^[a-zA-Z0-9](?:[a-zA-Z0-9_.-+]*[a-zA-Z0-9])?$").unwrap();
+                Regex::new(r"^[a-zA-Z0-9](?:[a-zA-Z0-9_.+-]*[a-zA-Z0-9])?$").unwrap();
             let no_double_hyphen = Regex::new(r"--").unwrap();
 
             for segment in owner.split('/') {
                 if !gitlab_name_part_regex.is_match(segment) || no_double_hyphen.is_match(segment) {
-                    return Err(format!(
-                        "Invalid GitLab group/owner segment: '{}'.",
-                        segment
-                    ));
+                    return Err(format!("Invalid GitLab group/owner segment: '{segment}'."));
                 }
             }
+
             if !gitlab_name_part_regex.is_match(&repo)
                 || repo.is_empty()
                 || repo.ends_with('.')
                 || no_double_hyphen.is_match(&repo)
             {
-                return Err(format!("Invalid GitLab project name: '{}'.", repo));
+                return Err(format!("Invalid GitLab project name: '{repo}'."));
             }
 
             Ok(SourceInfo {
@@ -143,8 +152,7 @@ pub fn verify_and_extract_source_info(
                         url_str.to_string() // Use the whole string for root
                     } else {
                         return Err(format!(
-                            "Invalid local path or could not determine file/directory name: '{}'.",
-                            url_str
+                            "Invalid local path or could not determine file/directory name: '{url_str}'."
                         ));
                     }
                 }
@@ -166,7 +174,7 @@ pub fn verify_and_extract_source_info(
                 && !(url_str == "/" || (url_str.ends_with(":\\") && url_str.len() == 3))
             {
                 // Check for empty repo unless it's a root
-                return Err(format!("Local path is empty or invalid: '{}'.", url_str));
+                return Err(format!("Local path is empty or invalid: '{url_str}'."));
             }
 
             Ok(SourceInfo {
@@ -175,9 +183,8 @@ pub fn verify_and_extract_source_info(
                 source_type,
             })
         }
-        _ => Err(
-            "Invalid source type specified. Use 0 for GitHub, 1 for GitLab, 2 for Local File."
-                .to_string(),
-        ),
+        _ => Err(String::from(
+            "Invalid source type specified. Use 0 for GitHub, 1 for GitLab, 2 for Local File.",
+        )),
     }
 }

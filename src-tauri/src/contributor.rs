@@ -34,7 +34,7 @@ pub async fn get_contributor_info(
 
     let repo = match Repository::open(canonical_path) {
         Ok(repo) => {
-            log::info!("Successfully opened repository at {}", path);
+            log::info!("Successfully opened repository at {path}");
             repo
         }
         Err(e) => {
@@ -58,8 +58,8 @@ pub async fn get_contributor_info(
         Some(target) => {
             // Ensure the branch exists before proceeding
             if !branches.contains(&target.to_string()) {
-                log::error!("Branch: {} not found in the repository.", target);
-                return Err(format!("Branch: {} not found in the repository.", target));
+                log::error!("Branch: {target} not found in the repository.");
+                return Err(format!("Branch: {target} not found in the repository."));
             }
             repo.find_branch(target, BranchType::Local)
                 .map_err(|e| e.to_string())?
@@ -96,10 +96,7 @@ pub async fn get_contributor_info(
         let email = author_signature.email().unwrap_or("").to_string();
         let gravatar_hash = md5::compute(email.clone().trim().to_lowercase());
         let gravatar_login = author_signature.name().unwrap_or("Unknown").to_string();
-        let gravatar_url = format!(
-            "https://www.gravatar.com/avatar/{:x}?d=identicon",
-            gravatar_hash
-        );
+        let gravatar_url = format!("https://www.gravatar.com/avatar/{gravatar_hash:x}?d=identicon");
 
         let commit_tree = commit.tree().map_err(|e| e.to_string())?;
         let parent_tree = if commit.parent_count() > 0 {
