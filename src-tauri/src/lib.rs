@@ -1,3 +1,4 @@
+mod ai_summary;
 mod branches;
 mod contributor;
 mod repositories;
