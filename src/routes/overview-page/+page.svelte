@@ -43,6 +43,8 @@
     <!-- commit graph -->
     {#if selected_view === "overview"}
     <CommitGraph {contributors} {branches} />
+    {:else if selected_view === "analysis"}
+    <ContributorAnalysis {contributors} />
     {/if}
     <div class="bottom-container">
         <ButtonPrimaryMedium icon="table-import" label="Upload Marking Sheet" />
