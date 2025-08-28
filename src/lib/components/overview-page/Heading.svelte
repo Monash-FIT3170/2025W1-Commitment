@@ -248,14 +248,6 @@
         padding: 0.6rem 0;
     }
 
-    .page-select-btns {
-        display: grid;
-        grid-template-columns: 20rem 20rem;
-        column-gap: 1rem;
-        padding-top: 2rem;
-        z-index: 1;
-    }
-
     .config-btn {
         grid-area: config;
     }
@@ -288,11 +280,6 @@
 
         .heading-btn {
             padding-top: 1rem;
-        }
-
-        .page-select-btns {
-            grid-template-columns: 16rem 16rem;
-            padding-top: 4rem;
         }
     }
 </style>

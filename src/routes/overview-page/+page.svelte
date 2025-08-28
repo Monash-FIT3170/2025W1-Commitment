@@ -1,5 +1,6 @@
 <script lang="ts">
     import { info, warn } from "@tauri-apps/plugin-log";
+    import ContributorAnalysis from "$lib/components/overview-page/ContributorAnalysis.svelte";
     import { page } from "$app/state";
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import CommitGraph from "$lib/components/overview-page/CommitGraph.svelte";
@@ -198,5 +199,20 @@
         padding-top: 2rem;
         padding-bottom: 6rem;
         gap: 1rem;
+    }
+    .page-select-btns {
+        display: grid;
+        grid-template-columns: 20rem 20rem;
+        column-gap: 1rem;
+        padding-top: 2rem;
+        z-index: 1;
+        padding: 0rem 4rem;
+    }
+
+    @media (max-width: 75rem) {
+    .page-select-btns {
+            grid-template-columns: 16rem 16rem;
+            padding-top: 4rem;
+        }
     }
 </style>
