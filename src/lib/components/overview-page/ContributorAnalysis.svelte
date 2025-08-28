@@ -26,7 +26,7 @@
             return {
                 username: user.bitmap_hash,
                 image: user.bitmap,
-                analysis: "",
+                analysis: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
                 scaling_factor: scaling_factor.toFixed(1),
             };
         })
@@ -44,9 +44,11 @@
     <div class="cards-row">
         {#each contributors_sorted() as person}
             <ContributorCard username={person.username} image={person.image} scaling_factor={person.scaling_factor}>
+                {#snippet content()}
                 <div class="contents body">
                     <div>{person.analysis}</div>
                 </div>
+                {/snippet}
             </ContributorCard>
         {/each}
     </div>
@@ -54,11 +56,15 @@
 
 <style>
     .container {
-        padding: 2rem;
+        padding: 0rem 2rem 2rem 2rem;
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
         min-height: auto;
+    }
+
+    .contents {
+        text-align: start;
     }
 </style>
