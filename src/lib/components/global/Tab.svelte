@@ -8,6 +8,7 @@
         width = "auto",
         icon_first = true,
         selected = false,
+        onclick = null,
     } = $props();
 </script>
 
@@ -15,6 +16,7 @@
     class="tab"
     class:active-style={selected}
     {disabled}
+    onclick={onclick}
     style="
         width: {width};
 		border-bottom: {selected
