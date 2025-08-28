@@ -102,14 +102,3 @@
         <ContributorStatsCard {...person} />
     {/each}
 </div>
-
-<style>
-    .cards-row {
-        width: 100%;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        justify-content: center;
-        margin-top: 80px; /* Increased to prevent overlap with expanded graph x-axis */
-    }
-</style>

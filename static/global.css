@@ -193,3 +193,12 @@ html, body, #app {
     width: 2.625rem;
     height: 2.625rem;
 }
+
+.cards-row {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 3rem;
+}
