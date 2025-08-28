@@ -64,14 +64,3 @@
         <ContributorStatsCard {...person} />
     {/each}
 </div>
-
-<style>
-    .cards-row {
-        width: 100%;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        justify-content: center;
-        margin-top: 3rem;
-    }
-</style>
