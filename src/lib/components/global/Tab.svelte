@@ -16,7 +16,7 @@
     class="tab"
     class:active-style={selected}
     {disabled}
-    onclick={onclick}
+    {onclick}
     style="
         width: {width};
 		border-bottom: {selected
