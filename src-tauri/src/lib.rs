@@ -28,6 +28,7 @@ pub fn run() {
             manifest::read_manifest,
             manifest::get_bookmarked_repositories,
             manifest::set_bookmarked_repository,
+            manifest::save_manifest
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
