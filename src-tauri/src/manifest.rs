@@ -27,8 +27,7 @@ manifest.json is this format
     */
 
 async fn get_manifest_path() -> PathBuf {
-    let path = PathBuf::from("../.gitgauge/manifest.json");
-    path
+    PathBuf::from("../.gitgauge/manifest.json")
 }
 
 #[tauri::command]
@@ -112,7 +111,7 @@ pub async fn create_repository(url: &str, path: &str, is_local: bool) -> Result<
         .get("repository")
         .and_then(|r| r.as_array())
         .cloned()
-        .unwrap_or_else(|| Vec::new());
+        .unwrap_or_else(Vec::new);
     // Set name to owner and repo name if URL is valid | github.com/owner/repo -> owner/repo
     let source_info = verify_and_extract_source_info(url, if is_local { 2 } else { 0 })
         .map_err(|e| format!("Invalid URL: {}", e))?;
