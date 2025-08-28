@@ -23,6 +23,8 @@ struct Part {
     text: String,
 }
 
+const COMMIT_SUMMARY_PROMPT: &str = include_str!("AI-summary-prompt.md");
+
 pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> {
     dotenvy::dotenv().ok();
     let api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY must be set");
@@ -30,9 +32,7 @@ pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> 
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
     );
 
-    let prompt = format!(
-        "Summarize the following commit messages in two sentences, under 20 words total. The summary should describe what this person has been working on. Do not use markdown.\n\nCommit messages:{commits}"
-    );
+    let prompt = COMMIT_SUMMARY_PROMPT.replace("{commits}", &commits);
 
     let client = reqwest::Client::new();
     let res = client
