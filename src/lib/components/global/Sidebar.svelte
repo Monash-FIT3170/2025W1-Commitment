@@ -4,6 +4,7 @@
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
     import { onMount } from "svelte";
     import { invoke } from "@tauri-apps/api/core";
+    import ButtonPrimaryMedium from "./ButtonPrimaryMedium.svelte";
 
     interface RepoBookmark {
         repo_name: string;
@@ -49,9 +50,19 @@
             <Icon icon="tabler:x" class="icon-medium" style="color: white" />
         </button>
     </div>
-
-    <div class="bookmark-list">
-        <div class="bookmark-header">
+    <div class="sidebar-item-container">
+        <div class="header">
+            <Icon
+                icon="tabler:sparkles"
+                class="icon-medium"
+                style="color: white"
+            />
+            <h2 class="heading-1 bookmark-text white">AI integration</h2>    
+        </div>
+        <ButtonPrimaryMedium icon="plus" label="Connect to Gemini" />
+    </div>
+    <div class="sidebar-item-container">
+        <div class="header">
             <Icon
                 icon="tabler:star-filled"
                 class="icon-medium"
@@ -122,12 +133,13 @@
         border: none;
         padding: 0;
     }
-    .bookmark-list {
+    .sidebar-item-container {
+        padding-bottom: 1.25rem;
         display: grid;
         grid-template-columns: 1fr;
         gap: 13px;
     }
-    .bookmark-header {
+    .header {
         display: flex;
         align-items: center;
         height: 22px;
