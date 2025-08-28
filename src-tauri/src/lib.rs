@@ -26,8 +26,6 @@ pub fn run() {
             repositories::is_repo_cloned,
             url_verifier::verify_and_extract_source_info,
             manifest::read_manifest,
-            manifest::get_bookmarked_repositories,
-            manifest::set_bookmarked_repository,
             manifest::save_manifest
         ])
         .run(tauri::generate_context!())

@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use serde::Serialize;
 use crate::url_verifier::{verify_and_extract_source_info};
 
 /*
@@ -162,46 +161,4 @@ pub async fn update_repository_last_accessed(repo_name: &str) -> Result<(), Stri
         }
     }
     Err(format!("Repository {} not found", repo_name))
-}
-
-#[tauri::command]
-pub async fn set_bookmarked_repository(repo_url: &str, bookmarked: bool) -> Result<(), String> {
-    let mut manifest = read_manifest().await?;
-    if let Some(repos) = manifest.get_mut("repository").and_then(|r| r.as_array_mut()) {
-        for repo in repos {
-            println!("Checking repository: {:?}", repo);
-            if repo.get("url").and_then(|n| n.as_str()) == Some(repo_url) {
-                println!("Found repository: {:?}", repo);
-                repo["bookmarked"] = bookmarked.into();
-                save_manifest_file(&manifest).await?;
-                return Ok(());
-            }
-        }
-    }
-    Err(format!("Repository {} not found", repo_url))
-}
-
-#[derive(Serialize)]
-pub struct RepoBookmark {
-    pub repo_name: String,
-    pub repo_url: String,
-}
-
-#[tauri::command]
-pub async fn get_bookmarked_repositories() -> Result<Vec<RepoBookmark>, String> {
-    let manifest = read_manifest().await?;
-    let mut bookmarked_repos = Vec::new();
-    if let Some(repos) = manifest.get("repository").and_then(|r| r.as_array()) {
-        for repo in repos {
-            if repo.get("bookmarked").and_then(|b| b.as_bool()).unwrap_or(false) {
-                if let Some(name) = repo.get("name").and_then(|n| n.as_str()) {
-                    bookmarked_repos.push(RepoBookmark {
-                        repo_name: name.to_string(),
-                        repo_url: repo.get("url").and_then(|u| u.as_str()).unwrap_or("").to_string(),
-                    });
-                }
-            }
-        }
-    }
-    Ok(bookmarked_repos)
 }
