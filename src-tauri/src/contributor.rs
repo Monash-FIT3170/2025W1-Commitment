@@ -1,3 +1,4 @@
+use crate::ai_summary;
 use git2::{BranchType, Repository, Sort};
 use serde::{Deserialize, Serialize};
 
@@ -135,6 +136,11 @@ pub async fn get_contributor_info(
         entry.additions += additions;
         entry.deletions += deletions;
     }
+
+    let repo_path_str = path.to_string();
+    tauri::async_runtime::spawn(async move {
+        ai_summary::summarize_all_contributors(&repo_path_str).await;
+    });
 
     Ok(contributors)
 }
