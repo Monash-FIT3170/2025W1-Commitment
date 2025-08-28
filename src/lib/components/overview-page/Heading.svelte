@@ -15,16 +15,6 @@
 
     let start_date = $state("01-01-25");
     let end_date = $state("20-01-25");
-    let selected_view: string = $state("overview");
-
-    const tabs = [
-        { id: "overview", label: "Overview", icon: "chart-line" },
-        { id: "analysis", label: "Contribution Analysis", icon: "id" },
-    ];
-
-    function select_view(id: string) {
-        selected_view = id;
-    }
 
     function open_config() {
         //config logic
@@ -86,18 +76,6 @@
 
         <span class="subtitle display-subtitle">Contribution Statistics</span>
     </div>
-
-    <div class="page-select-btns">
-        <!-- for each tab -->
-        {#each tabs as tab}
-            <Tab
-                label={tab.label}
-                icon={tab.icon}
-                selected={selected_view === tab.id}
-                width="100%"
-            />
-        {/each}
-    </div>
 </div>
 
 <style>
@@ -142,14 +120,6 @@
         padding: 0.6rem 0;
     }
 
-    .page-select-btns {
-        display: grid;
-        grid-template-columns: 20rem 20rem;
-        column-gap: 1rem;
-        padding-top: 2rem;
-        z-index: 1;
-    }
-
     .config-btn {
         grid-area: config;
     }
@@ -182,11 +152,6 @@
 
         .heading-btn {
             padding-top: 1rem;
-        }
-
-        .page-select-btns {
-            grid-template-columns: 16rem 16rem;
-            padding-top: 4rem;
         }
     }
 </style>
