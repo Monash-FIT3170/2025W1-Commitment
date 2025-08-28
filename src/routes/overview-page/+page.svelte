@@ -42,9 +42,9 @@
 
     <!-- commit graph -->
     {#if selected_view === "overview"}
-    <CommitGraph {contributors} {branches} />
+        <CommitGraph {contributors} {branches} />
     {:else if selected_view === "analysis"}
-    <ContributorAnalysis {contributors} />
+        <ContributorAnalysis {contributors} />
     {/if}
     <div class="bottom-container">
         <ButtonPrimaryMedium icon="table-import" label="Upload Marking Sheet" />
@@ -76,7 +76,7 @@
     }
 
     @media (max-width: 75rem) {
-    .page-select-btns {
+        .page-select-btns {
             grid-template-columns: 16rem 16rem;
             padding-top: 4rem;
         }

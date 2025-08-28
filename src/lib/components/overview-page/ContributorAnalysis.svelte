@@ -8,9 +8,7 @@
         get_user_total_commits,
     } from "../../metrics";
 
-    let {
-        contributors,
-    }: { contributors: Contributor[];} = $props();
+    let { contributors }: { contributors: Contributor[] } = $props();
 
     let commit_mean = get_average_commits(contributors);
     let sd = get_sd(contributors);
@@ -26,7 +24,8 @@
             return {
                 username: user.bitmap_hash,
                 image: user.bitmap,
-                analysis: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+                analysis:
+                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
                 scaling_factor: scaling_factor.toFixed(1),
             };
         })
@@ -43,11 +42,15 @@
 <main class="container">
     <div class="cards-row">
         {#each contributors_sorted() as person}
-            <ContributorCard username={person.username} image={person.image} scaling_factor={person.scaling_factor}>
+            <ContributorCard
+                username={person.username}
+                image={person.image}
+                scaling_factor={person.scaling_factor}
+            >
                 {#snippet content()}
-                <div class="contents body">
-                    <div>{person.analysis}</div>
-                </div>
+                    <div class="contents body">
+                        <div>{person.analysis}</div>
+                    </div>
                 {/snippet}
             </ContributorCard>
         {/each}
