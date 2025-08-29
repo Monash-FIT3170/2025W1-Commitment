@@ -57,9 +57,13 @@
                 class="icon-medium"
                 style="color: white"
             />
-            <h2 class="heading-1 bookmark-text white">AI integration</h2>    
+            <h2 class="heading-1 sidebar-item-header white">AI integration</h2>    
         </div>
-        <ButtonPrimaryMedium icon="plus" label="Connect to Gemini" />
+        <ApiKeyField
+            bind:api_input={api_input}
+            on_submit={on_submit}
+            error={api_error}
+        />
     </div>
     <div class="sidebar-item-container">
         <div class="header">
@@ -68,7 +72,7 @@
                 class="icon-medium"
                 style="color: white"
             />
-            <h2 class="heading-1 bookmark-text white">Bookmarks</h2>
+            <h2 class="heading-1 sidebar-item-header white">Bookmarks</h2>
         </div>
 
         {#each bookmarked_repos as repo (repo.repo_name)}
@@ -116,12 +120,10 @@
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
-        height: 1.8125rem;
         margin-bottom: 1.5rem;
     }
     .sidebar-title {
         display: flex;
-        height: 29px;
     }
     .sidebar-title-text {
         margin: auto 0 auto 0.375rem;
@@ -134,18 +136,18 @@
         padding: 0;
     }
     .sidebar-item-container {
-        padding-bottom: 1.25rem;
         display: grid;
         grid-template-columns: 1fr;
         gap: 13px;
+        padding: 0rem 0.375rem 1rem 0.375rem;
     }
     .header {
         display: flex;
         align-items: center;
         height: 22px;
     }
-    .bookmark-text {
-        padding-left: 6px;
+    .sidebar-item-header {
+        padding: 0px 6px;
     }
     .bookmark-item {
         display: flex;
@@ -154,7 +156,7 @@
         cursor: pointer;
         background: none;
         border: none;
-        padding: 0;
+        padding: 0rem;
     }
     .repo-name,
     .repo-url {
