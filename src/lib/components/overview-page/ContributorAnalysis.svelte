@@ -1,4 +1,4 @@
-<script lang="ts">
+'''<script lang="ts">
     import ContributorCard from "../global/ContributorCard.svelte";
     import type { Contributor } from "$lib/metrics";
     import {
@@ -25,7 +25,7 @@
                 username: user.bitmap_hash,
                 image: user.bitmap,
                 analysis:
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+                    user.ai_summary || "Loading...",
                 scaling_factor: scaling_factor.toFixed(1),
             };
         })
@@ -70,4 +70,4 @@
     .contents {
         text-align: start;
     }
-</style>
+</style>'''

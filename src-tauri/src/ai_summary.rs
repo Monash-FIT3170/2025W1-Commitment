@@ -1,6 +1,7 @@
 use git2::Repository;
 use serde::Deserialize;
 use serde_json::json;
+use std::collections::{HashMap, HashSet};
 use std::env;
 
 #[derive(Deserialize)]
@@ -90,40 +91,43 @@ pub fn get_contributor_commits(
     Ok(commits)
 }
 
-pub fn get_all_contributors(repo_path: &str) -> Result<Vec<String>, git2::Error> {
+pub fn get_all_contributors(repo_path: &str) -> Result<HashSet<(String, String)>, git2::Error> {
     let repo = Repository::open(repo_path)?;
     let mut revwalk = repo.revwalk()?;
     revwalk.push_head()?;
 
-    let mut contributors = std::collections::HashSet::new();
+    let mut contributors = HashSet::new();
 
     for oid in revwalk {
         let oid = oid?;
         let commit = repo.find_commit(oid)?;
         let author_signature = commit.author();
 
-        if let Some(author) = author_signature.name() {
-            contributors.insert(String::from(author));
+        if let (Some(author), Some(email)) = (author_signature.name(), author_signature.email()) {
+            contributors.insert((String::from(author), String::from(email)));
         }
     }
 
-    Ok(contributors.into_iter().collect())
+    Ok(contributors)
 }
 
-pub async fn summarize_all_contributors(repo_path: &str) {
+pub async fn summarize_all_contributors(repo_path: &str) -> Result<HashMap<String, String>, String> {
+    let mut summaries = HashMap::new();
     if let Ok(contributors) = get_all_contributors(repo_path) {
-        for contributor in contributors {
-            if let Ok(commits) = get_contributor_commits(repo_path, &contributor) {
+        for (contributor_name, contributor_email) in contributors {
+            if let Ok(commits) = get_contributor_commits(repo_path, &contributor_name) {
                 if !commits.is_empty() {
-                    println!("--- Summarizing commits for {contributor} ---");
                     match summarize_commits(&commits).await {
-                        Ok(summary) => println!("{summary}"),
+                        Ok(summary) => {
+                            summaries.insert(contributor_email.clone(), summary);
+                        }
                         Err(e) => {
-                            eprintln!("Failed to summarize commits for {contributor}: {e}")
+                            eprintln!("Failed to summarize commits for {contributor_name}: {e}")
                         }
                     }
                 }
             }
         }
     }
+    Ok(summaries)
 }

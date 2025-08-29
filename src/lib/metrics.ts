@@ -16,6 +16,7 @@ export type Contributor = Readonly<{
     deletions: number;
     bitmap_hash: String; // tmp use to store gravatar login
     bitmap: String; // tmp use to store gravatar url
+    ai_summary: String;
 }>;
 
 // Load branches for a repository

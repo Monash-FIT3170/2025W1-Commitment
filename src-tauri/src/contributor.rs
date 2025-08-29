@@ -20,6 +20,7 @@ pub struct Contributor {
     // pub changes: u64,
     pub bitmap_hash: String,
     pub bitmap: String, // tmp until using actual bitmap type
+    pub ai_summary: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -117,38 +118,47 @@ pub async fn get_contributor_info(
     branch: Option<&str>,
     date_range: Option<DateRange>,
 ) -> Result<HashMap<String, Contributor>, String> {
-    let canonical_path = std::path::Path::new(path)
-        .canonicalize()
-        .map_err(|e| e.to_string())?;
+    let mut contributors: HashMap<String, Contributor>;
+    {
+        let canonical_path = std::path::Path::new(path)
+            .canonicalize()
+            .map_err(|e| e.to_string())?;
 
-    let repo = match Repository::open(canonical_path) {
-        Ok(repo) => {
-            log::info!("Successfully opened repository at {path}");
-            repo
-        }
-        Err(e) => {
-            return Err(format!(
-                "Error: {e}. Occurred when attempting to opening repository."
-            ))
-        }
-    };
+        let repo = match Repository::open(canonical_path) {
+            Ok(repo) => {
+                log::info!("Successfully opened repository at {path}");
+                repo
+            }
+            Err(e) => {
+                return Err(format!(
+                    "Error: {e}. Occurred when attempting to opening repository."
+                ))
+            }
+        };
 
-    let mut branches: Vec<String> = Vec::new();
-    for branch in repo.branches(None).map_err(|e| e.to_string())? {
-        let (branch, _branch_type) = branch.map_err(|e| e.to_string())?;
-        if let Some(name) = branch.name().map_err(|e| e.to_string())? {
-            branches.push(name.to_string());
+        let mut branches: Vec<String> = Vec::new();
+        for branch in repo.branches(None).map_err(|e| e.to_string())? {
+            let (branch, _branch_type) = branch.map_err(|e| e.to_string())?;
+            if let Some(name) = branch.name().map_err(|e| e.to_string())? {
+                branches.push(name.to_string());
+            }
         }
-    }
 
-    // Resolve branch reference
-    let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
-    let head = match branch {
-        Some(target) => {
-            // Ensure the branch exists before proceeding
-            if !branches.contains(&target.to_string()) {
-                log::error!("Branch: {target} not found in the repository.");
-                return Err(format!("Branch: {target} not found in the repository."));
+        // Resolve branch reference
+        let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
+        let head = match branch {
+            Some(target) => {
+                // Ensure the branch exists before proceeding
+                if !branches.contains(&target.to_string()) {
+                    log::error!("Branch: {target} not found in the repository.");
+                    return Err(format!("Branch: {target} not found in the repository."));
+                }
+                repo.find_branch(target, BranchType::Local)
+                    .map_err(|e| e.to_string())?
+                    .get()
+                    .target()
+                    .ok_or(git2::Error::from_str("Invalid branch head"))
+                    .map_err(|e| e.to_string())?
             }
             find_branch_oid(&repo, target)?
         }
@@ -160,28 +170,27 @@ pub async fn get_contributor_info(
             .map_err(|e| e.to_string())?,
     };
 
-    revwalk.push(head).map_err(|e| e.to_string())?;
-    revwalk.set_sorting(Sort::TIME).map_err(|e| e.to_string())?;
+        revwalk.push(head).map_err(|e| e.to_string())?;
+        revwalk.set_sorting(Sort::TIME).map_err(|e| e.to_string())?;
 
-    let mut contributors: HashMap<String, Contributor> = HashMap::new();
+        contributors = HashMap::new();
 
-    for oid_result in revwalk {
-        let oid = oid_result.map_err(|e| e.to_string())?;
-        let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
-        let time = commit.time().seconds();
+        for oid_result in revwalk {
+            let oid = oid_result.map_err(|e| e.to_string())?;
+            let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
+            let time = commit.time().seconds();
 
         if let Some(ref date_range) = date_range {
             // Check if commit time is within the specified date range
             if time < date_range.start || time > date_range.end {
                 continue;
             }
-        }
 
-        let author_signature = commit.author();
-        let email = author_signature.email().unwrap_or("").to_string();
-        let gravatar_hash = md5::compute(email.clone().trim().to_lowercase());
-        let gravatar_login = author_signature.name().unwrap_or("Unknown").to_string();
-        let gravatar_url = format!("https://www.gravatar.com/avatar/{gravatar_hash:x}?d=identicon");
+            let author_signature = commit.author();
+            let email = author_signature.email().unwrap_or("").to_string();
+            let gravatar_hash = md5::compute(email.clone().trim().to_lowercase());
+            let gravatar_login = author_signature.name().unwrap_or("Unknown").to_string();
+            let gravatar_url = format!("https://www.gravatar.com/avatar/{gravatar_hash:x}?d=identicon");
 
         // Normalize username for grouping
         let normalized_username = if email.ends_with("@users.noreply.github.com") {
@@ -218,13 +227,13 @@ pub async fn get_contributor_info(
             None
         };
 
-        let diff = repo
-            .diff_tree_to_tree(parent_tree.as_ref(), Some(&commit_tree), None)
-            .map_err(|e| e.to_string())?;
-        let stats = diff.stats().map_err(|e| e.to_string())?;
+            let diff = repo
+                .diff_tree_to_tree(parent_tree.as_ref(), Some(&commit_tree), None)
+                .map_err(|e| e.to_string())?;
+            let stats = diff.stats().map_err(|e| e.to_string())?;
 
-        let additions = stats.insertions() as u64;
-        let deletions = stats.deletions() as u64;
+            let additions = stats.insertions() as u64;
+            let deletions = stats.deletions() as u64;
 
         let entry = contributors
             .entry(normalized_username.clone())
@@ -266,9 +275,13 @@ pub async fn get_contributor_info(
     }
 
     let repo_path_str = path.to_string();
-    tauri::async_runtime::spawn(async move {
-        ai_summary::summarize_all_contributors(&repo_path_str).await;
-    });
+    if let Ok(summaries) = ai_summary::summarize_all_contributors(&repo_path_str).await {
+        for (email, summary) in summaries {
+            if let Some(contributor) = contributors.get_mut(&email) {
+                contributor.ai_summary = summary;
+            }
+        }
+    }
 
     Ok(contributors)
 }
