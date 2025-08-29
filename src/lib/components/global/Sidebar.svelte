@@ -59,6 +59,9 @@
             />
             <h2 class="heading-1 sidebar-item-header white">AI integration</h2>    
         </div>
+        <div class ="caption label-secondary">
+            Add your Gemini API key to enable AI-powered features.
+        </div>
         <ApiKeyField
             bind:api_input={api_input}
             on_submit={on_submit}
