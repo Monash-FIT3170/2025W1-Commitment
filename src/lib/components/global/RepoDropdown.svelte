@@ -4,18 +4,6 @@
     import type { RepoOption } from "../../stores/repo";
 
     let { selected = $bindable<RepoOption>(), action = () => {} } = $props();
-
-    let dropdown_open = $state(false);
-
-    function toggle_dropdown() {
-        dropdown_open = !dropdown_open;
-    }
-
-    function select_option(option: RepoOption) {
-        selected = option;
-        dropdown_open = false;
-        action(option);
-    }
 </script>
 
 <!--
@@ -48,8 +36,7 @@ This is a dropdown component that allows users to select a repository type.
 <div class="dropdown">
     <button
         type="button"
-        class={`dropdown-btn ${dropdown_open ? "show" : "hide"}`}
-        onclick={toggle_dropdown}
+        class={`dropdown-btn hide"}`}
     >
         {#if selected}
             <div class="dropdown-option">
@@ -59,25 +46,7 @@ This is a dropdown component that allows users to select a repository type.
             <!-- This case should not happen with a default selected value -->
             <h6 class="display-body">Select an option</h6>
         {/if}
-        <Icon
-            icon={`tabler:chevron-down`}
-            class="icon-medium"
-            style="color: white"
-        />
     </button>
-
-    {#if dropdown_open}
-        <div class="dropdown-content">
-            {#each repo_options as option}
-                <button
-                    class="dropdown-option"
-                    onclick={() => select_option(option)}
-                >
-                    {@render DropdownItem(option)}
-                </button>
-            {/each}
-        </div>
-    {/if}
 </div>
 
 <style>
