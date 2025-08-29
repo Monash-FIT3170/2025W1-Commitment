@@ -67,7 +67,7 @@ if [[ $? -eq 101 ]]; then
     printf "\nLint errors/warnings found in rust code.\n"
 
     printf "
-Run \`npm run rs-lint\` to see lint suggestions or use \`npm run rs-lint:fix\` to
+Run \`npm run clippy\` to see lint suggestions or use \`npm run clippy:fix\` to
 apply lint suggestions to rust crate automatically.
 
 "
