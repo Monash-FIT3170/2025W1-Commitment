@@ -72,14 +72,18 @@
 
 <main class="container">
     {#if loading}
-            <p>Loading...</p>
+    <div class="body">
+        Loading...
+    </div>
     {/if}
     <div class="button-container">
+        <div>
         <ButtonPrimaryMedium
             label={!repo_summaries ? "Generate AI Summaries": "Regenerate AI Summaries"}
             onclick={generate_summaries}
             disabled={loading}
         />
+        </div>
     </div>
     {#if !loading && repo_summaries}
     <div class="cards-container">
@@ -123,5 +127,12 @@
         width: 100%;
         justify-items: center;
         justify-content: center;
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: center;
+        height: calc(100vh - 26rem);
+        align-items: center;
     }
 </style>

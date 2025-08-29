@@ -280,7 +280,7 @@
     }
 
     .main {
-        height: calc(100vh - 4.1875rem);
+        height: calc(100vh);
         display: flex;
         justify-content: center;
         align-items: center;

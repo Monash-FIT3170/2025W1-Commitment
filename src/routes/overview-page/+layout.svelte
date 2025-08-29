@@ -10,6 +10,7 @@
 
     import { page } from "$app/state";
     import Banner from "$lib/components/overview-page/Banner.svelte";
+    import ButtonFooter from "$lib/components/overview-page/ButtonFooter.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
 
     let profile_image_url = "/mock_profile_img.png";
@@ -25,7 +26,12 @@
     <header class="header">
         <Banner {repo_url} {repo_path} {username} {profile_image_url} />
     </header>
+    <div class="content">
     {@render children()}
+    </div>
+    <footer class="footer">
+        <ButtonFooter />
+    </footer>
 </main>
 <Sidebar />
 
@@ -38,5 +44,15 @@
         height: 1.375rem;
         display: flex;
         justify-content: space-between;
+    }
+    
+    .footer {
+        /* position: fixed; */
+        bottom: 0;
+        width: 100%;
+    }
+
+    .content {
+        min-height: 100vh;
     }
 </style>

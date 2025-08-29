@@ -197,15 +197,6 @@
 </div>
 
 <style>
-    .bottom-container {
-        flex-direction: row;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding-top: 2rem;
-        padding-bottom: 6rem;
-        gap: 1rem;
-    }
     .page-select-btns {
         display: grid;
         grid-template-columns: 20rem 20rem;
