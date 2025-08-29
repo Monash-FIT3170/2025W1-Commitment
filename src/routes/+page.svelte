@@ -1,6 +1,7 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
-    import { verify_and_extract_source_info } from "$lib/github_url_verifier.js";
+    import { get_source_type } from "$lib/github_url_verifier.js";
+    import Icon from "@iconify/svelte";
     import { load_branches, load_commit_data } from "$lib/metrics";
     import { goto } from "$app/navigation";
     import { get_repo_type, get_repo_name } from "$lib/stores/repo";
@@ -50,9 +51,15 @@
         })
     );
 
-
+    
+    let selected: RepoOption = $state(repo_options[0]); // Default to GitHub
+    
+    $effect(() => {
+        if (repo_url_input.trim() !== "") {
+            selected = repo_options[get_source_type(repo_url_input)];
+        }
+    });
     let repo_url_input: string = $state("");
-    let selected: RepoOption = $state(repo_options[0]);
 
     let verification_message: string = $state("");
     let verification_error: boolean = $state(false);
@@ -144,12 +151,6 @@
         }
 
         try {
-            
-            // Try frontend validation first
-            const result = verify_and_extract_source_info(
-                repo_url_input,
-                selected.source_type
-            );
 
             const backend_result = await invoke<BackendVerificationResult>(
                 "verify_and_extract_source_info",
