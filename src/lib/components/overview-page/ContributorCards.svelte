@@ -97,8 +97,21 @@
     }
 </script>
 
-<div class="cards-row">
+<div class="cards-container">
     {#each people_with_metrics_sorted() as person}
         <ContributorStatsCard {...person} />
     {/each}
 </div>
+
+<style>
+.cards-container {
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 26rem);
+    gap: 1rem;
+    padding: 1rem;
+    width: 100%;
+    justify-items: center;
+    justify-content: center;
+}
+</style>

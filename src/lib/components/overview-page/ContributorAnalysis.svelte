@@ -1,4 +1,4 @@
-'''<script lang="ts">
+<script lang="ts">
     import ContributorCard from "../global/ContributorCard.svelte";
     import type { Contributor } from "$lib/metrics";
     import {
@@ -37,6 +37,7 @@
         }
     }
 
+    const repo_summaries = $summaries_store.get($current_repo.repo_path);
     let people_with_analysis = $derived(
         contributors.map((user: Contributor) => {
             const num_commits = get_user_total_commits(user);
@@ -45,7 +46,6 @@
                 commit_mean,
                 sd
             );
-            const repo_summaries = $summaries_store.get($current_repo.repo_path);
             let analysis = "";
             if (repo_summaries && 'Email' in user.contacts) {
                 analysis = repo_summaries.get(user.contacts.Email as string) || "No summary available";
@@ -71,17 +71,18 @@
 </script>
 
 <main class="container">
+    {#if loading}
+            <p>Loading...</p>
+    {/if}
     <div class="button-container">
         <ButtonPrimaryMedium
-            label="Generate AI Summaries"
+            label={!repo_summaries ? "Generate AI Summaries": "Regenerate AI Summaries"}
             onclick={generate_summaries}
             disabled={loading}
         />
-        {#if loading}
-            <p>Loading...</p>
-        {/if}
     </div>
-    <div class="cards-row">
+    {#if !loading && repo_summaries}
+    <div class="cards-container">
         {#each contributors_sorted() as person}
             <ContributorCard
                 username={person.username}
@@ -96,11 +97,12 @@
             </ContributorCard>
         {/each}
     </div>
+    {/if}
 </main>
 
 <style>
     .container {
-        padding: 0rem 2rem 2rem 2rem;
+        padding: 2rem 2rem 2rem 2rem;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -112,7 +114,14 @@
         text-align: start;
     }
 
-    .button-container {
-        margin-bottom: 1rem;
+    .cards-container {
+        margin-top: 1rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 26rem);
+        gap: 1rem;
+        padding: 1rem;
+        width: 100%;
+        justify-items: center;
+        justify-content: center;
     }
-</style>'''
+</style>

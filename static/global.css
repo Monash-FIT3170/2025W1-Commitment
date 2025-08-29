@@ -193,17 +193,3 @@ html, body, #app {
     width: 2.625rem;
     height: 2.625rem;
 }
-
-.cards-row {
-    /* width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center; */
-    margin-top: 3rem;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1rem;
-    padding: 1rem;
-    width: 100%;
-}
