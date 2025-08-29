@@ -52,7 +52,7 @@
     );
 
     
-    let selected: RepoOption = $state(repo_options[0]); // Default to GitHub
+    let selected: RepoOption = $state(repo_options[2]); // Default to Local
     
     $effect(() => {
         if (repo_url_input.trim() !== "") {

@@ -63,7 +63,6 @@ This is a dropdown component that allows users to select a repository type.
         padding: 0.625rem 0.75rem 0.5rem 0rem;
         background: var(--tint-00);
         border: none;
-        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -115,7 +114,6 @@ This is a dropdown component that allows users to select a repository type.
         padding: 0.625rem 0.75rem 0.625rem 1rem;
         background: none;
         border: none;
-        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: start;
