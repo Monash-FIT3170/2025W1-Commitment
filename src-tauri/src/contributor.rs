@@ -1,5 +1,4 @@
 use git2::{BranchType, Oid, Repository, Sort};
-use crate::ai_summary;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -272,15 +271,6 @@ pub async fn get_contributor_info(
         entry.total_commits += 1;
         entry.additions += additions;
         entry.deletions += deletions;
-    }
-
-    let repo_path_str = path.to_string();
-    if let Ok(summaries) = ai_summary::summarize_all_contributors(&repo_path_str).await {
-        for (email, summary) in summaries {
-            if let Some(contributor) = contributors.get_mut(&email) {
-                contributor.ai_summary = summary;
-            }
-        }
     }
 
     Ok(contributors)

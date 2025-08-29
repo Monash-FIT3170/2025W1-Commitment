@@ -7,11 +7,35 @@
         get_sd,
         get_user_total_commits,
     } from "../../metrics";
+    import ButtonPrimaryMedium from "../global/ButtonPrimaryMedium.svelte";
+    import { invoke } from "@tauri-apps/api/core";
+    import { current_repo } from "$lib/stores/repo";
+    import { summaries_store } from "$lib/stores/summaries";
 
     let { contributors }: { contributors: Contributor[] } = $props();
 
     let commit_mean = get_average_commits(contributors);
     let sd = get_sd(contributors);
+    let loading = $state(false);
+
+    async function generate_summaries() {
+        loading = true;
+        const repo_name = $current_repo.repo_path.split('/').pop();
+        const repo_path = `../.gitgauge/repositories/${repo_name}`;
+        if (repo_path) {
+            try {
+                const result: Record<string, string> = await invoke("get_ai_summary", { path: repo_path });
+                summaries_store.update(store => {
+                    store.set($current_repo.repo_path, new Map(Object.entries(result)));
+                    return store;
+                });
+            } catch (e) {
+                console.error(e);
+            } finally {
+                loading = false;
+            }
+        }
+    }
 
     let people_with_analysis = $derived(
         contributors.map((user: Contributor) => {
@@ -21,11 +45,18 @@
                 commit_mean,
                 sd
             );
+            const repo_summaries = $summaries_store.get($current_repo.repo_path);
+            let analysis = "";
+            if (repo_summaries && 'Email' in user.contacts) {
+                analysis = repo_summaries.get(user.contacts.Email as string) || "No summary available";
+            } else if (!repo_summaries) {
+                analysis = "Click 'Generate AI Summaries'";
+            }
+
             return {
                 username: user.bitmap_hash,
                 image: user.bitmap,
-                analysis:
-                    user.ai_summary || "Loading...",
+                analysis: analysis,
                 scaling_factor: scaling_factor.toFixed(1),
             };
         })
@@ -40,6 +71,16 @@
 </script>
 
 <main class="container">
+    <div class="button-container">
+        <ButtonPrimaryMedium
+            label="Generate AI Summaries"
+            onclick={generate_summaries}
+            disabled={loading}
+        />
+        {#if loading}
+            <p>Loading...</p>
+        {/if}
+    </div>
     <div class="cards-row">
         {#each contributors_sorted() as person}
             <ContributorCard
@@ -69,5 +110,9 @@
 
     .contents {
         text-align: start;
+    }
+
+    .button-container {
+        margin-bottom: 1rem;
     }
 </style>'''

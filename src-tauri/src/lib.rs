@@ -5,6 +5,7 @@ mod contributor;
 mod manifest;
 mod repositories;
 mod url_verifier;
+mod summary;
 
 // use tauri_plugin_fs;
 
