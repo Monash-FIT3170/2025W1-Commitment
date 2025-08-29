@@ -1,6 +1,6 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
-    import { get_source_type } from "$lib/github_url_verifier.js";
+    import { get_source_type, get_repo_info } from "$lib/github_url_verifier.js";
     import Icon from "@iconify/svelte";
     import { load_branches, load_commit_data } from "$lib/metrics";
     import { goto } from "$app/navigation";
@@ -73,7 +73,7 @@
 
     async function select_bookmarked_repo(repo_url: string) {
         repo_url_input = repo_url;
-        handle_verification();
+        await handle_verification();
     }
 
     function reset_verification_result() {
@@ -135,6 +135,10 @@
         }
     }
 
+    function update_progress(progress: string) {
+        console.log(progress);
+    }
+
     async function handle_verification() {
         console.log(
             "handleVerification called with:",
@@ -152,21 +156,23 @@
 
         try {
 
-            const backend_result = await invoke<BackendVerificationResult>(
-                "verify_and_extract_source_info",
-                {
-                    url_str: repo_url_input,
-                    source_type: selected.source_type,
-                },
-            );
-
-            verification_message = `Successfully verified! Owner: ${backend_result.owner}, Repo: ${backend_result.repo}`;
+            // const backend_result = await invoke<BackendVerificationResult>(
+            //     "verify_and_extract_source_info",
+            //     {
+            //         urlStr: repo_url_input,
+            //         sourceType: selected.source_type,
+            //     }
+            // );
+            const backend_result = get_repo_info(repo_url_input)
+            console.log(backend_result)
+            // verification_message = `Successfully verified! Owner: ${backend_result.owner}, Repo: ${backend_result.repo}`;
 
             // Update the repo store with the new URL
             set_repo_url(repo_url_input);
 
             // Call loadBranches and loadCommitData and wait for both to complete
             const contributors = await load_commit_data(
+                backend_result.source,
                 backend_result.owner,
                 backend_result.repo,
                 selected.source_type

@@ -18,11 +18,13 @@ export function get_source_type(path) {
 /**
  * 
  * @param {string} path 
- * @returns {{ source: string, owner: string, repo: string }}
+ * @returns {{ source_type: 0 | 1 | 2, source: string, owner: string, repo: string }}
  */
 export function get_repo_info(path) {
     let path_split = path.split("/");
+    let source_type = get_source_type(path);
     let result = {
+        source_type: source_type,
         source: path_split[0],
         owner: path_split[1],
         repo: path_split[2]
