@@ -1,7 +1,7 @@
 {
   "name": "gitgauge",
-  "version": "0.2.0",
-  "description": "pretty gui for git contribution stats",
+  "version": "0.1.0",
+  "description": "",
   "type": "module",
   "scripts": {
     "dev": "vite dev",

@@ -1,33 +1,8 @@
 <script lang="ts">
     import Graph from "$lib/components/overview-page/Graph.svelte";
     import ContributorCards from "$lib/components/overview-page/ContributorCards.svelte";
-    import { info } from "@tauri-apps/plugin-log";
-    import { page } from "$app/stores"; // Import the $page store
-    import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte"
-    import { create_dropdown_selection } from "$lib/stores/dropdown";
     import ButtonTintedMedium from "../global/ButtonTintedMedium.svelte";
-    import { writable } from "svelte/store";
     import type { Contributor } from "$lib/metrics";
-
-    // Initialize from $page.state
-    // let contributors: Contributor[] = $state(($page.state as any).commitData || []);
-    // let branches: string[] = $state(($page.state as any).branches || []);
-    // let selected_branch = $state("all");
-    // if (branches.length > 0 && !branches.includes(selected_branch)) {
-    //     selected_branch = "all";
-    // }
-
-    let criteria: string[] = ["commits", "commit_size"];
-    let selectedCriteria = $state(writable(criteria[0]));
-
-    let sidebar_open = $state(false);
-    let bookmarked_repo: { repo_name: string; repo_url: string }[] = [];
-
-    function toggleSidebar() {
-        sidebar_open = !sidebar_open;
-    }
-
-    
 
     let {
         contributors,
@@ -47,12 +22,13 @@
 
 <main class="container">
     <div class="header-row">
-
-
-        <DropdownTintedMedium
-            options={criteria}
-            bind:selected={selectedCriteria}
-            disabled={false}
+        <!-- faking the dropdown button -->
+        <ButtonTintedMedium
+            label="commits"
+            label_class="body"
+            icon_first={false}
+            icon="chevron-down"
+            width="12rem"
         />
 
         <ButtonTintedMedium
@@ -62,13 +38,9 @@
             icon="chevron-down"
             width="12rem"
         />
-
     </div>
-
-
-    <Graph contributors={contributors} metric={$selectedCriteria} />
-    <ContributorCards users={contributors} />
-
+    <Graph {contributors} selected_branch={selected_branch} />
+    <ContributorCards users={contributors} selected_branch={selected_branch ?? ""} />
 </main>
 
 <style>
