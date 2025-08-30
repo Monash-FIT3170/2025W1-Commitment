@@ -1,7 +1,5 @@
 use git2::{build::RepoBuilder, RemoteCallbacks};
 
-use crate::manifest::{create_repository, update_repository_last_accessed};
-
 fn clone_progress(cur_progress: usize, total_progress: usize) {
     println!("\rProgress: {cur_progress}/{total_progress}");
 }
@@ -12,7 +10,7 @@ pub fn is_repo_cloned(path: &str) -> bool {
 }
 
 #[tauri::command]
-pub async fn bare_clone(owner: &str, repo: &str, source_type: i32, path: &str) -> Result<(), String> {
+pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
     // Check if path is a valid directory
     if is_repo_cloned(path) {
         log::info!("Repository already exists at: {path}");
@@ -33,7 +31,7 @@ pub async fn bare_clone(owner: &str, repo: &str, source_type: i32, path: &str) -
     RepoBuilder::new()
         .bare(true) // Set to true for a bare clone
         .fetch_options(fetch_opts)
-        .clone(&url, std::path::Path::new(path))
+        .clone(url, std::path::Path::new(path))
         .map_err(|e| e.to_string())?;
 
     log::info!("Repository cloned successfully at: {path}");

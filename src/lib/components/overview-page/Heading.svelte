@@ -1,14 +1,12 @@
 <script lang="ts">
     import { page } from "$app/state";
+    import { create_dropdown_selection } from "$lib/stores/dropdown";
     import Icon from "@iconify/svelte";
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import DropdownTintedMedium from "../global/DropdownTintedMedium.svelte";
     import Tab from "../global/Tab.svelte";
-    import Modal from "../global/Modal.svelte";
-    import { get } from "svelte/store";
-    import { load_commit_data, type Contributor } from "$lib/metrics";
 
-    let { repo_path: repo_path, repo_type: repo_type = "github", branches = [], branch_selection = $bindable() } = $props();
+    let { repo_path: repo_path, repo_type: repo_type = "github" } = $props();
 
     let branches: string[] = $derived(page.state.branches || []);
     let branch_selection = $derived(
@@ -28,34 +26,8 @@
         selected_view = id;
     }
 
-    let showModal = $state(false);
-
-    let files;
-    let fileInput: HTMLInputElement;
-
-    function triggerFileInput() {
-        fileInput.click();
-    }
-
-    let textareaValue = "";
-    function handleFileChange(event: Event) {
-        const selectedFiles = (event.target as HTMLInputElement).files;
-        if (selectedFiles && selectedFiles.length > 0) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const text = e.target?.result as string;
-                try {
-                    const json = JSON.parse(text);
-                    textareaValue = JSON.stringify(json, null, 4);
-                } catch {
-                    // If not valid JSON, just show the raw text
-                    textareaValue = text;
-                }
-                console.log("File contents:", textareaValue);
-            };
-            reader.readAsText(selectedFiles[0]);
-            showModal = false;
-        }
+    function open_config() {
+        //config logic
     }
 
     function open_calendar() {
@@ -94,7 +66,7 @@
         <div class="branch-dropdown heading-btn">
             <DropdownTintedMedium
                 options={branches}
-                bind:selected={branch_selection}
+                selected={branch_selection.selected}
                 disabled={false}
             />
         </div>
