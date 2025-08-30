@@ -2,7 +2,6 @@
     import Icon from "@iconify/svelte";
     import LeftMenu from "./LeftMenu.svelte";
     import { manifest } from "$lib/stores/manifest";
-    import { invoke } from "@tauri-apps/api/core";
 
     let {
         repo_url,
@@ -21,7 +20,7 @@
         } else {
             manifest.unbookmark(repo_url);
         }
-        invoke('save_manifest', { manifest: $manifest });
+        console.log($manifest);
     }
 </script>
 

@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use serde::Serialize;
 use crate::url_verifier::{verify_and_extract_source_info};
 
 /*
@@ -27,7 +28,8 @@ manifest.json is this format
     */
 
 async fn get_manifest_path() -> PathBuf {
-    PathBuf::from("../.gitgauge/manifest.json")
+    let path = PathBuf::from("../.gitgauge/manifest.json");
+    path
 }
 
 #[tauri::command]
@@ -111,7 +113,7 @@ pub async fn create_repository(url: &str, path: &str, is_local: bool) -> Result<
         .get("repository")
         .and_then(|r| r.as_array())
         .cloned()
-        .unwrap_or_else(Vec::new);
+        .unwrap_or_else(|| Vec::new());
     // Set name to owner and repo name if URL is valid | github.com/owner/repo -> owner/repo
     let source_info = verify_and_extract_source_info(url, if is_local { 2 } else { 0 })
         .map_err(|e| format!("Invalid URL: {}", e))?;
@@ -129,23 +131,15 @@ pub async fn create_repository(url: &str, path: &str, is_local: bool) -> Result<
     });
     repositories.push(new_repo);
     new_manifest["repository"] = serde_json::Value::Array(repositories.clone());
-    save_manifest_file(&new_manifest).await?;
+    save_manifest(&new_manifest).await?;
     Ok(())
 }
 
-async fn save_manifest_file(manifest: &serde_json::Value) -> Result<(), String> {
+async fn save_manifest(manifest: &serde_json::Value) -> Result<(), String> {
     let path = get_manifest_path().await;
     std::fs::write(path, serde_json::to_string_pretty(manifest).map_err(|e| e.to_string())?)
         .map_err(|e| e.to_string())?;
     Ok(())
-}
-
-// Exposed to the frontend. The frontend invokes this with the full manifest JSON
-// object (e.g. invoke('save_manifest', { manifest: $manifest })). This wrapper
-// forwards to the internal file writer.
-#[tauri::command]
-pub async fn save_manifest(manifest: serde_json::Value) -> Result<(), String> {
-    save_manifest_file(&manifest).await
 }
 
 pub async fn update_repository_last_accessed(repo_name: &str) -> Result<(), String> {
@@ -154,10 +148,52 @@ pub async fn update_repository_last_accessed(repo_name: &str) -> Result<(), Stri
         for repo in repos {
             if repo.get("name").and_then(|n| n.as_str()) == Some(repo_name) {
                 repo["last_accessed"] = chrono::Utc::now().to_rfc3339().into();
-                save_manifest_file(&manifest).await?;
+                save_manifest(&manifest).await?;
                 return Ok(());
             }
         }
     }
     Err(format!("Repository {} not found", repo_name))
+}
+
+#[tauri::command]
+pub async fn set_bookmarked_repository(repo_url: &str, bookmarked: bool) -> Result<(), String> {
+    let mut manifest = read_manifest().await?;
+    if let Some(repos) = manifest.get_mut("repository").and_then(|r| r.as_array_mut()) {
+        for repo in repos {
+            println!("Checking repository: {:?}", repo);
+            if repo.get("url").and_then(|n| n.as_str()) == Some(repo_url) {
+                println!("Found repository: {:?}", repo);
+                repo["bookmarked"] = bookmarked.into();
+                save_manifest(&manifest).await?;
+                return Ok(());
+            }
+        }
+    }
+    Err(format!("Repository {} not found", repo_url))
+}
+
+#[derive(Serialize)]
+pub struct RepoBookmark {
+    pub repo_name: String,
+    pub repo_url: String,
+}
+
+#[tauri::command]
+pub async fn get_bookmarked_repositories() -> Result<Vec<RepoBookmark>, String> {
+    let manifest = read_manifest().await?;
+    let mut bookmarked_repos = Vec::new();
+    if let Some(repos) = manifest.get("repository").and_then(|r| r.as_array()) {
+        for repo in repos {
+            if repo.get("bookmarked").and_then(|b| b.as_bool()).unwrap_or(false) {
+                if let Some(name) = repo.get("name").and_then(|n| n.as_str()) {
+                    bookmarked_repos.push(RepoBookmark {
+                        repo_name: name.to_string(),
+                        repo_url: repo.get("url").and_then(|u| u.as_str()).unwrap_or("").to_string(),
+                    });
+                }
+            }
+        }
+    }
+    Ok(bookmarked_repos)
 }

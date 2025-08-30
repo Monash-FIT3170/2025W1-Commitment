@@ -35,12 +35,11 @@
     interface RepoBookmark {
         repo_name: string;
         repo_url: string;
-        repo_bookmarked: boolean;
     }
 
     let recent_repos: RepoBookmark[] = $derived($manifest["repository"].map(
         (item) => {
-            return {repo_name: item.name, repo_url: item.url, repo_bookmarked: item.bookmarked}
+            return {repo_name: item.name, repo_url: item.url}
         }
     ));
 
