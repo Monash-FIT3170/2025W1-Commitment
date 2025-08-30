@@ -1,4 +1,5 @@
 import { writable, get } from "svelte/store";
+import { invoke } from "@tauri-apps/api/core";
 
 export interface RepoSchema {
     bookmarked: boolean;
@@ -24,7 +25,9 @@ function normalize(input: ManifestInput): ManifestSchema {
 }
 
 function createManifestStore() {
-    const { subscribe, set, update } = writable<ManifestSchema>({ repository: [] });
+    const { subscribe, set, update } = writable<ManifestSchema>({
+        repository: [],
+    });
 
     return {
         subscribe,
@@ -108,7 +111,7 @@ function createManifestStore() {
         },
 
         get_bookmark(): RepoSchema[] {
-            return get({ subscribe }).repository.filter(r => r.bookmarked);
+            return get({ subscribe }).repository.filter((r) => r.bookmarked);
         },
     };
 }

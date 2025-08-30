@@ -1,6 +1,6 @@
 <script lang="ts">
     import Icon from "@iconify/svelte";
-    import {createEventDispatcher} from "svelte";
+    import { createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher();
     let {
         icon = null,
@@ -12,7 +12,12 @@
     } = $props();
 </script>
 
-<button class="medium" {disabled} style="width: {width}" on:click={(e) => dispatch('click', e)}>
+<button
+    class="medium"
+    {disabled}
+    style="width: {width}"
+    on:click={(e) => dispatch("click", e)}
+>
     {#if icon_first}
         {#if icon}
             <Icon

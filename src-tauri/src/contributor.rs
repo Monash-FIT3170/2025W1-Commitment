@@ -1,4 +1,4 @@
-use git2::{BranchType, Repository, Sort, Oid};
+use git2::{BranchType, Oid, Repository, Sort};
 use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
@@ -137,12 +137,17 @@ pub async fn get_contributor_info(
 fn find_branch_oid(repo: &Repository, branch: &str) -> Result<Oid, String> {
     // Try local branch first
     if let Ok(branch_ref) = repo.find_branch(branch, BranchType::Local) {
-        return branch_ref.get().target().ok_or("Invalid local branch target".to_string());
+        return branch_ref
+            .get()
+            .target()
+            .ok_or("Invalid local branch target".to_string());
     }
     // Try remote branch (origin/<branch>)
-    let remote_branch_name = format!("refs/remotes/{}", branch);
+    let remote_branch_name = format!("refs/remotes/{branch}");
     if let Ok(reference) = repo.find_reference(&remote_branch_name) {
-        return reference.target().ok_or("Invalid remote branch target".to_string());
+        return reference
+            .target()
+            .ok_or("Invalid remote branch target".to_string());
     }
-    Err(format!("Branch '{}' not found as local or remote", branch))
+    Err(format!("Branch '{branch}' not found as local or remote"))
 }

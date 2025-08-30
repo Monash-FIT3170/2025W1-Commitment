@@ -12,7 +12,9 @@
         repo_path: string;
     } = $props();
 
-    let bookmarked = $state($manifest.repository.some(r => (r.url === repo_url && r.bookmarked)));
+    let bookmarked = $state(
+        $manifest.repository.some((r) => r.url === repo_url && r.bookmarked)
+    );
 
     function toggle_bookmark() {
         bookmarked = !bookmarked;
@@ -21,7 +23,7 @@
         } else {
             manifest.unbookmark(repo_url);
         }
-        invoke('save_manifest', { manifest: $manifest });
+        invoke("save_manifest", { manifest: $manifest });
     }
 </script>
 

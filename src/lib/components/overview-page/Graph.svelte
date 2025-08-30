@@ -9,7 +9,10 @@
         type Contributor,
     } from "../../metrics";
 
-    let { contributors, selected_branch = $bindable("") }: { contributors: Contributor[]; selected_branch?: string } = $props();
+    let {
+        contributors,
+        selected_branch = $bindable(""),
+    }: { contributors: Contributor[]; selected_branch?: string } = $props();
 
     let chart_container = $state<HTMLElement>();
     let chart: echarts.ECharts;
@@ -582,47 +585,47 @@
     }
 
     $effect(() => {
-    if (chart_container) {
-        chart = echarts.init(chart_container);
-        set_chart_options();
-
-        // Add click event listener to toggle staggered mode
-        chart.on("click", () => {
-            console.log("Graph clicked! Current mode:", is_staggered_mode);
-
-            // Clear any existing tooltip
-            chart.dispatchAction({ type: "hideTip" });
-
-            // Mark transitioning and clear chart immediately so nothing is shown
-            is_transitioning = true;
-            chart.clear();
-
-            // Re-apply base axes immediately so the x-axis remains visible during transition
+        if (chart_container) {
+            chart = echarts.init(chart_container);
             set_chart_options();
 
-            // Toggle mode on the next frame to ensure the clear is painted first
-            requestAnimationFrame(() => {
-                is_staggered_mode = !is_staggered_mode;
-                console.log(
-                    "New mode (applied after clear):",
-                    is_staggered_mode
-                );
-            });
-        });
+            // Add click event listener to toggle staggered mode
+            chart.on("click", () => {
+                console.log("Graph clicked! Current mode:", is_staggered_mode);
 
-        resize_handler = () => {
-            chart.resize();
-            update_graphics();
-        };
-        window.addEventListener('resize', resize_handler);
-    }
-    return () => {
-        if (chart) {
-            window.removeEventListener('resize', resize_handler);
-            chart.dispose();
+                // Clear any existing tooltip
+                chart.dispatchAction({ type: "hideTip" });
+
+                // Mark transitioning and clear chart immediately so nothing is shown
+                is_transitioning = true;
+                chart.clear();
+
+                // Re-apply base axes immediately so the x-axis remains visible during transition
+                set_chart_options();
+
+                // Toggle mode on the next frame to ensure the clear is painted first
+                requestAnimationFrame(() => {
+                    is_staggered_mode = !is_staggered_mode;
+                    console.log(
+                        "New mode (applied after clear):",
+                        is_staggered_mode
+                    );
+                });
+            });
+
+            resize_handler = () => {
+                chart.resize();
+                update_graphics();
+            };
+            window.addEventListener("resize", resize_handler);
         }
-    };
-});
+        return () => {
+            if (chart) {
+                window.removeEventListener("resize", resize_handler);
+                chart.dispose();
+            }
+        };
+    });
     onDestroy(() => {
         window.removeEventListener("resize", resize_handler);
         chart.dispose();

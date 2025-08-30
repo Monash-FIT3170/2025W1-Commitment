@@ -1,15 +1,16 @@
 mod branches;
+mod config;
 mod contributor;
+mod manifest;
 mod repositories;
 mod url_verifier;
-mod manifest;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Check manifest on startup
     tauri::async_runtime::spawn(async {
         if let Err(e) = manifest::check_manifest().await {
-            eprintln!("Manifest check failed: {}", e);
+            eprintln!("Manifest check failed: {e}");
             // You can decide whether to exit the app or continue
             // std::process::exit(1); // Uncomment to exit on failure
         } else {

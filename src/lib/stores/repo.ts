@@ -3,7 +3,7 @@ import { writable } from "svelte/store";
 export type Repo = {
     repo_name: string;
     repo_url: string;
-    repo_type: string
+    repo_type: string;
 };
 
 export function get_repo_type(url: string) {
@@ -32,9 +32,9 @@ export const current_repo = writable<Repo>();
 export function set_repo_url(repo: string) {
     let name = new URL(repo).pathname.slice(1);
     current_repo.set({
-        "repo_url": repo,
-        "repo_name": name,
-        "repo_type": get_repo_type(repo)
+        repo_url: repo,
+        repo_name: name,
+        repo_type: get_repo_type(repo),
     });
 }
 export interface RepoOption {

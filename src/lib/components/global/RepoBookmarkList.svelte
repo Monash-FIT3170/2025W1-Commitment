@@ -3,23 +3,27 @@
         bookmarked_repos,
         onclick,
     }: {
-        bookmarked_repos: { repo_name: string; repo_url: string; repo_bookmarked: boolean }[];
+        bookmarked_repos: {
+            repo_name: string;
+            repo_url: string;
+            repo_bookmarked: boolean;
+        }[];
         onclick: (repo_url: string) => void;
     } = $props();
 </script>
 
 <div class="repo-bookmark-list">
     {#each bookmarked_repos as bookmark (bookmark.repo_url)}
-        {#if bookmark.repo_bookmarked }
-        <button
-            class="repo-list-btn"
-            type="button"
-            onclick={() => onclick(bookmark.repo_url)}
-        >
-            <h6 class="display-body repo-list-text">
-                {bookmark.repo_url}
-            </h6>
-        </button>
+        {#if bookmark.repo_bookmarked}
+            <button
+                class="repo-list-btn"
+                type="button"
+                onclick={() => onclick(bookmark.repo_url)}
+            >
+                <h6 class="display-body repo-list-text">
+                    {bookmark.repo_url}
+                </h6>
+            </button>
         {/if}
     {/each}
 </div>

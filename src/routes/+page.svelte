@@ -20,29 +20,33 @@
     // only run on the browser
     onMount(async () => {
         try {
-            let data = await invoke<ManifestSchema>('read_manifest');
+            let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
             console.log("page", data);
         } catch (e: any) {
-            let err = typeof e === 'string' ? e : e?.message ?? String(e);
-            console.error('read_manifest failed', e);
+            let err = typeof e === "string" ? e : (e?.message ?? String(e));
+            console.error("read_manifest failed", e);
         }
     });
-    
+
     let profile_image_url = "/mock_profile_img.png";
     let username = "Baaset Moslih";
-    
+
     interface RepoBookmark {
         repo_name: string;
         repo_url: string;
         repo_bookmarked: boolean;
     }
 
-    let recent_repos: RepoBookmark[] = $derived($manifest["repository"].map(
-        (item) => {
-            return {repo_name: item.name, repo_url: item.url, repo_bookmarked: item.bookmarked}
-        }
-    ));
+    let recent_repos: RepoBookmark[] = $derived(
+        $manifest["repository"].map((item) => {
+            return {
+                repo_name: item.name,
+                repo_url: item.url,
+                repo_bookmarked: item.bookmarked,
+            };
+        })
+    );
 
     let selected: RepoOption = $state(repo_options[0]); // Default to GitHub
 
@@ -117,7 +121,7 @@
                     selected_branch: "devel",
                     branches: branches,
                     contributors: contributors,
-                    source_type: backend_result.source_type
+                    source_type: backend_result.source_type,
                 },
             });
         } catch (error: any) {
