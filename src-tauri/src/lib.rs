@@ -1,5 +1,7 @@
 mod branches;
+mod config;
 mod contributor;
+mod manifest;
 mod repositories;
 mod url_verifier;
 
