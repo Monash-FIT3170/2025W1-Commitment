@@ -10,7 +10,10 @@
 
     let { repo_path: repo_path, repo_type: repo_type = "github", branches = [], branch_selection = $bindable() } = $props();
 
-    let contributors: Contributor[] = [];
+    let branches: string[] = $derived(page.state.branches || []);
+    let branch_selection = $derived(
+        create_dropdown_selection(branches[0] || "All")
+    );
 
     let start_date = $state("01-01-25");
     let end_date = $state("20-01-25");
@@ -61,78 +64,57 @@
     }
 </script>
 
-<div class="page-heading">
+<div class="page-header">
     <div class="top-container">
-        <div class="display-title">
-            {repo_path}
-            <Icon
-                icon={`tabler:brand-${repo_type}`}
-                class="icon-xlarge"
-                style="color: white"
-            />
+        <div class="repo-path-container">
+            <span class="repo-path display-title" title={repo_path}
+                >{repo_path}</span
+            >
+            <div class="repo-icon">
+                <Icon
+                    icon={`tabler:brand-${repo_type}`}
+                    class="icon-xlarge"
+                    style="color: white"
+                />
+            </div>
         </div>
 
-        <div class="heading-btns">
-            <!-- config btn -->
+        <!-- config btn -->
+        <div class="config-btn heading-btn">
             <ButtonTintedMedium
                 label="Config"
                 icon="settings-2"
                 label_class="body-accent"
                 icon_first={true}
                 width="4rem"
-                on:click={() => (showModal = true)}
             />
+        </div>
 
-            <!-- Modal -->
-            <Modal bind:showModal>
-                <h2 id="modal-title" slot="header">
-                    Upload config file
-                </h2>
-                <p>Upload a config file to group email addresses to contributors</p>
-                    <input
-                        type="file"
-                        bind:this={fileInput}
-                        style="display: none;"
-                        onchange={handleFileChange}
-                    />
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                        <ButtonTintedMedium
-                            label="Cancel"
-                            label_class="body"
-                            icon_first={true}
-                            width="4rem"
-                            on:click={() => showModal = false}
-                        />
-                        <ButtonTintedMedium
-                            label="Upload"
-                            icon="upload"
-                            label_class="body-accent"
-                            icon_first={true}
-                            width="4rem"
-                            on:click={triggerFileInput}
-                        />
-                    </div>
-            </Modal>
-
-            <!-- branch dropdown btn -->
+        <!-- branch dropdown btn -->
+        <div class="branch-dropdown heading-btn">
             <DropdownTintedMedium
                 options={branches}
                 bind:selected={branch_selection}
                 disabled={false}
             />
+        </div>
 
-            <!-- calendar btn -->
+        <!-- calendar btn -->
+        <div class="calendar-btn heading-btn">
             <ButtonTintedMedium
                 label="{start_date}  →  {end_date}"
                 icon="calendar-month"
                 label_class="body"
                 icon_first={false}
-                width="16rem"
+                width="12rem"
             />
         </div>
+
+        <div class="heading-btn-spacer"></div>
+
+        <span class="subtitle display-subtitle">Contribution Statistics</span>
     </div>
 
-    <span class="display-subtitle">Contribution Statistics</span>
     <div class="page-select-btns">
         <!-- for each tab -->
         {#each tabs as tab}
@@ -140,66 +122,99 @@
                 label={tab.label}
                 icon={tab.icon}
                 selected={selected_view === tab.id}
-                width="20rem"
+                width="100%"
             />
         {/each}
     </div>
 </div>
 
 <style>
-    .page-heading {
+    .page-header {
         display: flex;
         flex-direction: column;
         padding: 2rem 4rem;
     }
 
     .top-container {
-        display: flex;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: 1fr auto auto auto;
+        grid-template-areas:
+            "repo-path config branch calendar"
+            "subtitle subtitle subtitle heading-btn-spacer";
         align-items: center;
-        width: 100%;
-        z-index: 110;
+        column-gap: 1rem;
     }
 
-    .display-title {
+    .repo-path-container {
+        grid-area: repo-path;
         display: flex;
-        flex-direction: row;
         align-items: center;
         gap: 1.5rem;
-        z-index: 110;
+        min-width: 0;
+    }
+
+    .repo-path {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+    }
+
+    .repo-icon {
+        flex-shrink: 0;
+        padding-right: 4rem;
     }
 
     .display-subtitle {
         color: var(--label-secondary);
         padding: 0.6rem 0;
-        z-index: 110;
-    }
-
-    .heading-btns {
-        display: flex;
-        gap: 1rem;
-        justify-content: flex-end;
-        align-items: center;
-        padding: 0;
-        z-index: 110;
     }
 
     .page-select-btns {
+        display: grid;
+        grid-template-columns: 20rem 20rem;
+        column-gap: 1rem;
         padding-top: 2rem;
-        z-index: 110;
+        z-index: 1;
     }
 
-    .format-box {
-	      width: 95%;
-        padding: 1em;
-        border-radius: 0.5em;
-        border: 1px solid #555;
-        background-color: #1e1e1e;
-        color: #fff;
-        font-size: 1em;
-        margin-top: 1em;
-        resize: vertical;
-      }
+    .config-btn {
+        grid-area: config;
+    }
 
+    .branch-dropdown {
+        grid-area: branch;
+    }
 
+    .calendar-btn {
+        grid-area: calendar;
+    }
+
+    .subtitle {
+        grid-area: subtitle;
+    }
+
+    .heading-btn-spacer {
+        grid-area: heading-btn-spacer;
+        display: flex;
+    }
+
+    @media (max-width: 75rem) {
+        .top-container {
+            grid-template-columns: auto auto auto 1fr;
+            grid-template-areas:
+                "repo-path repo-path repo-path repo-path"
+                "subtitle subtitle subtitle subtitle"
+                "config branch calendar heading-btn-spacer";
+        }
+
+        .heading-btn {
+            padding-top: 1rem;
+        }
+
+        .page-select-btns {
+            grid-template-columns: 16rem 16rem;
+            padding-top: 4rem;
+        }
+    }
 </style>

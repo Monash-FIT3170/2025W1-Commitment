@@ -71,7 +71,7 @@
         console.log(
             "handleVerification called with:",
             repo_url_input,
-            selected,
+            selected
         );
         reset_verification_result();
 
@@ -86,7 +86,7 @@
             // Try frontend validation first
             const result = verify_and_extract_source_info(
                 repo_url_input,
-                selected.source_type,
+                selected.source_type
             );
 
             const backend_result = await invoke<BackendVerificationResult>(
@@ -94,7 +94,7 @@
                 {
                     urlStr: repo_url_input,
                     sourceType: selected.source_type,
-                },
+                }
             );
 
             verification_message = `Successfully verified! Owner: ${backend_result.owner}, Repo: ${backend_result.repo}`;
@@ -102,7 +102,10 @@
             // Update the repo store with the new URL
             set_repo_url(repo_url_input);
             // Call loadBranches and loadCommitData and wait for both to complete
-            const contributors = await load_commit_data(backend_result.owner, backend_result.repo, backend_result.source_type);
+            const contributors = await load_commit_data(
+                backend_result.owner,
+                backend_result.repo
+            );
             const branches = await load_branches(backend_result.repo);
 
             // Navigate to the overview page

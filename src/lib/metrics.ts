@@ -4,35 +4,42 @@ import { info } from "@tauri-apps/plugin-log";
 export type Contacts = Readonly<String | String[]>;
 
 export type Contributor = Readonly<{
-    username: String,
-    contacts: Contacts,
-    total_commits: number,
-    additions: number,
-    deletions: number,
-    bitmap_hash: String,  // tmp use to store gravatar login
-    bitmap: String,       // tmp use to store gravatar url
+    username: String;
+    contacts: Contacts;
+    total_commits: number;
+    additions: number;
+    deletions: number;
+    bitmap_hash: String; // tmp use to store gravatar login
+    bitmap: String; // tmp use to store gravatar url
 }>;
 
 // Load branches for a repository
 export async function load_branches(repo: string): Promise<string[]> {
     const repo_path = `../.gitgauge/repositories/${repo}`;
     try {
-        const real_branches = await invoke<string[]>('get_branch_names', { path: repo_path });
-        return ['All', ...real_branches];
-
+        const real_branches = await invoke<string[]>("get_branch_names", {
+            path: repo_path,
+        });
+        return ["All", ...real_branches];
     } catch (err) {
-        console.error('Failed to load branches: ', err);
-        return ['All'];
+        console.error("Failed to load branches: ", err);
+        return ["All"];
     }
 }
 
-export async function load_commit_data(owner: string, repo: string, source_type: 0 | 1 | 2, branch?: string): Promise<Contributor[]> {
+export async function load_commit_data(
+    owner: string,
+    repo: string,
+    branch?: string
+): Promise<Contributor[]> {
     info(`Loading contributor data for ${owner}/${repo}...`);
 
     const repo_path = `../.gitgauge/repositories/${repo}`;
     try {
-        console.log(`Cloning repository ${owner}/${repo} to ${repo_path}`);
-        await invoke('bare_clone', { owner, repo, sourceType: source_type, path: repo_path });
+        await invoke("bare_clone", {
+            url: `https://github.com/${owner}/${repo}`,
+            path: repo_path,
+        });
         info(`Repository is cloned or already exists at ${repo_path}`);
     } catch (err) {
         info(`Failed to clone the repository: ${err}`);
@@ -40,11 +47,17 @@ export async function load_commit_data(owner: string, repo: string, source_type:
     }
 
     try {
-        const commit_data = await invoke<Contributor[]>('get_contributor_info', { path: repo_path, branch: branch });
+        const commit_data = await invoke<Contributor[]>(
+            "get_contributor_info",
+            {
+                path: repo_path,
+                branch: branch,
+            }
+        );
         const commit_array = Object.values(commit_data);
         return commit_array;
     } catch (err) {
-        info(`Failed to get contributor data`)
+        info(`Failed to get contributor data`);
         return [];
     }
 }
@@ -87,9 +100,10 @@ export function get_user_total_deletions(user: Contributor): number {
 // Calculate average commits
 export function get_average_commits(users: Contributor[]): number {
     if (users.length === 0) return 0;
-    const commit_mean: number = users.reduce((acc, curr) => {
-        return acc + curr.total_commits;
-    }, 0) / users.length;
+    const commit_mean: number =
+        users.reduce((acc, curr) => {
+            return acc + curr.total_commits;
+        }, 0) / users.length;
 
     return commit_mean;
 }
@@ -100,7 +114,7 @@ export function get_sd(users: Contributor[]): number {
     let commits: number[] = [];
 
     // Get the list of total commits for each user
-    users.forEach(user => {
+    users.forEach((user) => {
         commits.push(user.total_commits);
     });
 
@@ -108,7 +122,11 @@ export function get_sd(users: Contributor[]): number {
     const n: number = users.length;
     const mean = get_average_commits(users);
 
-    const variance: number = commits.reduce((acc: number, val: number) => acc + Math.pow(val - mean, 2), 0) / n;
+    const variance: number =
+        commits.reduce(
+            (acc: number, val: number) => acc + Math.pow(val - mean, 2),
+            0
+        ) / n;
 
     return Math.sqrt(variance);
 }
@@ -116,17 +134,15 @@ export function get_sd(users: Contributor[]): number {
 // Calculate reference points
 export function get_ref_points(mean: number, sd: number): number[] {
     if (sd === 0) return [mean, mean, mean, mean, mean];
-    return [
-        (mean - (2 * sd)),
-        (mean - sd),
-        mean,
-        (mean + sd),
-        (mean + (2 * sd))
-    ];
+    return [mean - 2 * sd, mean - sd, mean, mean + sd, mean + 2 * sd];
 }
 
 // Calculate scaling factor
-export function calculate_scaling_factor(numCommits: number, mean: number, sd: number): number {
+export function calculate_scaling_factor(
+    numCommits: number,
+    mean: number,
+    sd: number
+): number {
     if (sd === 0) return 1.0;
     const z_score = (numCommits - mean) / sd;
     const EPSILON = 1e-6;
@@ -141,4 +157,4 @@ export function calculate_scaling_factor(numCommits: number, mean: number, sd: n
     } else {
         return z_score < 0 ? 0.8 : 1.2;
     }
-} 
+}

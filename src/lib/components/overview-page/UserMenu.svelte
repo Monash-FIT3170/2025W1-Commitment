@@ -30,6 +30,11 @@
         margin-top: 0px;
         margin-bottom: 0px;
         margin-right: 0.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+        max-width: 13rem;
     }
 
     .profile-img {

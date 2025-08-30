@@ -71,6 +71,10 @@ toggle button.
         color: var(--label-primary);
         white-space: nowrap;
         margin-right: 0.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
     }
 
     .bookmark-btn {

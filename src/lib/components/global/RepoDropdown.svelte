@@ -157,4 +157,3 @@ This is a dropdown component that allows users to select a repository type.
         margin-left: 0.5rem;
     }
 </style>
-
