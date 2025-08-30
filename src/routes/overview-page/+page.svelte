@@ -1,9 +1,12 @@
-<script>
+<script lang="ts">
     import { page } from "$app/state";
     import Heading from "$lib/components/overview-page/Heading.svelte";
     import CommitGraph from "$lib/components/overview-page/CommitGraph.svelte";
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import UploadFileModal from  "$lib/components/overview-page/UploadFileModal.svelte";
+
+    import { uploadedGradingFile, type GradingFile } from "$lib/stores/gradingFile";
+
 
     let repo_path = $derived(page.state.repo_path);
     let repo_type = $derived(page.state.repo_type);
@@ -12,10 +15,27 @@
 
     let showModal = $state(false);
     const openModal = () => ( showModal = true); 
+    let pickedName = $state<string | null>(null);
 
-    function handleSelect(file) {
-        console.log("Selected file:", file);
-        showModal = false;
+
+
+    async function handleSelect(file: File) {
+
+        // read file into memory
+        const buf = await file.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+
+        const gf: GradingFile = {
+            name: file.name,
+            size: file.size,
+            mime: file.type || null,
+            bytes
+        };
+        uploadedGradingFile.set(gf);
+
+        pickedName = file.name;
+        // showModal = false;
+        console.info("[upload] stored file in memory:", {name: file.name, size: file.size})
     }
 
 </script>
