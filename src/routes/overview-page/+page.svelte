@@ -7,6 +7,8 @@
 
     import { uploadedGradingFile } from "$lib/stores/gradingFile";
     import { readHeaders, validateHeaders } from "$lib/utils/csv";
+    import { saveTextFileNative } from "$lib/utils/nativeSave"; 
+
 
 
     let repo_path = $derived(page.state.repo_path);
@@ -45,6 +47,20 @@
         console.log("[upload] valid:", ok, ok ? "" : `missing => ${missing.join(", ")}`);
     }
 
+
+  // TEMP: simple test writer
+  async function onDownloadClick() {
+    const testText = "hello,world\n1,2\n";
+    const suggested = pickedName ? pickedName.replace(/\.(csv|tsv|txt)?$/i, ".csv") : "grading-sheet.csv";
+
+    try {
+      const saved = await saveTextFileNative(suggested, testText);
+      if (saved) console.log("[download] Saved to:", saved);
+      else console.log("[download] Cancelled");
+    } catch (e) {
+      console.error("[download] Failed:", e);
+    }
+  }
 </script>
 
 <div class="main">
@@ -60,6 +76,8 @@
         <ButtonPrimaryMedium
             icon="file-download"
             label="Download Marking Sheet"
+            onclick={onDownloadClick}
+            disabled={!$uploadedGradingFile?.bytes}
         />
     </div>
     <UploadFileModal bind:showModal onselect={handleSelect} />

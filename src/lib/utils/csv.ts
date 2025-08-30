@@ -81,3 +81,26 @@ export function parseNumberCell(s: string | undefined): number | null {
   const x = Number(String(s).replace(/[^\d.+-]/g, ""));
   return Number.isFinite(x) ? x : null;
 }
+
+// Turn rows back into CSV/TSV text (preserves delimiter rules).
+export function stringifyRows(
+  headers: string[],
+  rows: Record<string, string>[],
+  delim: Delim
+): string {
+  const escape = (cell: string) => {
+    const s = String(cell ?? "");
+    if (delim === "\t") {
+      // TSV: just avoid newlines
+      return s.replace(/\r?\n/g, " ");
+    }
+    // CSV: quote if needed, escape inner quotes
+    const needs = /[",\r\n]/.test(s);
+    const q = s.replace(/"/g, '""');
+    return needs ? `"${q}"` : q;
+  };
+
+  const headerLine = headers.map(escape).join(delim);
+  const lines = rows.map((r) => headers.map((h) => escape(r[h] ?? "")).join(delim));
+  return [headerLine, ...lines].join("\r\n");
+}
