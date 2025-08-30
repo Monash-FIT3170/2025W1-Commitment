@@ -5,6 +5,7 @@
         get_average_commits,
         get_sd,
         get_ref_points,
+        calculate_scaling_factor,
         type Contributor,
     } from "../../metrics";
 
@@ -22,9 +23,22 @@
     let ref_point_values: number[] = [];
     let ref_points: { label: string; value: number }[] = [];
     let resize_handler: () => void;
+    let is_staggered_mode = $state(false);
+    let chart_height = $state(350);
+    let is_transitioning = $state(false);
 
     $effect(() => {
         filtered_people = get_user_commits(contributors);
+    });
+
+    // Watch for staggered mode changes specifically
+    $effect(() => {
+        console.log("Staggered mode effect triggered:", is_staggered_mode);
+        if (is_staggered_mode !== undefined) {
+            filtered_people = get_user_commits(contributors);
+            // Force height recalculation
+            console.log("Forcing height recalculation due to mode change");
+        }
     });
     $effect(() => {
         min_commits =
@@ -66,6 +80,80 @@
                   ];
     });
     $effect(() => {
+        // Update chart height based on mode and number of contributors
+        const old_height = chart_height;
+        const new_height = is_staggered_mode
+            ? 100 + filtered_people.length * 80
+            : 350;
+        console.log(
+            "Height effect triggered. Old height:",
+            old_height,
+            "New height:",
+            new_height,
+            "Staggered mode:",
+            is_staggered_mode,
+            "Contributors:",
+            filtered_people.length
+        );
+        chart_height = new_height;
+
+        // Trigger chart resize when height changes
+        if (chart && old_height !== new_height) {
+            console.log("Resizing chart due to height change");
+            // Use requestAnimationFrame to wait for DOM update
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    console.log("Starting gradual chart updates");
+                    console.log(
+                        "Initial container dimensions:",
+                        chart_container.clientWidth,
+                        "x",
+                        chart_container.clientHeight
+                    );
+
+                    // First resize immediately
+                    chart.resize();
+
+                    // Multiple gradual updates during the transition (every 25ms)
+                    const updateIntervals = [];
+                    for (let i = 25; i <= 750; i += 25) {
+                        updateIntervals.push(i);
+                    }
+
+                    updateIntervals.forEach((delay, index) => {
+                        setTimeout(() => {
+                            console.log(
+                                `Update ${index + 1} at ${delay}ms:`,
+                                chart_container.clientWidth,
+                                "x",
+                                chart_container.clientHeight
+                            );
+                            chart.resize();
+
+                            // Update graphics only when not transitioning
+                            if (!is_transitioning) {
+                                update_graphics();
+                            }
+
+                            // Only clear and reset options on the final update
+                            if (index === updateIntervals.length - 1) {
+                                console.log(
+                                    "Final refresh - clearing and resetting options"
+                                );
+                                chart.clear();
+                                set_chart_options();
+                                // Re-enable contributor icons after transition completes
+                                is_transitioning = false;
+                                // Call updateGraphics to render icons now that transition is complete
+                                update_graphics();
+                            }
+                        }, delay);
+                    });
+                });
+            });
+        }
+    });
+    $effect(() => {
         if (chart) set_chart_options();
     });
 
@@ -76,42 +164,62 @@
             user_total_commits.push({
                 username: user.bitmap_hash,
                 image: user.bitmap,
-                numCommits: user.total_commits,
+                num_commits: user.total_commits,
             });
         });
         const sorted_commits = user_total_commits.sort(
-            (a, b) => a.numCommits - b.numCommits,
+            (a, b) => a.num_commits - b.num_commits
         );
-        const groups = new Map<number, any[]>();
-        sorted_commits.forEach((user) => {
-            if (!groups.has(user.numCommits)) {
-                groups.set(user.numCommits, []);
-            }
-            groups.get(user.numCommits)!.push(user);
-        });
-        const result: any[] = [];
-        groups.forEach((users, commits) => {
-            if (users.length === 1) {
-                result.push(users[0]);
-            } else {
-                users.forEach((user, index) => {
+
+        if (is_staggered_mode) {
+            // In staggered mode, assign y-values progressively from left to right with reduced spacing
+            return sorted_commits.map((user, index) => ({
+                ...user,
+                y_value: 30 + index * 40, // Start at 30 with 40px spacing
+            }));
+        } else {
+            // Original mode with offsetIndex for same x-values
+            const groups = new Map<number, any[]>();
+            sorted_commits.forEach((user) => {
+                if (!groups.has(user.num_commits)) {
+                    groups.set(user.num_commits, []);
+                }
+                groups.get(user.num_commits)!.push(user);
+            });
+            const result: any[] = [];
+            groups.forEach((users, commits) => {
+                if (users.length === 1) {
                     result.push({
-                        ...user,
-                        offsetIndex: index - (users.length - 1) / 2,
+                        ...users[0],
+                        y_value: 1,
+                        offset_index: 0, // Reset offsetIndex
                     });
-                });
-            }
-        });
-        return result;
+                } else {
+                    users.forEach((user, index) => {
+                        result.push({
+                            ...user,
+                            offset_index: index - (users.length - 1) / 2,
+                            y_value: 1,
+                        });
+                    });
+                }
+            });
+            return result;
+        }
     }
 
     function update_graphics() {
-        if (!chart) return;
-        const grid_top = chart.convertToPixel({ gridIndex: 0 }, [0, 6])[1];
+        if (!chart || is_transitioning) return;
+        const grid_top = chart.convertToPixel({ gridIndex: 0 }, [
+            0,
+            is_staggered_mode
+                ? Math.max(30 + (filtered_people.length - 1) * 40 + 100, 2.5)
+                : 2.5,
+        ])[1];
         const x_axis_y = chart.convertToPixel({ gridIndex: 0 }, [0, 0])[1];
 
-        const full_height = x_axis_y - grid_top;
-        const tint_height = full_height * 0.9;
+        const tint_start_y = is_staggered_mode ? 40 : grid_top; // Start below text labels (40px from top in staggered mode)
+        const tint_height = x_axis_y - tint_start_y;
 
         const margin_left = 40; // px
         const margin_right = 40; // px
@@ -130,7 +238,7 @@
             const clampedX = Math.max(x, margin_left);
             const maxWidth = Math.min(
                 width - (clampedX - x),
-                container_width - margin_right - clampedX,
+                container_width - margin_right - clampedX
             );
             return { x: clampedX, width: maxWidth };
         }
@@ -144,15 +252,15 @@
         // Clamp tints within bounds
         const left_tint = clamp_tint(
             x_minus2sigma,
-            x_minus_sigma - x_minus2sigma,
+            x_minus_sigma - x_minus2sigma
         );
         const middle_tint = clamp_tint(
             x_minus_sigma,
-            x_plus_sigma - x_minus_sigma,
+            x_plus_sigma - x_minus_sigma
         );
         const right_tint = clamp_tint(
             x_plus_sigma,
-            x_plus2sigma - x_plus_sigma,
+            x_plus2sigma - x_plus_sigma
         );
 
         // White tint between -σ and +σ
@@ -160,7 +268,7 @@
             type: "rect",
             shape: {
                 x: middle_tint.x,
-                y: x_axis_y - tint_height,
+                y: tint_start_y, // Start below text labels
                 width: middle_tint.width,
                 height: tint_height,
             },
@@ -175,7 +283,7 @@
             type: "rect",
             shape: {
                 x: left_tint.x,
-                y: x_axis_y - tint_height,
+                y: tint_start_y, // Start below text labels
                 width: left_tint.width,
                 height: tint_height,
             },
@@ -190,7 +298,7 @@
             type: "rect",
             shape: {
                 x: right_tint.x,
-                y: x_axis_y - tint_height,
+                y: tint_start_y, // Start below text labels
                 width: right_tint.width,
                 height: tint_height,
             },
@@ -210,7 +318,7 @@
                         type: "line",
                         shape: {
                             x1: x,
-                            y1: grid_top,
+                            y1: is_staggered_mode ? 40 : grid_top, // Start below the text labels
                             x2: x,
                             y2: x_axis_y,
                         },
@@ -233,45 +341,93 @@
                             textVerticalAlign: "bottom",
                         },
                         x: x,
-                        y: grid_top - 8,
+                        y: is_staggered_mode ? 20 : grid_top - 8, // Fixed position in staggered mode
                         z: 2,
                     },
                 ],
             };
         });
-        const user_graphics = filtered_people.map((person: any) => {
-            const [baseX, y] = chart.convertToPixel({ gridIndex: 0 }, [
-                person.numCommits,
-                1,
-            ]);
-            const x =
-                baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
-            return {
-                type: "group",
-                children: [
-                    {
-                        type: "image",
-                        style: {
-                            image: person.image,
-                            width: 40,
-                            height: 40,
-                        },
-                        x: x - 20,
-                        y: y - 20,
-                        z: 3,
-                        silent: false,
-                        clipPath: {
-                            type: "circle",
-                            shape: {
-                                cx: 20,
-                                cy: 20,
-                                r: 20,
-                            },
-                        },
-                    },
-                ],
-            };
-        });
+        const user_graphics = is_transitioning
+            ? []
+            : filtered_people.map((person: any) => {
+                  const [base_x, y] = chart.convertToPixel({ gridIndex: 0 }, [
+                      person.num_commits,
+                      person.y_value,
+                  ]);
+                  const x = is_staggered_mode
+                      ? base_x
+                      : base_x +
+                        (person.offset_index ? person.offset_index * 16 : 0);
+                  const scaling_factor = calculate_scaling_factor(
+                      person.num_commits,
+                      commit_mean,
+                      sd
+                  );
+                  const is_rightmost = person.num_commits === max_commits;
+                  return {
+                      type: "group",
+                      children: [
+                          {
+                              type: "image",
+                              style: {
+                                  image: person.image,
+                                  width: is_staggered_mode ? 50 : 40,
+                                  height: is_staggered_mode ? 50 : 40,
+                              },
+                              x: x - (is_staggered_mode ? 25 : 20),
+                              y: y - (is_staggered_mode ? 25 : 20),
+                              z: 3,
+                              silent: false,
+                              clipPath: {
+                                  type: "circle",
+                                  shape: {
+                                      cx: is_staggered_mode ? 25 : 20,
+                                      cy: is_staggered_mode ? 25 : 20,
+                                      r: is_staggered_mode ? 25 : 20,
+                                  },
+                              },
+                          },
+                          ...(is_staggered_mode
+                              ? [
+                                    {
+                                        type: "text",
+                                        style: {
+                                            text: person.username,
+                                            fontSize: 14,
+                                            fontWeight: "900",
+                                            fill: "#fff",
+                                            font: 'bold 16px "DM Sans ExtraBold", sans-serif',
+                                            textAlign: is_rightmost
+                                                ? "right"
+                                                : "left",
+                                            textVerticalAlign: "top",
+                                        },
+                                        x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
+                                        y: y - 15,
+                                        z: 2,
+                                    },
+
+                                    {
+                                        type: "text",
+                                        style: {
+                                            text: `Scaling Factor: ${scaling_factor.toFixed(1)}`,
+                                            fontSize: 14,
+                                            fill: "#fff",
+                                            font: 'bold 16px "DM Sans", sans-serif',
+                                            textAlign: is_rightmost
+                                                ? "right"
+                                                : "left",
+                                            textVerticalAlign: "top",
+                                        },
+                                        x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
+                                        y: y + 5,
+                                        z: 2,
+                                    },
+                                ]
+                              : []),
+                      ],
+                  };
+              });
         chart.setOption({
             graphic: [
                 tint_between2sigma_left,
@@ -284,14 +440,26 @@
     }
 
     function set_chart_options() {
+        console.log(
+            "set_chart_options called. Staggered mode:",
+            is_staggered_mode,
+            "Chart height:",
+            chart_height,
+            "Filtered people:",
+            filtered_people.length
+        );
         const option = {
             backgroundColor: "transparent", //#222',
+            animation: true,
+            animationDuration: 800,
+            animationEasing: "cubicInOut" as const,
+            animationDelay: 0,
             grid: {
-                top: "50%",
-                bottom: 100,
-                left: 40,
-                right: 40,
-                containLabel: false,
+                top: 30, // Provides enough space for top labels while keeping chart at top
+                bottom: is_staggered_mode ? 80 : 80, // Keep consistent bottom margin
+                left: "5%",
+                right: "5%",
+                containLabel: true,
             },
             xAxis: {
                 type: "value",
@@ -304,7 +472,7 @@
                     fontFamily: "DM Sans, sans-serif",
                 },
                 nameLocation: "middle",
-                nameGap: 60,
+                nameGap: 60, // Tighter gap for axis title
                 axisLine: {
                     lineStyle: {
                         color: "#fff",
@@ -329,25 +497,48 @@
             yAxis: {
                 show: false,
                 min: 0,
-                max: 2.5,
+                max: (() => {
+                    const max_y = is_staggered_mode
+                        ? Math.max(
+                              30 + (filtered_people.length - 1) * 40 + 100,
+                              2.5
+                          )
+                        : 2.5;
+                    console.log(
+                        "Y-axis max set to:",
+                        max_y,
+                        "for staggered mode:",
+                        is_staggered_mode
+                    );
+                    return max_y;
+                })(),
             },
             series: [
                 {
                     type: "scatter",
-                    data: filtered_people.map((p: any) => [p.numCommits, 1]),
+                    data: filtered_people.map((p: any) => [
+                        p.num_commits,
+                        p.y_value,
+                    ]),
                     symbolSize: 0,
                     z: 3,
+                    animation: true,
+                    animationDuration: 800,
+                    animationEasing: "cubicInOut" as const,
                 },
                 {
                     name: "hoverPoints",
                     type: "scatter",
                     data: filtered_people.map((p: any) => [
-                        p.numCommits,
-                        1,
+                        p.num_commits,
+                        p.y_value,
                         p.username,
                     ]),
                     symbolSize: 32,
                     z: 10,
+                    animation: true,
+                    animationDuration: 800,
+                    animationEasing: "cubicInOut" as const,
                     itemStyle: {
                         color: "transparent",
                     },
@@ -369,7 +560,7 @@
                     if (params.seriesName === "hoverPoints") {
                         const username = params.data[2];
                         const person = filtered_people.find(
-                            (p: any) => p.username === username,
+                            (p: any) => p.username === username
                         );
                         if (!person) return username;
                         return `
@@ -391,6 +582,31 @@
     onMount(() => {
         chart = echarts.init(chart_container);
         set_chart_options();
+
+        // Add click event listener to toggle staggered mode
+        chart.on("click", () => {
+            console.log("Graph clicked! Current mode:", is_staggered_mode);
+
+            // Clear any existing tooltip
+            chart.dispatchAction({ type: "hideTip" });
+
+            // Mark transitioning and clear chart immediately so nothing is shown
+            is_transitioning = true;
+            chart.clear();
+
+            // Re-apply base axes immediately so the x-axis remains visible during transition
+            set_chart_options();
+
+            // Toggle mode on the next frame to ensure the clear is painted first
+            requestAnimationFrame(() => {
+                is_staggered_mode = !is_staggered_mode;
+                console.log(
+                    "New mode (applied after clear):",
+                    is_staggered_mode
+                );
+            });
+        });
+
         resize_handler = () => {
             chart.resize();
             update_graphics();
@@ -403,12 +619,15 @@
     });
 </script>
 
-<div bind:this={chart_container} class="chart-container"></div>
+<div
+    bind:this={chart_container}
+    class="chart-container"
+    style="height: {chart_height}px; transition: height 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);"
+></div>
 
 <style>
     .chart-container {
         width: 100%;
-        height: 500px;
         font-family: "DM Sans", sans-serif;
         padding-bottom: 2rem;
     }
