@@ -1,4 +1,5 @@
 import { writable, get } from "svelte/store";
+import { invoke } from "@tauri-apps/api/core";
 
 export interface RepoSchema {
     bookmarked: boolean;
