@@ -91,6 +91,11 @@ export function get_user_total_deletions(user: Contributor): number {
     return user.deletions;
 }
 
+// Calculate absolute value of diff for a user
+export function get_user_absolute_diff(user: Contributor): number {
+    return Math.abs(user.additions - user.deletions);
+}
+
 // Calculate average commits
 export function get_average_commits(users: Contributor[]): number {
     if (users.length === 0) return 0;
@@ -111,6 +116,16 @@ export function get_average_commit_size(users: Contributor[]): number {
     return size_mean;
 }
 
+// Calculate average absolute diff
+export function get_average_absolute_diff(users: Contributor[]): number {
+    if (users.length === 0) return 0;
+    const abs_diff_mean: number = users.reduce((acc, curr) => {
+        return acc + get_user_absolute_diff(curr);
+    }, 0) / users.length;
+
+    return abs_diff_mean;
+}
+
 // Calculate standard deviation
 export function get_sd(users: Contributor[], metric: string): number {
     if (users.length === 0) return 0;
@@ -127,7 +142,6 @@ export function get_sd(users: Contributor[], metric: string): number {
     // Determine the mean of the given metric
     let mean: number;
     switch (metric) {
-
         case 'commit_size': {
             mean = get_average_commit_size(users);
             break;
@@ -279,11 +293,41 @@ export function get_users_avg_commit_size(users: Contributor[]): UserDisplayData
             }
         });
     return result;
-
-    
 }
 
-//Calculate absolute value of diff
-export function get_user_absolute_diff(user: Contributor): number {
-    return Math.abs(user.additions - user.deletions);
+// Get users absolute diff data
+export function get_users_absolute_diff(users: Contributor[]): UserDisplayData[] {
+    if (users.length === 0) return [];
+    let userAbsoluteDiff: UserDisplayData[] = [];
+    users.forEach(user => {
+        userAbsoluteDiff.push({
+            username: user.bitmap_hash,
+            image: user.bitmap,
+            data_to_display: get_user_absolute_diff(user),
+        });
+    });
+
+    const sortedDiffs = userAbsoluteDiff.sort((a, b) => a.data_to_display - b.data_to_display);
+    const groups = new Map<number, any[]>();
+    sortedDiffs.forEach(user => {
+        if (!groups.has(user.data_to_display)) {
+            groups.set(user.data_to_display, []);
+        }
+        groups.get(user.data_to_display)!.push(user);
+    });
+    const result: UserDisplayData[] = [];
+    
+    groups.forEach((users, _) => {
+        if (users.length === 1) {
+            result.push(users[0]);
+        } else {
+            users.forEach((user, index) => {
+                result.push({
+                    ...user,
+                    offsetIndex: index - (users.length - 1) / 2
+                });
+            });
+        }
+    });
+    return result;
 }
