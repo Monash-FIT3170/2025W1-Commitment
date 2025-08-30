@@ -15,15 +15,15 @@
 
     let {
         users,
-        selected_branch: selected_branch,
+        // selected_branch: selected_branch,
     }: {
         users: Contributor[];
-        selected_branch: string;
+        // selected_branch: string;
     } = $props();
 
     // Calculate metrics for each user
     let commit_mean = get_average_commits(users);
-    let sd = get_sd(users);
+    let sd = get_sd(users, "commits");
 
     let people_with_metrics = $derived(
         users.map((user: Contributor) => {

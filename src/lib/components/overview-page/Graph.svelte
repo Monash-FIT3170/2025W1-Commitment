@@ -3,67 +3,76 @@
     import * as echarts from "echarts";
     import {
         get_average_commits,
+        get_average_commit_size,
+        get_metric_min_max,
         get_sd,
         get_ref_points,
+        get_users_total_commits,
+        get_users_avg_commit_size,
         type Contributor,
+        type UserDisplayData
     } from "../../metrics";
 
-    let { contributors, selected_branch = $bindable("") }: { contributors: Contributor[]; selected_branch?: string } = $props();
+    let { contributors, metric }: { contributors: Contributor[], metric: string } = $props();
 
     let chart_container = $state<HTMLElement>();
     let chart: echarts.ECharts;
-    let filtered_people: any[] = [];
-    let min_commits: number = 0;
-    let max_commits: number = 1;
-    let x_min: number = 0;
-    let x_max: number = 1;
-    let commit_mean: number = 0;
-    let sd: number = 0;
-    let ref_point_values: number[] = [];
-    let ref_points: { label: string; value: number }[] = [];
+    let filtered_people: UserDisplayData[] = $state([]);
+    let x_min: number = $state(0);
+    let x_max: number = $state(1);
+    let metric_mean: number = $state(0);
+    let sd: number = $state(0);
+    let ref_point_values: number[] = $state([]);
+    let ref_points: { label: string, value: number }[] = $state([]);
     let resize_handler: () => void;
-    let chart_key = $state("");
 
     $effect(() => {
-    if (chart && chart_container) {
-        chart.dispose();
-        chart = echarts.init(chart_container);
-        set_chart_options();
-    }
+
+        switch(metric) {
+            case "commits": {
+                filtered_people = get_users_total_commits(contributors);
+                break;
+            }
+            case "commit_size": {
+                filtered_people = get_users_avg_commit_size(contributors);
+                break;
+            }
+            default: {
+                filtered_people = get_users_total_commits(contributors);
+                break;
+            }
+            
+        }
+        
     });
     $effect(() => {
-        chart_key = contributors.map(c => c.bitmap_hash).join(",") + selected_branch;
+        metric;
+        const min_max: {min: number, max: number} = get_metric_min_max(contributors, metric);
+        x_min = min_max.min;
+        x_max = min_max.max;
     });
 
     $effect(() => {
-        filtered_people = get_user_commits(contributors);
+        switch (metric) {
+            case "commits": {
+                metric_mean = get_average_commits(contributors);
+                break;
+            }
+            case "commit_size": {
+                metric_mean = get_average_commit_size(contributors);
+                break;
+            }
+            default: {
+                metric_mean = get_average_commits(contributors);
+                break;
+            }
+        }
     });
     $effect(() => {
-        min_commits =
-            filtered_people.length > 0
-                ? Math.min(...filtered_people.map((p: any) => p.num_commits))
-                : 0;
+        sd = get_sd(contributors, metric);
     });
     $effect(() => {
-        max_commits =
-            filtered_people.length > 0
-                ? Math.max(...filtered_people.map((p: any) => p.num_commits))
-                : 1;
-    });
-    $effect(() => {
-        x_min = min_commits === max_commits ? min_commits - 1 : min_commits - 1;
-    });
-    $effect(() => {
-        x_max = min_commits === max_commits ? max_commits + 1 : max_commits + 1;
-    });
-    $effect(() => {
-        commit_mean = get_average_commits(contributors);
-    });
-    $effect(() => {
-        sd = get_sd(contributors);
-    });
-    $effect(() => {
-        ref_point_values = get_ref_points(commit_mean, sd);
+        ref_point_values = get_ref_points(metric_mean, sd);
     });
     $effect(() => {
         ref_points =
@@ -78,44 +87,13 @@
                   ];
     });
     $effect(() => {
-        if (chart) set_chart_options();
+        metric;
+        if (chart) {
+            set_chart_options();
+        }
     });
 
-    function get_user_commits(users: Contributor[]) {
-        if (users.length === 0) return [];
-        let user_total_commits: any[] = [];
-        users.forEach((user) => {
-            user_total_commits.push({
-                username: user.bitmap_hash,
-                image: user.bitmap,
-                numCommits: user.total_commits,
-            });
-        });
-        const sorted_commits = user_total_commits.sort(
-            (a, b) => a.numCommits - b.numCommits,
-        );
-        const groups = new Map<number, any[]>();
-        sorted_commits.forEach((user) => {
-            if (!groups.has(user.numCommits)) {
-                groups.set(user.numCommits, []);
-            }
-            groups.get(user.numCommits)!.push(user);
-        });
-        const result: any[] = [];
-        groups.forEach((users, commits) => {
-            if (users.length === 1) {
-                result.push(users[0]);
-            } else {
-                users.forEach((user, index) => {
-                    result.push({
-                        ...user,
-                        offsetIndex: index - (users.length - 1) / 2,
-                    });
-                });
-            }
-        });
-        return result;
-    }
+
 
     function update_graphics() {
         if (!chart) return;
@@ -251,13 +229,9 @@
                 ],
             };
         });
-        const user_graphics = filtered_people.map((person: any) => {
-            const [baseX, y] = chart.convertToPixel({ gridIndex: 0 }, [
-                person.numCommits,
-                1,
-            ]);
-            const x =
-                baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
+        const user_graphics = filtered_people.map((person: UserDisplayData) => {
+            const [baseX, y] = chart.convertToPixel({gridIndex: 0}, [person.data_to_display, 1]);
+            const x = baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
             return {
                 type: "group",
                 children: [
@@ -306,10 +280,10 @@
                 containLabel: false,
             },
             xAxis: {
-                type: "value",
-                min: x_min,
+                type: 'value',
+                min: x_min - 1 < 0 ? 0 : x_min,
                 max: x_max,
-                name: "Total Commits",
+                name: metric,
                 nameTextStyle: {
                     fontSize: 20,
                     fontWeight: "bold",
@@ -345,19 +319,15 @@
             },
             series: [
                 {
-                    type: "scatter",
-                    data: filtered_people.map((p: any) => [p.numCommits, 1]),
+                    type: 'scatter',
+                    data: filtered_people.map((p: UserDisplayData) => [p.data_to_display, 1]),
                     symbolSize: 0,
                     z: 3,
                 },
                 {
-                    name: "hoverPoints",
-                    type: "scatter",
-                    data: filtered_people.map((p: any) => [
-                        p.numCommits,
-                        1,
-                        p.username,
-                    ]),
+                    name: 'hoverPoints',
+                    type: 'scatter',
+                    data: filtered_people.map((p: UserDisplayData) => [p.data_to_display, 1, p.username]),
                     symbolSize: 32,
                     z: 10,
                     itemStyle: {
@@ -387,7 +357,7 @@
                         return `
                           <div style="text-align: left;">
                             <strong>${username}</strong><br/>
-                            Total Commits: ${params.data[0]}
+                            ${metric}: ${params.data[0]}
                           </div>
                         `;
                     }
