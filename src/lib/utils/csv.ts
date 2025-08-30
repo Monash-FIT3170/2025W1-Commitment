@@ -1,25 +1,83 @@
 // src/lib/utils/csv.ts
-export function sniffDelimiterFromText(text: string): "," | "\t" {
-  const firstLine = text.split(/\r?\n/)[0] ?? "";
-  const commas = (firstLine.match(/,/g) || []).length;
-  const tabs   = (firstLine.match(/\t/g) || []).length;
+export type Delim = "," | "\t";
+
+export function sniffDelimiter(text: string): Delim {
+  const first = text.split(/\r?\n/)[0] ?? "";
+  const commas = (first.match(/,/g) || []).length;
+  const tabs = (first.match(/\t/g) || []).length;
   return tabs > commas ? "\t" : ",";
 }
 
-export function readHeaders(bytes: Uint8Array): { headers: string[]; delimiter: "," | "\t" } {
-  // TextDecoder exists in Node and browsers; fine for SSR
-  const text = new TextDecoder("utf-8").decode(bytes);
-  const delimiter = sniffDelimiterFromText(text);
+export function readHeaders(bytes: Uint8Array): { headers: string[]; delimiter: Delim } {
+  const text = new TextDecoder().decode(bytes);
+  const delimiter = sniffDelimiter(text);
   const firstLine = text.split(/\r?\n/)[0] ?? "";
-  const headers = firstLine.split(delimiter).map((h) => h.trim());
+  const headers = splitRow(firstLine, delimiter).map((h) => h.trim());
   return { headers, delimiter };
 }
 
-// Minimal required columns
-const REQUIRED = ["Identifier", "Full name", "ID number", "Email address"];
+export function parseRows(bytes: Uint8Array): { headers: string[]; delimiter: Delim; rows: Record<string, string>[] } {
+  const text = new TextDecoder().decode(bytes);
+  const delimiter = sniffDelimiter(text);
+  const lines = text.split(/\r?\n/).filter((l) => l.length > 0);
+  if (lines.length === 0) return { headers: [], delimiter, rows: [] };
 
-export function validateHeaders(headers: string[]): { ok: boolean; missing: string[] } {
-  const set = new Set(headers.map((h) => h.toLowerCase()));
-  const missing = REQUIRED.filter((r) => !set.has(r.toLowerCase()));
+  const headers = splitRow(lines[0], delimiter);
+  const rows = lines.slice(1).map((line) => {
+    const cells = splitRow(line, delimiter);
+    const obj: Record<string, string> = {};
+    headers.forEach((h, i) => (obj[h] = cells[i] ?? ""));
+    return obj;
+  });
+
+  return { headers, delimiter, rows };
+}
+
+// Split a CSV/TSV line into cells, handling quotes for CSV.
+function splitRow(line: string, delim: Delim): string[] {
+  if (delim === "\t") {
+    // TSV is simple
+    return line.split("\t");
+  }
+  // CSV with quotes
+  const out: string[] = [];
+  let cur = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        cur += '"'; i++; // escaped quote
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (ch === "," && !inQuotes) {
+      out.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur);
+  return out.map((s) => s.trim());
+}
+
+// Basic schema validation for Moodle-style grading sheets
+const REQUIRED = ["Email address"]; // minimum join key
+export function validateHeaders(headers: string[]) {
+  const set = new Set(headers);
+  const missing = REQUIRED.filter((h) => !set.has(h));
   return { ok: missing.length === 0, missing };
+}
+
+// Nicely parse a number (grade) from a string cell
+export function parseNumberCell(s: string | undefined): number | null {
+  if (!s) return null;
+  const x = Number(String(s).replace(/[^\d.+-]/g, ""));
+  return Number.isFinite(x) ? x : null;
 }
