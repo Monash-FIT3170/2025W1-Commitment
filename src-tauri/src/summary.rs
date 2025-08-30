@@ -1,4 +1,3 @@
-
 use crate::ai_summary;
 use std::collections::HashMap;
 
@@ -6,4 +5,29 @@ use std::collections::HashMap;
 pub async fn get_ai_summary(path: &str) -> Result<HashMap<String, String>, String> {
     let repo_path_str = path.to_string();
     ai_summary::summarize_all_contributors(&repo_path_str).await
+}
+
+#[tauri::command]
+pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
+    println!("Validating Gemini API key...");
+    let url: &str = "https://generativelanguage.googleapis.com/v1/models";
+
+    let client = reqwest::Client::new();
+
+    let response = client
+        .get(url)
+        .bearer_auth(api_key)
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    match response.status() {
+        reqwest::StatusCode::OK => Ok(true),
+        reqwest::StatusCode::UNAUTHORIZED | reqwest::StatusCode::FORBIDDEN => Ok(false),
+        status => {
+            let body = response.text().await.unwrap_or_default();
+            log::error!("Unexpected validation status {}: {}", body, status);
+            Ok(false)
+        }
+    }
 }

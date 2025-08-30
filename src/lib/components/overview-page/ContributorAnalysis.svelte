@@ -20,13 +20,19 @@
 
     async function generate_summaries() {
         loading = true;
-        const repo_name = $current_repo.repo_path.split('/').pop();
+        const repo_name = $current_repo.repo_path.split("/").pop();
         const repo_path = `../.gitgauge/repositories/${repo_name}`;
         if (repo_path) {
             try {
-                const result: Record<string, string> = await invoke("get_ai_summary", { path: repo_path });
-                summaries_store.update(store => {
-                    store.set($current_repo.repo_path, new Map(Object.entries(result)));
+                const result: Record<string, string> = await invoke(
+                    "get_ai_summary",
+                    { path: repo_path }
+                );
+                summaries_store.update((store) => {
+                    store.set(
+                        $current_repo.repo_path,
+                        new Map(Object.entries(result))
+                    );
                     return store;
                 });
             } catch (e) {
@@ -47,8 +53,10 @@
                 sd
             );
             let analysis = "";
-            if (repo_summaries && 'Email' in user.contacts) {
-                analysis = repo_summaries.get(user.contacts.Email as string) || "No summary available";
+            if (repo_summaries && "Email" in user.contacts) {
+                analysis =
+                    repo_summaries.get(user.contacts.Email as string) ||
+                    "No summary available";
             } else if (!repo_summaries) {
                 analysis = "Click 'Generate AI Summaries'";
             }
@@ -72,35 +80,35 @@
 
 <main class="container">
     {#if loading}
-    <div class="body">
-        Loading...
-    </div>
+        <div class="body">Loading...</div>
     {/if}
     <div class="button-container">
         <div>
-        <ButtonPrimaryMedium
-            label={!repo_summaries ? "Generate AI Summaries": "Regenerate AI Summaries"}
-            onclick={generate_summaries}
-            disabled={loading}
-        />
+            <ButtonPrimaryMedium
+                label={!repo_summaries
+                    ? "Generate AI Summaries"
+                    : "Regenerate AI Summaries"}
+                onclick={generate_summaries}
+                disabled={loading}
+            />
         </div>
     </div>
     {#if !loading && repo_summaries}
-    <div class="cards-container">
-        {#each contributors_sorted() as person}
-            <ContributorCard
-                username={person.username}
-                image={person.image}
-                scaling_factor={person.scaling_factor}
-            >
-                {#snippet content()}
-                    <div class="contents body">
-                        <div>{person.analysis}</div>
-                    </div>
-                {/snippet}
-            </ContributorCard>
-        {/each}
-    </div>
+        <div class="cards-container">
+            {#each contributors_sorted() as person}
+                <ContributorCard
+                    username={person.username}
+                    image={person.image}
+                    scaling_factor={person.scaling_factor}
+                >
+                    {#snippet content()}
+                        <div class="contents body">
+                            <div>{person.analysis}</div>
+                        </div>
+                    {/snippet}
+                </ContributorCard>
+            {/each}
+        </div>
     {/if}
 </main>
 

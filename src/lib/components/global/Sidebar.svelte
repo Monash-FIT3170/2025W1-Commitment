@@ -1,6 +1,7 @@
 <script lang="ts">
     import { sidebar_open, close_sidebar } from "$lib/stores/sidebar";
     import Icon from "@iconify/svelte";
+    import ApiKeyField from "./APIKeyField.svelte";
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
     import { onMount } from "svelte";
     import { invoke } from "@tauri-apps/api/core";
@@ -30,6 +31,28 @@
             };
         })
     );
+    let api_input = $state("");
+    let api_error = $state(false);
+
+    async function on_submit() {
+        console.log("API Key submitted:", api_input);
+        // Key validation
+
+        let is_valid_key = await invoke<Boolean>("gemini_key_validation", {
+            apiKey: api_input,
+        });
+
+        // If key is valid, store securely
+        if (is_valid_key) {
+            console.log("Valid API Key");
+            api_error = false;
+            // Store key securely
+        } else {
+            // Else, prompt user to re-enter
+            console.log("Invalid API Key");
+            api_error = true;
+        }
+    }
 </script>
 
 <div class={`sidebar ${$sidebar_open ? "open" : "closed"}`}>
@@ -57,16 +80,12 @@
                 class="icon-medium"
                 style="color: white"
             />
-            <h2 class="heading-1 sidebar-item-header white">AI integration</h2>    
+            <h2 class="heading-1 sidebar-item-header white">AI integration</h2>
         </div>
-        <div class ="caption label-secondary">
+        <div class="caption label-secondary">
             Add your Gemini API key to enable AI-powered features.
         </div>
-        <ApiKeyField
-            bind:api_input={api_input}
-            on_submit={on_submit}
-            error={api_error}
-        />
+        <ApiKeyField bind:api_input {on_submit} error={api_error} />
     </div>
     <div class="sidebar-item-container">
         <div class="header">

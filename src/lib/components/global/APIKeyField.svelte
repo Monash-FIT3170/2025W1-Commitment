@@ -16,9 +16,11 @@
     }
 
     function toggle_edit() {
-        const input_field = document.getElementById("api-input-field") as HTMLInputElement;
+        const input_field = document.getElementById(
+            "api-input-field"
+        ) as HTMLInputElement;
         if (editing) {
-            on_submit()
+            on_submit();
             input_field.disabled = true;
             editing = false;
         } else {
@@ -27,7 +29,6 @@
             editing = true;
         }
     }
-
 </script>
 
 <!--
@@ -108,9 +109,11 @@ repository URL.
 
     .api-textbox::placeholder {
         font-size: 0.8125rem;
-        font-family: DM Sans, sans-serif;
+        font-family:
+            DM Sans,
+            sans-serif;
         font-weight: 400;
-        word-wrap: break-word
+        word-wrap: break-word;
     }
 
     .api-textbox:focus {

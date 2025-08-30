@@ -189,7 +189,8 @@ pub async fn get_contributor_info(
             let email = author_signature.email().unwrap_or("").to_string();
             let gravatar_hash = md5::compute(email.clone().trim().to_lowercase());
             let gravatar_login = author_signature.name().unwrap_or("Unknown").to_string();
-            let gravatar_url = format!("https://www.gravatar.com/avatar/{gravatar_hash:x}?d=identicon");
+            let gravatar_url =
+                format!("https://www.gravatar.com/avatar/{gravatar_hash:x}?d=identicon");
 
         // Normalize username for grouping
         let normalized_username = if email.ends_with("@users.noreply.github.com") {

@@ -33,7 +33,7 @@ pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> 
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
     );
 
-    let prompt = COMMIT_SUMMARY_PROMPT.replace("{commits}", &commits);
+    let prompt = COMMIT_SUMMARY_PROMPT.replace("{commits}", commits);
 
     let client = reqwest::Client::new();
     let res = client
@@ -111,7 +111,9 @@ pub fn get_all_contributors(repo_path: &str) -> Result<HashSet<(String, String)>
     Ok(contributors)
 }
 
-pub async fn summarize_all_contributors(repo_path: &str) -> Result<HashMap<String, String>, String> {
+pub async fn summarize_all_contributors(
+    repo_path: &str,
+) -> Result<HashMap<String, String>, String> {
     let mut summaries = HashMap::new();
     if let Ok(contributors) = get_all_contributors(repo_path) {
         for (contributor_name, contributor_email) in contributors {

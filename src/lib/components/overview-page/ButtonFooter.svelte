@@ -5,10 +5,7 @@
 <div class="bottom-container">
     <ButtonPrimaryMedium icon="table-import" label="Upload Marking Sheet" />
 
-    <ButtonPrimaryMedium
-        icon="file-download"
-        label="Download Marking Sheet"
-    />
+    <ButtonPrimaryMedium icon="file-download" label="Download Marking Sheet" />
 </div>
 
 <style>

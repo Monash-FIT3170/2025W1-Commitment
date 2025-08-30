@@ -11,7 +11,7 @@
     let { icon = null, label, disabled = false, onclick }: $Props = $props();
 </script>
 
-<button class="medium" {disabled} onclick={onclick}>
+<button class="medium" {disabled} {onclick}>
     {#if icon}
         <Icon
             icon={`tabler:${icon}`}

@@ -27,7 +27,7 @@
         <Banner {repo_url} {repo_path} {username} {profile_image_url} />
     </header>
     <div class="content">
-    {@render children()}
+        {@render children()}
     </div>
     <footer class="footer">
         <ButtonFooter />
