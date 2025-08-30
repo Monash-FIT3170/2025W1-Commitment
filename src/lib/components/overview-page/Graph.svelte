@@ -9,6 +9,7 @@
         get_ref_points,
         get_users_total_commits,
         get_users_avg_commit_size,
+        get_users_absolute_diff,
         type Contributor,
         type UserDisplayData
     } from "../../metrics";
@@ -37,13 +38,15 @@
                 filtered_people = get_users_avg_commit_size(contributors);
                 break;
             }
+            case "absolute_diff": {
+                filtered_people = get_users_absolute_diff(contributors);
+                break;
+            }
             default: {
                 filtered_people = get_users_total_commits(contributors);
                 break;
-            }
-            
+            } 
         }
-        
     });
     $effect(() => {
         metric;

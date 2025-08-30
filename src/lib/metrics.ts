@@ -213,6 +213,12 @@ export function get_metric_min_max(users: Contributor[], metric: string): {
             result = {min: minSize, max: maxSize};
             break;
         }
+        case "absolute_diff": {
+            const minDiff: number = users.reduce((min, user) => Math.min(min, get_user_absolute_diff(user)), 0);
+            const maxDiff: number = users.reduce((max, user) => Math.max(max, get_user_absolute_diff(user)), 0);
+            result = {min: minDiff, max: maxDiff};
+            break;
+        }
         default: {
             const minCommits: number = users.reduce((min, user) => Math.min(min, user.total_commits), 0);
             const maxCommits: number = users.reduce((max, user) => Math.max(max, user.total_commits), 0);
