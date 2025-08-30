@@ -1,15 +1,14 @@
 import { writable } from "svelte/store";
 
-export type GradingFile = {
+export type UploadedGradingFile = {
   name: string;
   size: number;
-  mime: string | null;
+  mime: string;
   bytes: Uint8Array;
-  headers?: string[]; 
+  headers?: string[];
+  delimiter?: "," | "\t";
+  valid?: boolean;
+  missing?: string[]; // names of missing columns (if any)
 };
 
-export const uploadedGradingFile = writable<GradingFile | null>(null);
-
-export function clearUploadedGradingFile() {
-  uploadedGradingFile.set(null);
-}
+export const uploadedGradingFile = writable<UploadedGradingFile | null>(null);

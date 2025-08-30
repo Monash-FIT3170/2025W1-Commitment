@@ -5,7 +5,8 @@
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import UploadFileModal from  "$lib/components/overview-page/UploadFileModal.svelte";
 
-    import { uploadedGradingFile, type GradingFile } from "$lib/stores/gradingFile";
+    import { uploadedGradingFile } from "$lib/stores/gradingFile";
+    import { readHeaders, validateHeaders } from "$lib/utils/csv";
 
 
     let repo_path = $derived(page.state.repo_path);
@@ -22,20 +23,26 @@
     async function handleSelect(file: File) {
 
         // read file into memory
-        const buf = await file.arrayBuffer();
-        const bytes = new Uint8Array(buf);
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const { headers, delimiter } = readHeaders(bytes);
+        const { ok, missing } = validateHeaders(headers);
 
-        const gf: GradingFile = {
+        uploadedGradingFile.set({
             name: file.name,
             size: file.size,
-            mime: file.type || null,
-            bytes
-        };
-        uploadedGradingFile.set(gf);
+            mime: file.type || "text/plain",
+            bytes,
+            headers,
+            delimiter,
+            valid: ok,
+            missing
+
+        });
 
         pickedName = file.name;
-        // showModal = false;
-        console.info("[upload] stored file in memory:", {name: file.name, size: file.size})
+        console.log("[upload] headers:", headers);
+        console.log("[upload] delimiter:", delimiter);
+        console.log("[upload] valid:", ok, ok ? "" : `missing => ${missing.join(", ")}`);
     }
 
 </script>
