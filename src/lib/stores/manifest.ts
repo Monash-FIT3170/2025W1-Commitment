@@ -16,6 +16,12 @@ export interface ManifestSchema {
     repository: RepoSchema[];
 }
 
+interface BackendVerificationResult {
+    owner: string;
+    repo: string;
+    source_type: 0 | 1 | 2;
+}
+
 // Accepts either a Manifest object or a raw array of repos and normalizes it
 type ManifestInput = ManifestSchema | RepoSchema[];
 
@@ -112,6 +118,35 @@ function createManifestStore() {
 
         get_bookmark(): RepoSchema[] {
             return get({ subscribe }).repository.filter((r) => r.bookmarked);
+        },
+
+        /** Create a new repository inside of the manifest file */
+        create_repository(backendResult: BackendVerificationResult, repo_url: string) {
+            const new_repo: RepoSchema = {
+                name: backendResult.repo,
+                url: repo_url,
+                path: '../.gitguage/repositories/' + repo_url.split('/')[3] + "-" + repo_url.split('/')[4],
+                bookmarked: false,
+                cloned: true,
+                email_mapping: null,
+                grading_sheet: null,
+                last_accessed: new Date().toISOString(),
+            };
+            update((m) => ({
+                repository: [...m.repository, new_repo],
+            }));
+
+        },
+
+        /** Update the last accessed timestamp of a repository. */
+        update_repository_timestamp(url: string) {
+            update((m) => {
+                const repo = m.repository.find((r) => r.url === url);
+                if (repo) {
+                    repo.last_accessed = new Date().toISOString();
+                }
+                return { repository: [...m.repository] };
+            });
         },
     };
 }

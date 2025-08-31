@@ -114,35 +114,6 @@ async fn check_repository(repo: &serde_json::Value) -> Result<(), bool> {
     Err(false)
 }
 
-// pub async fn create_repository(url: &str, path: &str, is_local: bool) -> Result<(), String> {
-//     let manifest = read_manifest().await?;
-//     let mut new_manifest = manifest.clone();
-//     let mut repositories = new_manifest
-//         .get("repository")
-//         .and_then(|r| r.as_array())
-//         .cloned()
-//         .unwrap_or_else(Vec::new);
-//     // Set name to owner and repo name if URL is valid | github.com/owner/repo -> owner/repo
-//     let source_info = verify_and_extract_source_info(url, if is_local { 2 } else { 0 })
-//         .map_err(|e| format!("Invalid URL: {e}"))?;
-//     let owner = source_info.owner;
-//     let repo = source_info.repo;
-//     let new_repo = serde_json::json!({
-//         "name": format!("{}/{}", owner, repo),
-//         "url": url,
-//         "path": path,
-//         "last_accessed": chrono::Utc::now().to_rfc3339(),
-//         "cloned": !is_local,
-//         "bookmarked": false,
-//         "email_mapping": null,
-//         "grading_sheet": null
-//     });
-//     repositories.push(new_repo);
-//     new_manifest["repository"] = serde_json::Value::Array(repositories.clone());
-//     save_manifest_file(&new_manifest).await?;
-//     Ok(())
-// }
-
 async fn save_manifest_file(manifest: &serde_json::Value) -> Result<(), String> {
     let path = get_manifest_path().await;
     std::fs::write(
@@ -160,20 +131,3 @@ async fn save_manifest_file(manifest: &serde_json::Value) -> Result<(), String> 
 pub async fn save_manifest(manifest: serde_json::Value) -> Result<(), String> {
     save_manifest_file(&manifest).await
 }
-
-// pub async fn update_repository_last_accessed(repo_name: &str) -> Result<(), String> {
-//     let mut manifest = read_manifest().await?;
-//     if let Some(repos) = manifest
-//         .get_mut("repository")
-//         .and_then(|r| r.as_array_mut())
-//     {
-//         for repo in repos {
-//             if repo.get("name").and_then(|n| n.as_str()) == Some(repo_name) {
-//                 repo["last_accessed"] = chrono::Utc::now().to_rfc3339().into();
-//                 save_manifest_file(&manifest).await?;
-//                 return Ok(());
-//             }
-//         }
-//     }
-//     Err(format!("Repository {repo_name} not found"))
-// }
