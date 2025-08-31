@@ -139,6 +139,11 @@
         console.log(progress);
     }
 
+    async function local_verification() {
+        console.log("Local verification called");
+        // Implement local verification logic here
+    }
+
     async function handle_verification() {
         console.log(
             "handleVerification called with:",
@@ -147,25 +152,20 @@
         );
         reset_verification_result();
 
-        if (!selected || !repo_url_input.trim()) {
+        if (!repo_url_input.trim()) {
             verification_error = true;
             verification_message =
-                "Please select a source type and enter a URL/path.";
+                "Please enter a URL/path.";
+            return;
+        }
+
+        if (selected.source_type === 2) {
+            await local_verification();
             return;
         }
 
         try {
-
-            // const backend_result = await invoke<BackendVerificationResult>(
-            //     "verify_and_extract_source_info",
-            //     {
-            //         urlStr: repo_url_input,
-            //         sourceType: selected.source_type,
-            //     }
-            // );
             const backend_result = get_repo_info(repo_url_input)
-            console.log(backend_result)
-            // verification_message = `Successfully verified! Owner: ${backend_result.owner}, Repo: ${backend_result.repo}`;
 
             // Update the repo store with the new URL
             set_repo_url(repo_url_input);
