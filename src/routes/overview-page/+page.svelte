@@ -17,7 +17,6 @@
 
     let showModal = $state(false);
     const openModal = () => ( showModal = true); 
-    let pickedName = $state<string | null>(null);
     let currentUpload = $state(null as ReturnType<typeof uploadedGradingFile["get"]> | null);
 
     
@@ -33,32 +32,6 @@
         return () => unsub();
     });
 
-
-
-    // async function handleSelect(file: File) {
-
-    //     // read file into memory
-    //     const bytes = new Uint8Array(await file.arrayBuffer());
-    //     const { headers, delimiter } = readHeaders(bytes);
-    //     const { ok, missing } = validateHeaders(headers);
-
-    //     uploadedGradingFile.set({
-    //         name: file.name,
-    //         size: file.size,
-    //         mime: file.type || "text/plain",
-    //         bytes,
-    //         headers,
-    //         delimiter,
-    //         valid: ok,
-    //         missing
-
-    //     });
-
-    //     pickedName = file.name;
-    //     console.log("[upload] headers:", headers);
-    //     console.log("[upload] delimiter:", delimiter);
-    //     console.log("[upload] valid:", ok, ok ? "" : `missing => ${missing.join(", ")}`);
-    // }
 
     async function commitUpload(file: File | null) {
         if (!file) {
