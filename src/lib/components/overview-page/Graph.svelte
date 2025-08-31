@@ -9,12 +9,9 @@
         type Contributor,
     } from "../../metrics";
 
-    let {
-        contributors,
-        selected_branch = $bindable(""),
-    }: { contributors: Contributor[]; selected_branch?: string } = $props();
+    let { contributors }: { contributors: Contributor[] } = $props();
 
-    let chart_container = $state<HTMLElement>();
+    let chart_container: HTMLElement;
     let chart: echarts.ECharts;
     let filtered_people: any[] = [];
     let min_commits: number = 0;
