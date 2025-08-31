@@ -92,7 +92,7 @@
             icon="file-download"
             label="Download Marking Sheet"
             onclick={handleDownload}
-            disabled={!currentUpload || !contributors || contributors.length === 0}
+            disabled={!$uploadedGradingFile || !$uploadedGradingFile.valid}
         />
     </div>
     <UploadFileModal bind:showModal onselect={handleSelect} />

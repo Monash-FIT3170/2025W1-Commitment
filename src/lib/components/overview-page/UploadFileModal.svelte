@@ -3,6 +3,8 @@
     import Icon from "@iconify/svelte";
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte"
+    import { uploadedGradingFile } from "$lib/stores/gradingFile";
+
 
     let { showModal = $bindable(false), onselect = undefined } = $props();
 
@@ -69,6 +71,8 @@
         pickedSize = null;
         pickedIcon = null;
         if (fileInput) fileInput.value = "";
+
+        uploadedGradingFile.set(null);
     }
 
     function handlePicked(files: FileList | null) {
