@@ -1,130 +1,161 @@
 // src/lib/utils/grading.ts
 import type { Contributor } from "$lib/metrics";
+import {
+  get_average_commits,
+  get_sd,
+  calculate_scaling_factor
+} from "$lib/metrics";
+import {
+  parseRows,
+  stringifyRows,
+  parseNumberCell
+} from "$lib/utils/csv";
 import type { UploadedGradingFile } from "$lib/stores/gradingFile";
+import { saveTextFileNative } from "$lib/utils/nativeSave";
 
-// -------- CSV helpers we rely on --------
-import { stringifyRows } from "$lib/utils/csv";
+export type Algo = "commits"; // ready to extend later
 
-// Runtime check for Tauri
-const isTauri = typeof window !== "undefined" && !!(window as any).__TAURI__;
 
-/**
- * Avoid Vite import-analysis: build the specifier at runtime
- * and use a Function wrapper so the string isn’t visible to the parser.
- */
-// eslint-disable-next-line @typescript-eslint/no-implied-eval
-const runtimeImport = (s: string) => new Function("s", "return import(s)")(s);
-
-// ---------- Public API ----------
-
-export function populateUploadedFile(opts: {
-  contributors: Contributor[];
-  uploaded: UploadedGradingFile | null;
-  algorithm?: "commits"; // extend later
-}): string {
-  const { contributors, uploaded } = opts;
-  // If no uploaded sheet, export a minimal CSV (fallback)
-  if (!uploaded || !uploaded.headers?.length) {
-    const headers = [
-      "Email address",
-      "Raw mark",
-      "Scaling factor",
-      "Scaled mark",
-    ];
-    const rows = contributors.map((c) => {
-      const email = toPrimaryEmail(c.contacts);
-      const raw = null;
-      const factor = 1.0;
-      const scaled = null;
-      return {
-        [headers[0]]: email ?? "",
-        [headers[1]]: rawToCell(raw),
-        [headers[2]]: factor.toFixed(2),
-        [headers[3]]: scaledToCell(scaled),
-      };
-    });
-    return stringifyRows(headers, rows, ",");
-  }
-
-  // Use the uploaded header order, appending our computed columns if missing
-  const H = new Set(uploaded.headers);
-  const appended = ["Raw mark", "Scaling factor", "Scaled mark"].filter(
-    (h) => !H.has(h)
-  );
-  const headers = [...uploaded.headers, ...appended];
-
-  // Build a lookup by email from uploaded rows if you parse them later
-  // For now we only emit one row per contributor and keep any extra columns empty.
-  const rows = contributors.map((c) => {
-    const email = toPrimaryEmail(c.contacts) ?? "";
-    const factor = 1.0; // TODO: replace with real factor from page later
-    const raw: number | null = null;
-    const scaled: number | null = null;
-
-    const row: Record<string, string> = {};
-    // start all uploaded columns empty; we don’t have original rows here yet
-    for (const h of uploaded.headers) row[h] = "";
-
-    row["Email address"] = email;
-    row["Raw mark"] = rawToCell(raw);
-    row["Scaling factor"] = factor.toFixed(2);
-    row["Scaled mark"] = scaledToCell(scaled);
-
-    return row;
-  });
-
-  return stringifyRows(headers, rows, uploaded.delimiter ?? ",");
+function cleanQuotes(s: string): string {
+  return (s || "")
+    .replace(/[“”‘’"]/g, "")
+    .trim()
+    .toLowerCase();
 }
 
-export async function downloadTextFile(filename: string, text: string) {
-  if (isTauri) {
-    try {
-      // Build specifiers at runtime (no literal in the AST)
-      const dialogMod = await runtimeImport("@tauri-apps/api/dialog");
-      const fsMod = await runtimeImport("@tauri-apps/plugin-fs");
+function extractFirstEmail(s: string): string | null {
+  const text = cleanQuotes(s);
+  const angle = text.match(/<([^>]+)>/);
+  const candidate = angle ? angle[1] : text;
+  const m = candidate.match(/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/i);
+  return m ? m[0].toLowerCase() : null;
+}
 
-      const ext = extOf(filename) || "csv";
-      const dest: string | null = await dialogMod.save({
-        defaultPath: filename,
-        filters: [{ name: ext.toUpperCase(), extensions: [ext] }],
-      });
-      if (dest) {
-        await fsMod.writeTextFile(dest, text);
-      }
-      return;
-    } catch (e) {
-      console.warn("[downloadTextFile] Tauri path failed, falling back:", e);
+function normEmail(s: string | undefined | null): string {
+  return extractFirstEmail(s || "") ?? "";
+}
+
+// contacts can be string | string[] | object { Email: "..." }
+function extractEmailsFromContacts(contacts: unknown): string[] {
+  const out: string[] = [];
+  const pushEmail = (val: unknown) => {
+    const e = normEmail(String(val ?? ""));
+    if (e) out.push(e);
+  };
+
+  if (typeof contacts === "string") {
+    pushEmail(contacts);
+  } else if (Array.isArray(contacts)) {
+    for (const c of contacts) pushEmail(c);
+  } else if (contacts && typeof contacts === "object") {
+    for (const v of Object.values(contacts as Record<string, unknown>)) {
+      pushEmail(v);
     }
   }
 
-  // Browser fallback
-  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+  return Array.from(new Set(out));
 }
 
-// ---------- Small helpers ----------
-function extOf(name: string): string | null {
-  const dot = name.lastIndexOf(".");
-  return dot > -1 ? name.slice(dot + 1).toLowerCase() : null;
+function pickBestContributor(cands: Contributor[]): Contributor | null {
+  if (cands.length === 0) return null;
+  if (cands.length === 1) return cands[0];
+  let best = cands[0];
+  for (let i = 1; i < cands.length; i++) {
+    if (cands[i].total_commits > best.total_commits) best = cands[i];
+  }
+  console.warn("[grading] multiple candidates; picked most commits", {
+    picked: { commits: best.total_commits, contacts: best.contacts },
+    candidates: cands.map(c => ({
+      commits: c.total_commits,
+      contacts: c.contacts
+    }))
+  });
+  return best;
 }
 
-function toPrimaryEmail(contacts: Contributor["contacts"]): string | null {
-  if (Array.isArray(contacts)) return contacts[0] ?? null;
-  if (typeof contacts === "string") return contacts || null;
-  return null;
+function emailsMatch(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  return a === b || a.includes(b) || b.includes(a);
 }
 
-function rawToCell(raw: number | null) {
-  return raw == null ? "" : String(raw);
+function findContributorByEmail(contributors: Contributor[], emailCell: string): Contributor | null {
+  const target = normEmail(emailCell);
+  if (!target) return null;
+
+  const candidates: Contributor[] = [];
+  for (const c of contributors) {
+    const emails = extractEmailsFromContacts(c.contacts);
+    if (emails.some(e => emailsMatch(e, target))) {
+      candidates.push(c);
+    }
+  }
+  return pickBestContributor(candidates);
 }
 
-function scaledToCell(s: number | null) {
-  return s == null ? "" : s.toFixed(2);
+
+/**
+ * Build a new CSV/TSV using:
+ * - original headers/rows
+ * - contributors from current page
+ * - scaling factors derived from commits
+ *
+ * Columns added (if missing):
+ *   Scaling Factor | Scaled Grade
+ */
+
+export function populateUsingMetrics(
+    contributors: Contributor[],
+    uploaded: UploadedGradingFile
+): string {
+    const { headers, delimiter, rows } = parseRows(uploaded.bytes);
+
+    const FACTOR_COL = "Scaling Factor";
+    const SCALED_COL = "Scaled Grade";
+
+    const outHeaders = [...headers];
+    if (!outHeaders.includes(FACTOR_COL)) outHeaders.push(FACTOR_COL);
+    if (!outHeaders.includes(SCALED_COL)) outHeaders.push(SCALED_COL);
+
+    const mean = get_average_commits(contributors);
+    const sd = get_sd(contributors);
+
+    const emailKey = headers.find(h => h.trim().toLowerCase() === "email address");
+    const gradeKey = headers.find(h => h.trim().toLowerCase() === "grade");
+
+    const outRows = rows.map(row => {
+        const email = emailKey ? row[emailKey] : "";
+        const c = findContributorByEmail(contributors, email);
+
+        const factorStr = c
+        ? calculate_scaling_factor(c.total_commits, mean, sd).toFixed(2)
+        : "NA";
+
+        const raw = parseNumberCell(gradeKey ? row[gradeKey] : undefined);
+        const scaled = raw != null && c ? +(raw * Number(factorStr)).toFixed(2) : null;
+
+        const next: Record<string, string> = { ...row };
+        next[FACTOR_COL] = factorStr;
+        next[SCALED_COL] = scaled != null ? String(scaled) : "";
+
+        console.debug("[grading] row", {
+            emailCell: row[emailKey ?? ""],
+            matched: !!c,
+            contributorEmails: c ? extractEmailsFromContacts(c.contacts) : [],
+            commits: c?.total_commits ?? null,
+            factor: next[FACTOR_COL]
+        });
+
+        return next;
+    });
+
+    return stringifyRows(outHeaders, outRows, delimiter);
+}
+
+
+export async function downloadPopulatedFile(
+  contributors: Contributor[],
+  uploaded: UploadedGradingFile
+) {
+  const text = populateUsingMetrics(contributors, uploaded);
+  await saveTextFileNative("populated-grading-sheet.csv", text);
 }

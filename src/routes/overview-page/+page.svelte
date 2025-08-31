@@ -5,10 +5,9 @@
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import UploadFileModal from  "$lib/components/overview-page/UploadFileModal.svelte";
 
+    import { downloadPopulatedFile } from "$lib/utils/grading";
     import { uploadedGradingFile } from "$lib/stores/gradingFile";
     import { readHeaders, validateHeaders } from "$lib/utils/csv";
-    import { saveTextFileNative } from "$lib/utils/nativeSave"; 
-
 
 
     let repo_path = $derived(page.state.repo_path);
@@ -19,6 +18,20 @@
     let showModal = $state(false);
     const openModal = () => ( showModal = true); 
     let pickedName = $state<string | null>(null);
+    let currentUpload = $state(null as ReturnType<typeof uploadedGradingFile["get"]> | null);
+
+    
+    $effect(() => {
+        const unsub = uploadedGradingFile.subscribe((v) => {
+        currentUpload = v;
+        console.log("[upload store] now:", v?.name, {
+            hasBytes: !!v?.bytes?.length,
+            valid: v?.valid,
+            missing: v?.missing,
+        });
+        });
+        return () => unsub();
+    });
 
 
 
@@ -47,20 +60,22 @@
         console.log("[upload] valid:", ok, ok ? "" : `missing => ${missing.join(", ")}`);
     }
 
-
-  // TEMP: simple test writer
-  async function onDownloadClick() {
-    const testText = "hello,world\n1,2\n";
-    const suggested = pickedName ? pickedName.replace(/\.(csv|tsv|txt)?$/i, ".csv") : "grading-sheet.csv";
-
-    try {
-      const saved = await saveTextFileNative(suggested, testText);
-      if (saved) console.log("[download] Saved to:", saved);
-      else console.log("[download] Cancelled");
-    } catch (e) {
-      console.error("[download] Failed:", e);
+    async function handleDownload() {
+        if (!contributors || !contributors.length) {
+            console.warn("[download] no contributors on page");
+            return;
+        }
+        if (!currentUpload) {
+            console.warn("[download] no uploaded file in memory");
+            return;
+        }
+        try {
+            await downloadPopulatedFile(contributors, currentUpload);
+            console.log("[download] complete");
+        } catch (err) {
+            console.error("[download] failed:", err);
+        }
     }
-  }
 </script>
 
 <div class="main">
@@ -76,8 +91,8 @@
         <ButtonPrimaryMedium
             icon="file-download"
             label="Download Marking Sheet"
-            onclick={onDownloadClick}
-            disabled={!$uploadedGradingFile?.bytes}
+            onclick={handleDownload}
+            disabled={!currentUpload || !contributors || contributors.length === 0}
         />
     </div>
     <UploadFileModal bind:showModal onselect={handleSelect} />

@@ -68,7 +68,7 @@
     display: grid;
     place-items: center;
     z-index: 9999;
-    -webkit-backdrop-filter: blur(8px); /* Safari/WebKit (Tauri on macOS) */
+    -webkit-backdrop-filter: blur(8px); 
     backdrop-filter: blur(8px);
     transition: backdrop-filter 120ms ease, background 120ms ease;
   }
