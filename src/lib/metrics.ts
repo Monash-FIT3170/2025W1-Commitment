@@ -34,7 +34,7 @@ export async function load_commit_data(
 ): Promise<Contributor[]> {
     info(`Loading contributor data for ${owner}/${repo}...`);
 
-    const repo_path = `../.gitgauge/repositories/${repo}`;
+    const repo_path = `../.gitgauge/repositories/${owner}-${repo}`;
     try {
         await invoke("bare_clone", {
             url: `https://github.com/${owner}/${repo}`,
