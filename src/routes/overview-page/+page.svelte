@@ -11,7 +11,7 @@
 </script>
 
 <div class="main">
-    <Heading repo_path={repo_path.split("/").pop() || repo_path} {repo_type} />
+    <Heading repo_path={repo_path.split("/")[1] || repo_path} {repo_type} />
     <CommitGraph {contributors} {branches} />
     <div class="bottom-container">
         <ButtonPrimaryMedium icon="table-import" label="Upload Marking Sheet" />
