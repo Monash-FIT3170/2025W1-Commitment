@@ -6,7 +6,7 @@
     import UploadFileModal from  "$lib/components/overview-page/UploadFileModal.svelte";
 
     import { downloadPopulatedFile } from "$lib/utils/grading";
-    import { uploadedGradingFile } from "$lib/stores/gradingFile";
+    import { uploadedGradingFile, type UploadedGradingFile } from "$lib/stores/gradingFile";
     import { readHeaders, validateHeaders } from "$lib/utils/csv";
 
 
@@ -35,14 +35,40 @@
 
 
 
-    async function handleSelect(file: File) {
+    // async function handleSelect(file: File) {
 
-        // read file into memory
+    //     // read file into memory
+    //     const bytes = new Uint8Array(await file.arrayBuffer());
+    //     const { headers, delimiter } = readHeaders(bytes);
+    //     const { ok, missing } = validateHeaders(headers);
+
+    //     uploadedGradingFile.set({
+    //         name: file.name,
+    //         size: file.size,
+    //         mime: file.type || "text/plain",
+    //         bytes,
+    //         headers,
+    //         delimiter,
+    //         valid: ok,
+    //         missing
+
+    //     });
+
+    //     pickedName = file.name;
+    //     console.log("[upload] headers:", headers);
+    //     console.log("[upload] delimiter:", delimiter);
+    //     console.log("[upload] valid:", ok, ok ? "" : `missing => ${missing.join(", ")}`);
+    // }
+
+    async function commitUpload(file: File | null) {
+        if (!file) {
+            uploadedGradingFile.set(null);   // re-disable Download
+            return;
+        }
         const bytes = new Uint8Array(await file.arrayBuffer());
         const { headers, delimiter } = readHeaders(bytes);
         const { ok, missing } = validateHeaders(headers);
-
-        uploadedGradingFile.set({
+        const payload: UploadedGradingFile = {
             name: file.name,
             size: file.size,
             mime: file.type || "text/plain",
@@ -51,13 +77,8 @@
             delimiter,
             valid: ok,
             missing
-
-        });
-
-        pickedName = file.name;
-        console.log("[upload] headers:", headers);
-        console.log("[upload] delimiter:", delimiter);
-        console.log("[upload] valid:", ok, ok ? "" : `missing => ${missing.join(", ")}`);
+        };
+        uploadedGradingFile.set(payload);
     }
 
     async function handleDownload() {
@@ -95,7 +116,7 @@
             disabled={!$uploadedGradingFile || !$uploadedGradingFile.valid}
         />
     </div>
-    <UploadFileModal bind:showModal onselect={handleSelect} />
+    <UploadFileModal bind:showModal current={$uploadedGradingFile} oncommit={commitUpload} />
 </div>
 
 

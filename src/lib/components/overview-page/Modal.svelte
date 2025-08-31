@@ -1,63 +1,69 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+    import { onMount } from "svelte";
 
-  let { showModal = $bindable(false), header = null, body = null } = $props();
+    let { 
+        showModal = $bindable(false), 
+        header = null, 
+        body = null, 
+        oncancel = null 
+    } = $props();
 
-  let panelEl: HTMLDivElement | null = null;
+    let panelEl: HTMLDivElement | null = null;
 
-  function close() {
-    showModal = false;
-  }
+    function close() {
+        oncancel?.();
+        showModal = false;
+    }
 
   // Backdrop keyboard handler (Enter/Space triggers close)
-  function onBackdropKey(e: KeyboardEvent) {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      close();
+    function onBackdropKey(e: KeyboardEvent) {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            close();
+        }
     }
-  }
 
-  // Dialog keyboard handler (Esc closes)
-  function onDialogKey(e: KeyboardEvent) {
-    if (e.key === "Escape") close();
-  }
+    // Dialog keyboard handler (Esc closes)
+    function onDialogKey(e: KeyboardEvent) {
+        if (e.key === "Escape") close();
+    }
 
-  // Auto-focus the dialog when shown
-  onMount(() => {
-    if (showModal) panelEl?.focus();
-  });
-  $effect(() => {
-    if (showModal) queueMicrotask(() => panelEl?.focus());
-  });
+    // Auto-focus the dialog when shown
+    onMount(() => {
+        if (showModal) panelEl?.focus();
+    });
+    $effect(() => {
+        if (showModal) queueMicrotask(() => panelEl?.focus());
+    });
 </script>
 
 {#if showModal}
   <!-- Backdrop -->
-  <div
-    class="backdrop"
-    tabindex="0"
-    role="button"
-    aria-label="Close dialog"
-    onclick={close}
-    onkeydown={onBackdropKey}
-  >
-    <!-- Dialog -->
     <div
-      class="modal"
-      role="dialog"
-      aria-modal="true"
-      tabindex="-1"
-      onkeydown={onDialogKey}
-      onclick={(e) => e.stopPropagation()}
-      bind:this={panelEl}
+        class="backdrop"
+        tabindex="0"
+        role="button"
+        aria-label="Close dialog"
+        onclick={close}
+        onkeydown={onBackdropKey}
     >
-      <div class="row">
-        {@render header?.()}
-        <button class="x" type="button" onclick={close} aria-label="Close">✕</button>
-      </div>
-      {@render body?.()}
+      <!-- Dialog -->
+        <div
+            class="modal"
+            role="dialog"
+            aria-modal="true"
+            tabindex="-1"
+            onkeydown={onDialogKey}
+            onclick={(e) => e.stopPropagation()}
+            bind:this={panelEl}
+        >
+            <div class="row">
+                {@render header?.()}
+                <button class="x" type="button" onclick={close} aria-label="Close">✕</button>
+            </div>
+            {@render body?.()}
+        </div>
     </div>
-  </div>
 {/if}
 
 <style>
