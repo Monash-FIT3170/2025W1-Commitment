@@ -64,6 +64,10 @@
                 metric_mean = get_average_commit_size(contributors);
                 break;
             }
+            case "absolute_diff": {
+                filtered_people = get_users_absolute_diff(contributors);
+                break;
+            }
             default: {
                 metric_mean = get_average_commits(contributors);
                 break;

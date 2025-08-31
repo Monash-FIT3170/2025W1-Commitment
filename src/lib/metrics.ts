@@ -150,6 +150,10 @@ export function get_sd(users: Contributor[], metric: string): number {
             mean = get_average_commits(users);
             break;
         }
+        case 'absolute_diff': {
+            mean = get_average_absolute_diff(users);
+            break;
+        }
         default: {
             mean = get_average_commits(users);
             break
