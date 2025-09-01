@@ -43,7 +43,7 @@
         }
     }
 
-    const repo_summaries = $summaries_store.get($current_repo.repo_path);
+    let repo_summaries = $derived($summaries_store.get($current_repo.repo_path));
     let people_with_analysis = $derived(
         contributors.map((user: Contributor) => {
             const num_commits = get_user_total_commits(user);
@@ -82,33 +82,43 @@
     {#if loading}
         <div class="body">Loading...</div>
     {/if}
-    <div class="button-container">
-        <div>
-            <ButtonPrimaryMedium
-                label={!repo_summaries
-                    ? "Generate AI Summaries"
-                    : "Regenerate AI Summaries"}
-                onclick={generate_summaries}
-                disabled={loading}
-            />
-        </div>
-    </div>
-    {#if !loading && repo_summaries}
-        <div class="cards-container">
-            {#each contributors_sorted() as person}
-                <ContributorCard
-                    username={person.username}
-                    image={person.image}
-                    scaling_factor={person.scaling_factor}
-                >
-                    {#snippet content()}
-                        <div class="contents body">
-                            <div>{person.analysis}</div>
-                        </div>
-                    {/snippet}
-                </ContributorCard>
-            {/each}
-        </div>
+    {#if !loading}
+        {#if repo_summaries}
+            <div class="cards-container">
+                {#each contributors_sorted() as person}
+                    <ContributorCard
+                        username={person.username}
+                        image={person.image}
+                        scaling_factor={person.scaling_factor}
+                    >
+                        {#snippet content()}
+                            <div class="contents body">
+                                <div>{person.analysis}</div>
+                            </div>
+                        {/snippet}
+                    </ContributorCard>
+                {/each}
+            </div>
+            <div class="button-container">
+                <div>
+                    <ButtonPrimaryMedium
+                        label={"Regenerate AI Summaries"}
+                        onclick={generate_summaries}
+                        disabled={loading}
+                    />
+                </div>
+            </div>
+        {:else}
+            <div class="button-container">
+                <div>
+                    <ButtonPrimaryMedium
+                        label={"Generate AI Summaries"}
+                        onclick={generate_summaries}
+                        disabled={loading}
+                    />
+                </div>
+            </div>
+        {/if}
     {/if}
 </main>
 

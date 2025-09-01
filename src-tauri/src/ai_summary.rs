@@ -30,7 +30,7 @@ pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> 
     dotenvy::dotenv().ok();
     let api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY must be set");
     let url = format!(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
     );
 
     let prompt = COMMIT_SUMMARY_PROMPT.replace("{commits}", commits);
