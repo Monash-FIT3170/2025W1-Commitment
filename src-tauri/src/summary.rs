@@ -37,7 +37,16 @@ pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
             env::set_var("GEMINI_API_KEY", &api_key);
             Ok(true)
         }
-        reqwest::StatusCode::UNAUTHORIZED | reqwest::StatusCode::FORBIDDEN => Ok(false),
+        reqwest::StatusCode::UNAUTHORIZED | reqwest::StatusCode::FORBIDDEN | reqwest::StatusCode::BAD_REQUEST => {
+            println!("INVALID API KEY");
+
+            if env::var("GEMINI_API_KEY").is_ok() {
+                // Removes the previously inputted valid key in case invalid key is entered.
+                env::remove_var("GEMINI_API_KEY");
+            }
+            
+            Ok(false)
+        }
         status => {
             let body = response.text().await.unwrap_or_default();
             log::error!("Unexpected validation status {}: {}", body, status);
