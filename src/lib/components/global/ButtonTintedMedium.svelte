@@ -7,7 +7,7 @@
         disabled = false,
         width = "100%",
         icon_first = true,
-        onclick = undefined
+        onclick = undefined,
     } = $props();
 </script>
 

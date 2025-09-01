@@ -1,47 +1,35 @@
 <script lang="ts">
+    import { info, warn } from "@tauri-apps/plugin-log";
     import { page } from "$app/state";
-    import Heading from "$lib/components/overview-page/Heading.svelte";
-    import CommitGraph from "$lib/components/overview-page/CommitGraph.svelte";
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
-    import UploadFileModal from  "$lib/components/overview-page/UploadFileModal.svelte";
-
-    import { downloadPopulatedFile } from "$lib/utils/grading";
-    import { uploadedGradingFile, type UploadedGradingFile } from "$lib/stores/gradingFile";
-    import { readHeaders, validateHeaders } from "$lib/utils/csv";
-
+    import CommitGraph from "$lib/components/overview-page/CommitGraph.svelte";
+    import Heading from "$lib/components/overview-page/Heading.svelte";
+    import UploadFileModal from "$lib/components/overview-page/UploadFileModal.svelte";
+    import type { UploadedGradingFile } from "$lib/stores/gradingFile";
+    import { read_headers, validate_headers } from "$lib/utils/csv";
+    import { download_populated_file } from "$lib/utils/grading";
 
     let repo_path = $derived(page.state.repo_path);
     let repo_type = $derived(page.state.repo_type);
     let branches = $state(page.state.branches);
     let contributors = $derived(page.state.contributors);
 
-    let showModal = $state(false);
-    const openModal = () => ( showModal = true); 
-    let currentUpload = $state(null as ReturnType<typeof uploadedGradingFile["get"]> | null);
+    let show_modal = $state(false);
+    const open_modal = () => (show_modal = true);
 
-    
-    $effect(() => {
-        const unsub = uploadedGradingFile.subscribe((v) => {
-        currentUpload = v;
-        console.log("[upload store] now:", v?.name, {
-            hasBytes: !!v?.bytes?.length,
-            valid: v?.valid,
-            missing: v?.missing,
-        });
-        });
-        return () => unsub();
-    });
+    let current_upload = $state<UploadedGradingFile | null>(null);
 
-
-    async function commitUpload(file: File | null) {
+    async function commit_upload(file: File | null) {
         if (!file) {
-            uploadedGradingFile.set(null);   // re-disable Download
+            current_upload = null; // disables download button
+            void info("[upload] cleared");
             return;
         }
         const bytes = new Uint8Array(await file.arrayBuffer());
-        const { headers, delimiter } = readHeaders(bytes);
-        const { ok, missing } = validateHeaders(headers);
-        const payload: UploadedGradingFile = {
+        const { headers, delimiter } = read_headers(bytes);
+        const { ok, missing } = validate_headers(headers);
+
+        current_upload = {
             name: file.name,
             size: file.size,
             mime: file.type || "text/plain",
@@ -49,26 +37,22 @@
             headers,
             delimiter,
             valid: ok,
-            missing
+            missing,
         };
-        uploadedGradingFile.set(payload);
+        void info(`[upload] staged: ${file.name} (${file.size} bytes)`);
     }
 
-    async function handleDownload() {
+    async function handle_download() {
         if (!contributors || !contributors.length) {
-            console.warn("[download] no contributors on page");
+            void warn("[download] no contributors on page");
             return;
         }
-        if (!currentUpload) {
-            console.warn("[download] no uploaded file in memory");
+        if (!current_upload) {
+            void warn("[download] no uploaded file in memory");
             return;
         }
-        try {
-            await downloadPopulatedFile(contributors, currentUpload);
-            console.log("[download] complete");
-        } catch (err) {
-            console.error("[download] failed:", err);
-        }
+        await download_populated_file(contributors, current_upload);
+        void info("[download] populated file saved");
     }
 </script>
 
@@ -76,23 +60,25 @@
     <Heading repo_path={repo_path.split("/").pop() || repo_path} {repo_type} />
     <CommitGraph {contributors} {branches} />
     <div class="bottom-container">
-        <ButtonPrimaryMedium 
-            icon="table-import" 
-            label="Upload Marking Sheet" 
-            onclick={openModal}
+        <ButtonPrimaryMedium
+            icon="table-import"
+            label="Upload Marking Sheet"
+            onclick={open_modal}
         />
-
         <ButtonPrimaryMedium
             icon="file-download"
             label="Download Marking Sheet"
-            onclick={handleDownload}
-            disabled={!$uploadedGradingFile || !$uploadedGradingFile.valid}
+            onclick={handle_download}
+            disabled={!current_upload || !current_upload.valid}
         />
     </div>
-    <UploadFileModal bind:showModal current={$uploadedGradingFile} oncommit={commitUpload} />
+    <UploadFileModal
+        bind:show_modal
+        current={current_upload}
+        on_commit={commit_upload}
+        {contributors}
+    />
 </div>
-
-
 
 <style>
     .bottom-container {
