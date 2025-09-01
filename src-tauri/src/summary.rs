@@ -1,13 +1,42 @@
 use git2::Repository;
 use serde::Deserialize;
 use serde_json::json;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::env;
+use tauri::Emitter;
+
+#[derive(Clone, serde::Serialize)]
+struct SummaryProgress {
+    email: String,
+    summary: String,
+}
 
 #[tauri::command]
-pub async fn get_ai_summary(path: &str) -> Result<HashMap<String, String>, String> {
-    let repo_path_str = path.to_string();
-    summarize_all_contributors(&repo_path_str).await
+pub async fn get_ai_summary(window: tauri::Window, path: &str) -> Result<(), String> {
+    if let Ok(contributors) = get_all_contributors(path) {
+        let total = contributors.len();
+        window.emit("summary-total", total).unwrap();
+
+        for (contributor_name, contributor_email) in contributors {
+            if let Ok(commits) = get_contributor_commits(path, &contributor_name) {
+                if !commits.is_empty() {
+                    match summarize_commits(&commits).await {
+                        Ok(summary) => {
+                            let progress = SummaryProgress {
+                                email: contributor_email.clone(),
+                                summary,
+                            };
+                            window.emit("summary-progress", progress).unwrap();
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to summarize commits for {}: {}", contributor_name, e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Ok(())
 }
 
 #[tauri::command]
@@ -173,27 +202,4 @@ pub fn get_all_contributors(repo_path: &str) -> Result<HashSet<(String, String)>
     }
 
     Ok(contributors)
-}
-
-pub async fn summarize_all_contributors(
-    repo_path: &str,
-) -> Result<HashMap<String, String>, String> {
-    let mut summaries = HashMap::new();
-    if let Ok(contributors) = get_all_contributors(repo_path) {
-        for (contributor_name, contributor_email) in contributors {
-            if let Ok(commits) = get_contributor_commits(repo_path, &contributor_name) {
-                if !commits.is_empty() {
-                    match summarize_commits(&commits).await {
-                        Ok(summary) => {
-                            summaries.insert(contributor_email.clone(), summary);
-                        }
-                        Err(e) => {
-                            eprintln!("Failed to summarize commits for {contributor_name}: {e}")
-                        }
-                    }
-                }
-            }
-        }
-    }
-    Ok(summaries)
 }
