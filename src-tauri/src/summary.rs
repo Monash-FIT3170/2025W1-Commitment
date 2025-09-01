@@ -16,10 +16,13 @@ pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
 
     let response = client
         .get(url)
-        .bearer_auth(api_key)
+        .query(&[("key", &api_key)])
         .send()
         .await
         .map_err(|e| e.to_string())?;
+
+    // Debugging: Check response status
+    println!("Response Status: {}", response.status());
 
     match response.status() {
         reqwest::StatusCode::OK => Ok(true),
