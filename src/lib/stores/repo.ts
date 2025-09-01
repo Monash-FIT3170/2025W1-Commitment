@@ -1,18 +1,39 @@
 import { writable } from "svelte/store";
-import type { Repo } from "$lib/repo";
-import { get_repo_type } from "$lib/repo";
 
-export const current_repo = writable<Repo>({
-    repo_url: "https://github.com/Monash/FIT3170/2025W1-Commitment.git",
-    repo_path: "Monash/FIT3170/2025W1-Commitment",
-    repo_type: "github",
-});
+export type Repo = {
+    repo_name: string;
+    repo_url: string;
+    repo_type: string;
+};
+
+export function get_repo_type(url: string) {
+    const domain = new URL(url).hostname;
+
+    if (domain.includes("github.com")) {
+        return "github";
+    } else if (domain.includes("gitlab.com")) {
+        return "gitlab";
+    } else {
+        return "Unknown";
+    }
+}
+
+export function get_repo_name(url: string) {
+    let result = new URL(url).pathname.split("/").at(-1);
+    if (result) {
+        return result;
+    } else {
+        return "Unknown";
+    }
+}
+
+export const current_repo = writable<Repo>();
 
 export function set_repo_url(repo: string) {
     let name = new URL(repo).pathname.slice(1);
     current_repo.set({
         repo_url: repo,
-        repo_path: name,
+        repo_name: name,
         repo_type: get_repo_type(repo),
     });
 }

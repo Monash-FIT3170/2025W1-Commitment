@@ -1,7 +1,34 @@
 <script lang="ts">
     import { sidebar_open, close_sidebar } from "$lib/stores/sidebar";
-    import { bookmarks } from "$lib/stores/bookmarks";
     import Icon from "@iconify/svelte";
+    import { manifest, type ManifestSchema } from "$lib/stores/manifest";
+    import { onMount } from "svelte";
+    import { invoke } from "@tauri-apps/api/core";
+
+    interface RepoBookmark {
+        repo_name: string;
+        repo_url: string;
+        repo_bookmarked: boolean;
+    }
+    onMount(async () => {
+        try {
+            let data = await invoke<ManifestSchema>("read_manifest");
+            manifest.set(data);
+            console.log("page", data);
+        } catch (e: any) {
+            let err = typeof e === "string" ? e : (e?.message ?? String(e));
+            console.error("read_manifest failed", e);
+        }
+    });
+    let bookmarked_repos: RepoBookmark[] = $derived(
+        $manifest["repository"].map((item) => {
+            return {
+                repo_name: item.name,
+                repo_url: item.url,
+                repo_bookmarked: item.bookmarked,
+            };
+        })
+    );
 </script>
 
 <div class={`sidebar ${$sidebar_open ? "open" : "closed"}`}>
@@ -33,15 +60,17 @@
             <h2 class="heading-1 bookmark-text white">Bookmarks</h2>
         </div>
 
-        {#each $bookmarks as repo (repo.repo_path)}
-            <button class="bookmark-item" type="button">
-                <h6 class="heading-2 repo-name label-secondary">
-                    {repo.repo_path}
-                </h6>
-                <h6 class="caption repo-url label-secondary">
-                    {repo.repo_url}
-                </h6>
-            </button>
+        {#each bookmarked_repos as repo (repo.repo_name)}
+            {#if repo.repo_bookmarked}
+                <button class="bookmark-item" type="button">
+                    <h6 class="heading-2 repo-name label-secondary">
+                        {repo.repo_name}
+                    </h6>
+                    <h6 class="caption repo-url label-secondary">
+                        {repo.repo_url}
+                    </h6>
+                </button>
+            {/if}
         {/each}
     </div>
 </div>

@@ -31,7 +31,9 @@ function normalize(input: ManifestInput): ManifestSchema {
 }
 
 function createManifestStore() {
-    const { subscribe, set, update } = writable<ManifestSchema>({ repository: [] });
+    const { subscribe, set, update } = writable<ManifestSchema>({
+        repository: [],
+    });
 
     return {
         subscribe,
@@ -115,7 +117,7 @@ function createManifestStore() {
         },
 
         get_bookmark(): RepoSchema[] {
-            return get({ subscribe }).repository.filter(r => r.bookmarked);
+            return get({ subscribe }).repository.filter((r) => r.bookmarked);
         },
 
         /** Create a new repository inside of the manifest file */

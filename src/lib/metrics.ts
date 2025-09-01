@@ -16,10 +16,12 @@ export type Contributor = Readonly<{
 // Load branches for a repository
 export async function load_branches(repo: string): Promise<string[]> {
     const repo_path = `../.gitgauge/repositories/${repo}`;
+    console.log("PATH", repo_path);
     try {
         const real_branches = await invoke<string[]>("get_branch_names", {
             path: repo_path,
         });
+        console.log("REAL BRANCHES", real_branches);
         return ["All", ...real_branches];
     } catch (err) {
         console.error("Failed to load branches: ", err);
