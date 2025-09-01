@@ -60,7 +60,7 @@ contains the user's name and profile image.
         display: flex;
         justify-content: space-between;
         gap: 2rem;
-        min-width: 0;
+        width: (100hw - 4rem);
     }
 
     .left-menu-container {
