@@ -1,12 +1,17 @@
 <script lang="ts">
     import Icon from "@iconify/svelte";
     import { invoke } from "@tauri-apps/api/core";
+    import { onMount } from "svelte";
 
     let {
         on_submit = () => {},
         api_input = $bindable<string>(),
         error = false,
     } = $props();
+
+    onMount(async () => {
+        await check_key_set();
+    });
 
     let editing = $state(false);
 
@@ -23,22 +28,26 @@
         }
     }
 
-    check_key_set();
-
     function handle_input_keydown(event: KeyboardEvent) {
         if (event.key === "Enter") {
             toggle_edit();
         }
     }
 
-    function toggle_edit() {
+    async function toggle_edit() {
         const input_field = document.getElementById(
             "api-input-field"
         ) as HTMLInputElement;
         if (editing) {
-            on_submit();
+            let error = await on_submit();
+            if (!error) {
+                api_input = "";
+                return;
+            }
+            else {
             input_field.disabled = true;
             editing = false;
+            }
         } else {
             input_field.disabled = false;
             input_field.focus();

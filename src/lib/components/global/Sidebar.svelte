@@ -34,7 +34,7 @@
     let api_input = $state("");
     let api_error = $state(false);
 
-    async function on_submit() {
+    async function on_submit(): Promise<Boolean> {
         // Key validation
         let is_valid_key = await invoke<Boolean>("gemini_key_validation", {
             apiKey: api_input,
@@ -50,6 +50,7 @@
             console.log("Invalid API Key");
             api_error = true;
         }
+        return is_valid_key;
     }
 </script>
 
