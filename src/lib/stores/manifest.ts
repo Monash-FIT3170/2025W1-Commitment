@@ -121,11 +121,18 @@ function createManifestStore() {
         },
 
         /** Create a new repository inside of the manifest file */
-        create_repository(backendResult: BackendVerificationResult, repo_url: string) {
+        create_repository(
+            backendResult: BackendVerificationResult,
+            repo_url: string
+        ) {
             const new_repo: RepoSchema = {
                 name: backendResult.repo,
                 url: repo_url,
-                path: '../.gitguage/repositories/' + repo_url.split('/')[3] + "-" + repo_url.split('/')[4],
+                path:
+                    "../.gitguage/repositories/" +
+                    repo_url.split("/")[3] +
+                    "-" +
+                    repo_url.split("/")[4],
                 bookmarked: false,
                 cloned: true,
                 email_mapping: null,
@@ -135,7 +142,6 @@ function createManifestStore() {
             update((m) => ({
                 repository: [...m.repository, new_repo],
             }));
-
         },
 
         /** Update the last accessed timestamp of a repository. */

@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-
 /*
 manifest.json is this format
 {

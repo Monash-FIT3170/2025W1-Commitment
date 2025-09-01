@@ -111,8 +111,10 @@
                 backend_result.repo
             );
             console.log(backend_result);
-            const branches = await load_branches(`${backend_result.owner}-${backend_result.repo}`);
-            
+            const branches = await load_branches(
+                `${backend_result.owner}-${backend_result.repo}`
+            );
+
             // Check if the repository exists in the manifest
             const repo_exists = $manifest["repository"].some(
                 (item) => item.url === repo_url_input
@@ -123,7 +125,7 @@
             }
             manifest.update_repository_timestamp(repo_url_input);
 
-            await invoke('save_manifest', {manifest: $manifest})
+            await invoke("save_manifest", { manifest: $manifest });
 
             // Navigate to the overview page
             goto(`/overview-page`, {
