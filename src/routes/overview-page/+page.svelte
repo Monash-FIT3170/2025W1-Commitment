@@ -5,7 +5,8 @@
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import { load_branches, load_commit_data } from "$lib/metrics";
 
-    let repo_path = $state(page.state.repo_path || "");
+    let owner = $state(page.state.owner || "");
+    let repo = $state(page.state.repo || "");
     let repo_type = $state(page.state.repo_type || "");
     let branches = $state(page.state.branches || []);
     let contributors = $state(page.state.contributors || []);

@@ -34,12 +34,10 @@
         });
     })();
 
-    interface RepoOption {
-        label: string;
-        icon: string;
-    }
+
 
     let repo_url_input: string = $state("");
+    let selected: RepoOption = $state(repo_options[0]);
 
     let verification_message: string = $state("");
     let verification_error: boolean = $state(false);
@@ -76,6 +74,7 @@
         }
 
         try {
+            
             // Try frontend validation first
             const result = verify_and_extract_source_info(
                 repo_url_input,
