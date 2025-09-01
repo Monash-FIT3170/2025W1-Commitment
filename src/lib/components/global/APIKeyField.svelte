@@ -1,5 +1,6 @@
 <script lang="ts">
     import Icon from "@iconify/svelte";
+    import { invoke } from "@tauri-apps/api/core";
 
     let {
         on_submit = () => {},
@@ -8,6 +9,21 @@
     } = $props();
 
     let editing = $state(false);
+
+    async function check_key_set(): Promise<void> {
+        const input_field = document.getElementById(
+            "api-input-field"
+        ) as HTMLInputElement;
+        let check_key = await invoke<Boolean>("check_key_set");
+
+        if (check_key) {
+            api_input = "****************************************";
+            input_field.disabled = true;
+            editing = false;
+        }
+    }
+
+    check_key_set();
 
     function handle_input_keydown(event: KeyboardEvent) {
         if (event.key === "Enter") {

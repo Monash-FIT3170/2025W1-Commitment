@@ -8,11 +8,11 @@ pub async fn get_ai_summary(path: &str) -> Result<HashMap<String, String>, Strin
     ai_summary::summarize_all_contributors(&repo_path_str).await
 }
 
-// #[tauri::command]
-// pub fn check_key_set() -> bool {
-//     dotenvy::dotenv().ok();
-//     env::var("GEMINI_API_KEY").is_ok()
-// }
+#[tauri::command]
+pub fn check_key_set() -> bool {
+    dotenvy::dotenv().ok();
+    env::var("GEMINI_API_KEY").is_ok()
+}
 
 #[tauri::command]
 pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
