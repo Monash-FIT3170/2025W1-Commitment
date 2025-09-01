@@ -1,4 +1,3 @@
-mod ai_summary;
 mod branches;
 mod config;
 mod contributor;
