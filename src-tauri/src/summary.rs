@@ -83,32 +83,42 @@ const COMMIT_SUMMARY_PROMPT: &str = include_str!("AI-summary-prompt.md");
 pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> {
     dotenvy::dotenv().ok();
     let api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY must be set");
-    let url = format!(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
-    );
+
+    let models = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-2.5-flash-lite"];
 
     let prompt = COMMIT_SUMMARY_PROMPT.replace("{commits}", commits);
-
     let client = reqwest::Client::new();
-    let res = client
-        .post(&url)
-        .json(&json!({
-            "contents": [{
-                "parts": [{"text": prompt}]
-            }]
-        }))
-        .send()
-        .await?;
 
-    let response_json: GeminiResponse = res.json().await?;
+    for model in &models {
+        let url = format!(
+            "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent?key={}",
+            model, api_key
+        );
 
-    if let Some(candidate) = response_json.candidates.first() {
-        if let Some(part) = candidate.content.parts.first() {
-            return Ok(part.text.clone());
+        let res = client
+            .post(&url)
+            .json(&json!({
+                "contents": [{
+                    "parts": [{"text": &prompt}]
+                }]
+            }))
+            .send()
+            .await;
+
+        if let Ok(res) = res {
+            if let Ok(response_json) = res.json::<GeminiResponse>().await {
+                if let Some(candidate) = response_json.candidates.first() {
+                    if let Some(part) = candidate.content.parts.first() {
+                        return Ok(part.text.clone());
+                    }
+                }
+            }
         }
     }
 
-    Ok(String::from("Could not generate a summary."))
+    Ok(String::from(
+        "Could not generate a summary after trying all models.",
+    ))
 }
 
 pub fn get_contributor_commits(
