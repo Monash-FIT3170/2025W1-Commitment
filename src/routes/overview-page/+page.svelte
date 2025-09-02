@@ -63,7 +63,7 @@
         await download_populated_file(contributors, current_upload);
         void info("[download] populated file saved");
     }
-  
+
     //let branch_selection = $bindable($state("#"));
     $effect(() => {
         if (
@@ -72,7 +72,12 @@
         ) {
             // Fetch new contributors for the selected branch
             (async () => {
-                const source = source_type === 0 ? "https://github.com" : source_type === 1 ? "https://gitlab.com" : "";
+                const source =
+                    source_type === 0
+                        ? "https://github.com"
+                        : source_type === 1
+                          ? "https://gitlab.com"
+                          : "";
                 const branch_arg =
                     branch_selection === "" ? undefined : branch_selection;
                 const new_contributors = await load_commit_data(

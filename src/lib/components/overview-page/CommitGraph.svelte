@@ -9,8 +9,14 @@
         branches,
         selected_branch,
         start_date,
-        end_date
-    }: { contributors: Contributor[]; branches: String[]; selected_branch?: string; start_date?: string; end_date?: string } = $props();
+        end_date,
+    }: {
+        contributors: Contributor[];
+        branches: String[];
+        selected_branch?: string;
+        start_date?: string;
+        end_date?: string;
+    } = $props();
 
     let criteria = ["total commits", "lines of code", "lines/commit"];
     let selected_criteria = criteria[0];
@@ -42,7 +48,7 @@
             width="12rem"
         />
     </div>
-    <Graph {contributors} selected_branch={selected_branch} start_date={start_date} end_date={end_date}/>
+    <Graph {contributors} {selected_branch} {start_date} {end_date} />
     <ContributorCards
         users={contributors}
         selected_branch={selected_branch ?? ""}

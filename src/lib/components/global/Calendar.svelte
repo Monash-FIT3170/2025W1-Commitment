@@ -13,7 +13,7 @@
         label_class = "body",
         disabled = false,
         width = "auto",
-        label = "Select Date Range"
+        label = "Select Date Range",
     }: {
         initial_start: string;
         initial_end: string;
@@ -33,7 +33,9 @@
     let input_elem: HTMLInputElement;
     let picker: flatpickr.Instance;
 
-    let displayLabel = $state(start && end ? `${start} → ${end}` : "Select dates");
+    let displayLabel = $state(
+        start && end ? `${start} → ${end}` : "Select dates"
+    );
 
     onMount(() => {
         picker = flatpickr(input_elem, {

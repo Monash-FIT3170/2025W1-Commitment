@@ -1,6 +1,9 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
-    import { get_source_type, get_repo_info } from "$lib/github_url_verifier.js";
+    import {
+        get_source_type,
+        get_repo_info,
+    } from "$lib/github_url_verifier.js";
     import Icon from "@iconify/svelte";
     import { load_branches, load_commit_data } from "$lib/metrics";
     import { goto } from "$app/navigation";
@@ -51,9 +54,8 @@
         })
     );
 
-    
     let selected: RepoOption = $state(repo_options[2]); // Default to Local
-    
+
     $effect(() => {
         if (repo_url_input.trim() !== "") {
             selected = repo_options[get_source_type(repo_url_input)];
@@ -154,8 +156,7 @@
 
         if (!repo_url_input.trim()) {
             verification_error = true;
-            verification_message =
-                "Please enter a URL/path.";
+            verification_message = "Please enter a URL/path.";
             return;
         }
 
@@ -167,7 +168,7 @@
         }
 
         try {
-            const repository_information = get_repo_info(repo_url_input)
+            const repository_information = get_repo_info(repo_url_input);
 
             // Update the repo store with the new URL
             set_repo_url(repo_url_input);
@@ -189,7 +190,10 @@
             );
 
             if (!repo_exists) {
-                manifest.create_repository(repository_information, repo_url_input);
+                manifest.create_repository(
+                    repository_information,
+                    repo_url_input
+                );
             }
             manifest.update_repository_timestamp(repo_url_input);
 

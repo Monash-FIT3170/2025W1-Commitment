@@ -1,12 +1,11 @@
 <script lang="ts">
-    import { page } from "$app/state";
     import Icon from "@iconify/svelte";
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
     import Tab from "$lib/components/global/Tab.svelte";
-    import { get } from "svelte/store";
-    import { load_commit_data, type Contributor } from "$lib/metrics";
-    import Calendar from "../global/Calendar.svelte";
+    import Calendar from "$lib/components/global/Calendar.svelte";
+    import Modal from "$lib/components/overview-page/Modal.svelte";
+    import { validate_config_file } from "$lib/file_validation";
 
     let {
         repo: repo,
@@ -17,8 +16,6 @@
         end_date = $bindable(),
     } = $props();
 
-    let contributors: Contributor[] = [];
-
     let selected_view: string = $state("overview");
 
     const tabs = [
@@ -28,6 +25,41 @@
 
     function select_view(id: string) {
         selected_view = id;
+    }
+
+    let show_modal = $state(false);
+
+    let file_input: HTMLInputElement;
+
+    function trigger_file_input() {
+        file_input.click();
+    }
+
+    let textarea_value = "";
+    function handle_file_change(event: Event) {
+        const selected_files = (event.target as HTMLInputElement).files;
+        if (selected_files && selected_files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target?.result as string;
+                try {
+                    const json = JSON.parse(text);
+                    const { valid, errors } = validate_config_file(json);
+                    if (valid) {
+                        textarea_value = JSON.stringify(json, null, 4);
+                    } else {
+                        textarea_value =
+                            "Invalid format:\n" +
+                            JSON.stringify(errors, null, 2);
+                    }
+                } catch {
+                    textarea_value = "Not valid JSON";
+                }
+                console.log("File contents:", textarea_value);
+            };
+            reader.readAsText(selected_files[0]);
+            show_modal = false;
+        }
     }
 
     function open_calendar() {
@@ -64,8 +96,46 @@
                 label_class="body-accent"
                 icon_first={true}
                 width="4rem"
+                onclick={() => (show_modal = true)}
             />
         </div>
+
+        <!-- Modal -->
+        <Modal bind:show_modal>
+            {#snippet header()}
+                <h2 id="modal-title">Upload config file</h2>
+            {/snippet}
+
+            {#snippet body()}
+                <p>
+                    Upload a config file to group email addresses to
+                    contributors
+                </p>
+                <input
+                    type="file"
+                    bind:this={file_input}
+                    style="display: none;"
+                    onchange={handle_file_change}
+                />
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <ButtonTintedMedium
+                        label="Cancel"
+                        label_class="body"
+                        icon_first={true}
+                        width="4rem"
+                        onclick={() => (show_modal = false)}
+                    />
+                    <ButtonTintedMedium
+                        label="Upload"
+                        icon="upload"
+                        label_class="body-accent"
+                        icon_first={true}
+                        width="4rem"
+                        onclick={trigger_file_input}
+                    />
+                </div>
+            {/snippet}
+        </Modal>
 
         <!-- branch dropdown btn -->
         <div class="branch-dropdown heading-btn">
@@ -197,5 +267,17 @@
             grid-template-columns: 16rem 16rem;
             padding-top: 4rem;
         }
+    }
+
+    .format-box {
+        width: 95%;
+        padding: 1em;
+        border-radius: 0.5em;
+        border: 1px solid #555;
+        background-color: #1e1e1e;
+        color: #fff;
+        font-size: 1em;
+        margin-top: 1em;
+        resize: vertical;
     }
 </style>

@@ -626,9 +626,9 @@
     $effect(() => {
         if (chart_container) {
             if (chart) {
-            window.removeEventListener("resize", resize_handler);
-            chart.dispose();
-        }
+                window.removeEventListener("resize", resize_handler);
+                chart.dispose();
+            }
             chart = echarts.init(chart_container);
             set_chart_options();
             window.addEventListener("resize", resize_handler);
@@ -678,10 +678,12 @@
 </script>
 
 {#key chart_key}
-    <div bind:this={chart_container} class="chart-container"
-    style="height: {chart_height}px; transition: height 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);"></div>
+    <div
+        bind:this={chart_container}
+        class="chart-container"
+        style="height: {chart_height}px; transition: height 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);"
+    ></div>
 {/key}
-
 
 <style>
     .chart-container {

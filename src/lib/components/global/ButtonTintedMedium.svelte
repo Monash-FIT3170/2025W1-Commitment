@@ -11,7 +11,7 @@
     } = $props();
 </script>
 
-<button class="medium" {disabled} {onclick} style="width: {width}">
+<button class="medium" {disabled} style="width: {width}" {onclick}>
     {#if icon_first}
         {#if icon}
             <Icon
