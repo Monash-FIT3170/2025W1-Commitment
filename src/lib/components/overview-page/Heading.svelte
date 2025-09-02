@@ -58,7 +58,8 @@
             />
         </div>
 
-            <!-- branch dropdown btn -->
+        <!-- branch dropdown btn -->
+        <div class="branch-dropdown heading-btn">
             <DropdownTintedMedium
                 options={branches}
                 selected={branch_selection.selected}
