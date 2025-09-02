@@ -1,9 +1,13 @@
 import { writable, get } from "svelte/store";
 
+export interface Config {
+    [group: string]: string[];
+}
+
 export interface RepoSchema {
     bookmarked: boolean;
     cloned: boolean;
-    email_mapping: string | null;
+    email_mapping: Config | null;
     grading_sheet: string | null;
     last_accessed: string;
     name: string;
@@ -151,6 +155,22 @@ function create_manifest_store() {
                     repo.last_accessed = new Date().toISOString();
                 }
                 return { repository: [...m.repository] };
+            });
+        },
+
+        /** Update email_mapping for repositories using a config object. */
+        update_email_mapping(config: Config, repo_url: string) {
+            update((m) => {
+                const next = m.repository.map((repo) => {
+                    if (repo.url === repo_url) {
+                        return {
+                            ...repo,
+                            email_mapping: config,
+                        };
+                    }
+                    return repo;
+                });
+                return { repository: next };
             });
         },
     };
