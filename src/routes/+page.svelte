@@ -34,19 +34,6 @@
     let profile_image_url = "/mock_profile_img.png";
     let username = "Baaset Moslih";
 
-<<<<<<< HEAD
-    let bookmarked_repos: RepoBookmark[] = [];
-    (async () => {
-        bookmarked_repos = await invoke<RepoBookmark[]>(
-            "get_bookmarked_repositories",
-            {}
-        ).catch((error) => {
-            console.error("Failed to fetch bookmarked repositories:", error);
-            return [];
-        });
-    })();
-
-=======
     interface RepoBookmark {
         repo_name: string;
         repo_url: string;
@@ -62,7 +49,6 @@
             };
         })
     );
->>>>>>> devel
 
 
     let repo_url_input: string = $state("");
@@ -185,7 +171,7 @@
                 selected.source_type
             );
             console.log(backend_result);
-            const branches = await load_branches(backend_result.repo);
+            const branches = await load_branches(`${backend_result.owner}-${backend_result.repo}`);
 
             // Check if the repository exists in the manifest
             const repo_exists = $manifest["repository"].some(

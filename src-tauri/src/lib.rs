@@ -4,7 +4,6 @@ mod contributor;
 mod manifest;
 mod repositories;
 mod url_verifier;
-mod manifest;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
