@@ -1,38 +1,9 @@
 use git2::{build::RepoBuilder, RemoteCallbacks};
-use std::env;
 
 fn clone_progress(cur_progress: usize, total_progress: usize) {
     println!("\rProgress: {cur_progress}/{total_progress}");
 }
 
-fn load_access_tokens_from_env() -> Vec<String> {
-    let mut tokens = Vec::new();
-    
-    // Load .env file if it exists
-    if let Err(e) = dotenvy::dotenv() {
-        log::warn!("Could not load .env file: {}", e);
-    }
-    
-    // Try to load multiple token environment variables
-    let token_vars = ["GITHUB_TOKEN", "GITLAB_TOKEN"];
-    
-    for var in token_vars.iter() {
-        if let Ok(token) = env::var(var) {
-            if !token.is_empty() {
-                log::info!("Loaded token from {}", var);
-                tokens.push(token);
-            }
-        }
-    }
-    
-    if tokens.is_empty() {
-        log::warn!("No access tokens found in environment variables");
-    } else {
-        log::info!("Loaded {} access token(s) from environment", tokens.len());
-    }
-    
-    tokens
-}
 
 #[tauri::command]
 pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>) -> Result<(), String> {
@@ -111,45 +82,6 @@ pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
         }
     }
 
-    // Step 2: Load access tokens from environment
-    let tokens = load_access_tokens_from_env();
-    if tokens.is_empty() {
-        return Err(
-            "Repository appears to be private, but no access tokens found in environment variables. \
-            Please add GITHUB_TOKEN or GITLAB_TOKEN to your .env file."
-                .to_string(),
-        );
-    }
-
-    // Step 3: Try each token until one works
-    let mut last_error = String::new();
-    for (index, token) in tokens.iter().enumerate() {
-        log::info!("Attempting clone with token {} of {}", index + 1, tokens.len());
-        
-        match try_clone_with_token(url, path, Some(token)) {
-            Ok(()) => {
-                log::info!("Successfully cloned private repository at: {}", path);
-                return Ok(());
-            }
-            Err(e) => {
-                last_error = e.to_string();
-                log::warn!("Token {} failed: {}", index + 1, last_error);
-                
-                // Clean up any partial clone attempt
-                if std::path::Path::new(path).exists() {
-                    let _ = std::fs::remove_dir_all(path);
-                }
-            }
-        }
-    }
-
-    // Step 4: All tokens failed
-    Err(format!(
-        "Failed to clone repository. All {} access tokens were tried but none worked. \
-        This could mean: 1) You don't have access to this private repository, \
-        2) The tokens are invalid or expired, or 3) The repository doesn't exist. \
-        Last error: {}",
-        tokens.len(),
-        last_error
-    ))
+    // Step 4: Repository is private and requires authentication
+    Err("Repository appears to be private and requires authentication. Please use try_clone_with_token with a valid access token.".to_string())
 }

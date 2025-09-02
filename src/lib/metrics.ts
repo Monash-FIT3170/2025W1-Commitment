@@ -48,11 +48,7 @@ export async function load_commit_data(
         info(`Failed to clone the repository: ${error_message}`);
 
         // Check if this is an authentication error that requires a token
-        if (
-            error_message.includes("no access tokens found") ||
-            (error_message.includes("All") &&
-                error_message.includes("access tokens were tried"))
-        ) {
+        if (error_message.includes("private and requires authentication")) {
             show_token_modal(error_message, repo_url, repo_path);
         }
 

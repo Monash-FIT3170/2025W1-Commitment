@@ -177,11 +177,7 @@
             console.error("Verification failed:", error);
 
             // Check if this is an authentication error that requires a token
-            if (
-                error_message.includes("no access tokens found") ||
-                (error_message.includes("All") &&
-                    error_message.includes("access tokens were tried"))
-            ) {
+            if (error_message.includes("private and requires authentication")) {
                 console.log("Authentication required, showing modal");
                 waiting_for_auth = true;
                 // The modal will show automatically via the auth store
