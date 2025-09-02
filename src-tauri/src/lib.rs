@@ -1,5 +1,7 @@
 mod branches;
+mod config;
 mod contributor;
+mod manifest;
 mod repositories;
 mod url_verifier;
 mod manifest;
@@ -9,7 +11,7 @@ pub fn run() {
     // Check manifest on startup
     tauri::async_runtime::spawn(async {
         if let Err(e) = manifest::check_manifest().await {
-            eprintln!("Manifest check failed: {}", e);
+            eprintln!("Manifest check failed: {e}");
             // You can decide whether to exit the app or continue
             // std::process::exit(1); // Uncomment to exit on failure
         } else {
@@ -23,10 +25,11 @@ pub fn run() {
             branches::get_branch_names,
             contributor::get_contributor_info,
             repositories::bare_clone,
+            repositories::try_clone_with_token,
             repositories::is_repo_cloned,
             url_verifier::verify_and_extract_source_info,
-            manifest::get_bookmarked_repositories,
-            manifest::set_bookmarked_repository,
+            manifest::read_manifest,
+            manifest::save_manifest
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

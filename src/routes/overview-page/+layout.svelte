@@ -30,8 +30,4 @@
         display: flex;
         justify-content: space-between;
     }
-
-    .body {
-        min-height: calc(100vh - 1.375rem);
-    }
 </style>
