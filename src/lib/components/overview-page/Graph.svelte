@@ -198,7 +198,7 @@
         let user_total_commits: any[] = [];
         users.forEach((user) => {
             user_total_commits.push({
-                username: user.bitmap_hash,
+                username: user.username,
                 image: user.bitmap,
                 num_commits: user.total_commits,
             });
