@@ -9,6 +9,7 @@
     import Calendar from "../global/Calendar.svelte";
 
     let {
+        repo_path: repo_path,
         repo: repo,
         repo_type: repo_type = "github",
         branches = [],
@@ -80,7 +81,8 @@
                 bind:selected={branch_selection}
                 disabled={false}
             />
-
+        </div>
+        <div class="calendar-btn heading-btn">
             <!-- calendar btn -->
             <Calendar
                 initial_start={start_date}
@@ -95,20 +97,6 @@
                 on:change={handle_date_change}
             />
         </div>
-
-        <!-- calendar btn -->
-        <Calendar
-            initial_start={start_date}
-            initial_end={end_date}
-            date_format="DD-MM-YY"
-            icon="calendar"
-            icon_first={true}
-            label_class="body-accent"
-            label="Select Date Range"
-            disabled={false}
-            width="4rem"
-            on:change={handle_date_change}
-        />
     </div>
 
     <div class="heading-btn-spacer"></div>
