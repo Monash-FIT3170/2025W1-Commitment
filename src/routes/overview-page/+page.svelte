@@ -117,13 +117,15 @@
         bind:end_date
     />
 
-    <CommitGraph
-        {contributors}
-        {branches}
-        selected_branch={branch_selection}
-        {start_date}
-        {end_date}
-    />
+    {#key contributors}
+        <CommitGraph
+            {contributors}
+            {branches}
+            selected_branch={branch_selection}
+            {start_date}
+            {end_date}
+        />
+    {/key}
 
     <div class="bottom-container">
         <ButtonPrimaryMedium
