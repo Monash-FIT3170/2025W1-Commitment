@@ -1,14 +1,15 @@
 use git2::{BranchType, Oid, Repository, Sort};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Contacts {
     Email(String),
     EmailList(Vec<String>),
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Contributor {
     pub username: String,
     pub contacts: Contacts,
@@ -24,6 +25,84 @@ pub struct Contributor {
 pub struct DateRange {
     pub start: i64,
     pub end: i64,
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn group_contributors_by_config(
+    config_json: Value,
+    contributors: Vec<Contributor>,
+) -> Result<Vec<Contributor>, String> {
+    let mut result: Vec<Contributor> = Vec::new();
+
+    // Collect emails from config for grouping
+    let mut grouped_emails = std::collections::HashSet::new();
+    if let Value::Object(ref map) = config_json {
+        for (group_name, emails_value) in map.iter() {
+            let mut total_commits = 0;
+            let mut additions = 0;
+            let mut deletions = 0;
+            let mut contacts = Vec::new();
+            let mut bitmap_hash = String::new();
+            let mut bitmap = String::new();
+
+            if let Value::Array(email_list) = emails_value {
+                for email_val in email_list {
+                    if let Some(email) = email_val.as_str() {
+                        grouped_emails.insert(email.to_string());
+                        if let Some(contrib) = contributors.iter().find(|c| match &c.contacts {
+                            Contacts::Email(e) => e == email,
+                            Contacts::EmailList(list) => list.contains(&email.to_string()),
+                        }) {
+                            total_commits += contrib.total_commits;
+                            additions += contrib.additions;
+                            deletions += contrib.deletions;
+                            contacts.push(email.to_string());
+                            if bitmap_hash.is_empty() {
+                                bitmap_hash = contrib.bitmap_hash.clone();
+                            }
+                            if bitmap.is_empty() {
+                                bitmap = contrib.bitmap.clone();
+                            }
+                        }
+                    }
+                }
+            }
+
+            if !contacts.is_empty() {
+                result.push(Contributor {
+                    username: group_name.clone(),
+                    contacts: Contacts::EmailList(contacts),
+                    total_commits,
+                    additions,
+                    deletions,
+                    bitmap_hash,
+                    bitmap,
+                });
+            }
+        }
+    }
+
+    // Add contributors not included in config
+    for c in &contributors {
+        let mut is_grouped = false;
+        match &c.contacts {
+            Contacts::Email(email) => {
+                if grouped_emails.contains(email) {
+                    is_grouped = true;
+                }
+            }
+            Contacts::EmailList(list) => {
+                if list.iter().any(|e| grouped_emails.contains(e)) {
+                    is_grouped = true;
+                }
+            }
+        }
+        if !is_grouped {
+            result.push(c.clone());
+        }
+    }
+
+    Ok(result)
 }
 
 // date_range: Option<(i64, i64)> - Optional date range in UNIX timestamp format
@@ -81,8 +160,6 @@ pub async fn get_contributor_info(
 
     let mut contributors: HashMap<String, Contributor> = HashMap::new();
 
-    // let custom_date_range = start_date.is_some() || end_date.is_some();
-
     for oid_result in revwalk {
         let oid = oid_result.map_err(|e| e.to_string())?;
         let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
@@ -100,6 +177,28 @@ pub async fn get_contributor_info(
         let gravatar_hash = md5::compute(email.clone().trim().to_lowercase());
         let gravatar_login = author_signature.name().unwrap_or("Unknown").to_string();
         let gravatar_url = format!("https://www.gravatar.com/avatar/{gravatar_hash:x}?d=identicon");
+
+        // Normalize username for grouping
+        let normalized_username = if email.ends_with("@users.noreply.github.com") {
+            // Extract username from GitHub noreply email
+            if let Some(pos) = email.find('+') {
+                let rest = &email[pos + 1..];
+                if let Some(at_pos) = rest.find('@') {
+                    rest[..at_pos].to_string()
+                } else {
+                    gravatar_login.clone()
+                }
+            } else {
+                gravatar_login.clone()
+            }
+        } else {
+            // Use login name or email prefix
+            if !gravatar_login.is_empty() && gravatar_login != "Unknown" {
+                gravatar_login.clone()
+            } else {
+                email.split('@').next().unwrap_or("").to_string()
+            }
+        };
 
         let commit_tree = commit.tree().map_err(|e| e.to_string())?;
         let parent_tree = if commit.parent_count() > 0 {
@@ -123,16 +222,38 @@ pub async fn get_contributor_info(
         let deletions = stats.deletions() as u64;
 
         let entry = contributors
-            .entry(email.clone())
+            .entry(normalized_username.clone())
             .or_insert_with(|| Contributor {
-                username: String::from(""),
-                contacts: Contacts::Email(email),
+                username: normalized_username.clone(),
+                contacts: Contacts::EmailList(vec![email.clone()]),
                 total_commits: 0,
                 additions: 0,
                 deletions: 0,
-                bitmap_hash: gravatar_login, // tmp use to store gravatar login
-                bitmap: gravatar_url,        // tmp use to store gravatar url
+                bitmap_hash: gravatar_login.clone(), // tmp use to store gravatar login
+                bitmap: gravatar_url.clone(),        // tmp use to store gravatar url
             });
+
+        // Add email to contacts if not already present
+        match &mut entry.contacts {
+            Contacts::EmailList(list) => {
+                if !list.contains(&email) {
+                    list.push(email.clone());
+                }
+            }
+            Contacts::Email(existing) => {
+                if existing != &email {
+                    *entry = Contributor {
+                        username: normalized_username.clone(),
+                        contacts: Contacts::EmailList(vec![existing.clone(), email.clone()]),
+                        total_commits: entry.total_commits,
+                        additions: entry.additions,
+                        deletions: entry.deletions,
+                        bitmap_hash: entry.bitmap_hash.clone(),
+                        bitmap: entry.bitmap.clone(),
+                    };
+                }
+            }
+        }
 
         entry.total_commits += 1;
         entry.additions += additions;
