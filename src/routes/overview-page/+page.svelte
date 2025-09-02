@@ -22,6 +22,7 @@
     let end_date = $state("");
 
     let source_type = $state(page.state.source_type);
+    let repo_url = $state(page.state.repo_url || "");
 
     let show_modal = $state(false);
     const open_modal = () => (show_modal = true);
@@ -56,15 +57,16 @@
             void warn("[download] no contributors on page");
             return;
         }
+
         if (!current_upload) {
             void warn("[download] no uploaded file in memory");
             return;
         }
+
         await download_populated_file(contributors, current_upload);
         void info("[download] populated file saved");
     }
 
-    //let branch_selection = $bindable($state("#"));
     $effect(() => {
         if (
             (branch_selection && branch_selection !== "") ||
@@ -114,6 +116,7 @@
         bind:start_date
         bind:end_date
     />
+
     <CommitGraph
         {contributors}
         {branches}
@@ -121,6 +124,7 @@
         {start_date}
         {end_date}
     />
+
     <div class="bottom-container">
         <ButtonPrimaryMedium
             icon="table-import"
