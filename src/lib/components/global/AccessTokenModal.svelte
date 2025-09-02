@@ -21,10 +21,14 @@
 
 <!-- Personal Access Token Modal -->
 <Modal bind:showModal={show_modal}>
-    <h2 id="modal-title" slot="header">Add Personal Access Token</h2>
+    <h2 id="modal-title" slot="header">Use Personal Access Token</h2>
     <p>
         It seems that the repository you are trying to access is private. Please
         provide a Personal Access Token
+    </p>
+    <p class="permission-note">
+        Please ensure "Contents" permissions are granted for your Personal
+        Access Token
     </p>
     <input
         type="password"
@@ -33,13 +37,20 @@
         class="token-input"
     />
     <div style="display: flex; justify-content: center; margin-top: 1rem;">
-        <ButtonPrimaryMedium label="Add" onclick={handle_add_token} />
+        <ButtonPrimaryMedium label="Use" onclick={handle_add_token} />
     </div>
 </Modal>
 
 <style>
+    .permission-note {
+        font-size: 0.75em;
+        color: #a0a0a0;
+        margin-top: 0.5em;
+        margin-bottom: 0.5em;
+    }
+
     .token-input {
-        width: 95%;
+        width: calc(100% - 2em);
         padding: 1em;
         border-radius: 0.5em;
         border: 1px solid #555;
