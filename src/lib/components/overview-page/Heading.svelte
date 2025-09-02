@@ -6,6 +6,9 @@
     import Calendar from "$lib/components/global/Calendar.svelte";
     import Modal from "$lib/components/overview-page/Modal.svelte";
     import { validate_config_file } from "$lib/file_validation";
+    import { invoke } from "@tauri-apps/api/core";
+    import { manifest } from "$lib/stores/manifest";
+    import type { Contributor } from "$lib/metrics";
 
     let {
         repo: repo,
@@ -14,6 +17,7 @@
         branch_selection = $bindable(),
         start_date = $bindable(),
         end_date = $bindable(),
+        contributors = $bindable<Contributor[]>([]),
     } = $props();
 
     let selected_view: string = $state("overview");
@@ -36,30 +40,50 @@
     }
 
     let textarea_value = "";
-    function handle_file_change(event: Event) {
+
+    async function handleFileChange(event: Event) {
         const selected_files = (event.target as HTMLInputElement).files;
         if (selected_files && selected_files.length > 0) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const text = e.target?.result as string;
-                try {
-                    const json = JSON.parse(text);
-                    const { valid, errors } = validate_config_file(json);
-                    if (valid) {
-                        textarea_value = JSON.stringify(json, null, 4);
-                    } else {
-                        textarea_value =
-                            "Invalid format:\n" +
-                            JSON.stringify(errors, null, 2);
+            // Helper to read file as text using Promise
+            function read_file_async(file: File): Promise<string> {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target?.result as string);
+                    reader.onerror = reject;
+                    reader.readAsText(file);
+                });
+            }
+
+            try {
+                const text = await read_file_async(selected_files[0]);
+                const json = JSON.parse(text);
+                const { valid, errors } = validate_config_file(json);
+                if (valid) {
+                    try {
+                        const result = await invoke<Contributor[]>(
+                            "group_contributors_by_config",
+                            {
+                                config_json: json,
+                                contributors: contributors,
+                            }
+                        );
+
+                        console.log("Config applied successfully:", result);
+
+                        contributors = result;
+                        manifest.update_email_mapping(json, repo_url);
+                        await invoke("save_manifest", { manifest: $manifest });
+                    } catch (error) {
+                        console.error("Error applying config:", error);
                     }
-                } catch {
-                    textarea_value = "Not valid JSON";
+                } else {
+                    textarea_value =
+                        "Invalid format:\n" + JSON.stringify(errors, null, 2);
                 }
+            } catch {
+                textarea_value = "Not valid JSON";
+            }
 
-                console.log("File contents:", textarea_value);
-            };
-
-            reader.readAsText(selected_files[0]);
             show_modal = false;
         }
     }

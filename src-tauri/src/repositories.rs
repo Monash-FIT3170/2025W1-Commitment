@@ -4,7 +4,7 @@ fn clone_progress(cur_progress: usize, total_progress: usize) {
     println!("\rProgress: {cur_progress}/{total_progress}");
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>) -> Result<(), String> {
     log::info!("Starting try_clone_with_token: {} -> {}", url, path);
 
@@ -53,12 +53,12 @@ pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>) -> Resul
     }
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub fn is_repo_cloned(path: &str) -> bool {
     std::path::Path::new(path).exists()
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
     // Check if path already exists
     if is_repo_cloned(path) {
