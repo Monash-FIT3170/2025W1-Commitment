@@ -8,11 +8,13 @@
     import type { UploadedGradingFile } from "$lib/stores/gradingFile";
     import { read_headers, validate_headers } from "$lib/utils/csv";
     import { download_populated_file } from "$lib/utils/grading";
+    import { load_branches, load_commit_data } from "$lib/metrics";
 
-    let repo_path = $derived(page.state.repo_path);
-    let repo_type = $derived(page.state.repo_type);
-    let branches = $state(page.state.branches);
-    let contributors = $derived(page.state.contributors);
+    let repo_path = $state(page.state.repo_path || "");
+    let repo_type = $state(page.state.repo_type || "");
+    let branches = $state(page.state.branches || []);
+    let contributors = $state(page.state.contributors || []);
+    let source_type = $state(page.state.source_type);
 
     let show_modal = $state(false);
     const open_modal = () => (show_modal = true);
@@ -54,6 +56,42 @@
         await download_populated_file(contributors, current_upload);
         void info("[download] populated file saved");
     }
+
+    //let branch_selection = $bindable($state("#"));
+    $effect(() => {
+        console.log("EFFECT: branch_selection is", source_type);
+        if (source_type && repo_path) {
+            // Fetch new contributors for the selected branch
+            (async () => {
+                console.log(
+                    "Calling load_commit_data with:",
+                    repo_path,
+                    source_type
+                );
+                const newContributors = await load_commit_data(
+                    repo_path.split("/")[0],
+                    repo_path.split("/")[1],
+                    source_type
+                );
+                contributors = [...newContributors];
+            })();
+        }
+    });
+    $effect(() => {
+        if ((!branches || branches.length === 0) && repo_path) {
+            // You may need to adjust this to match your load_branches signature
+            (async () => {
+                branches = await load_branches(repo_path.split("/")[1]);
+                console.log("Fetched branches:", branches);
+            })();
+        }
+    });
+    $effect(() => {
+        console.log("Page branch_selection", page.state.selected_branch);
+    });
+    $effect(() => {
+        console.log("Branches in +page.svelte:", branches);
+    });
 </script>
 
 <div class="main">
