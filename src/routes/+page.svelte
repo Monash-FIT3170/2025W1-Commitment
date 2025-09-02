@@ -98,7 +98,7 @@
             const contributors = await load_commit_data(
                 backend_result.owner,
                 backend_result.repo,
-                backend_result.source_type
+                selected.source_type
             );
 
             const branches = await load_branches(backend_result.repo);
@@ -106,10 +106,11 @@
             // Navigate to the overview page
             goto(`/overview-page`, {
                 state: {
+                    repo_path: `../.gitgauge/repositories/${backend_result.repo}`,
                     repo_url: repo_url_input,
                     owner: backend_result.owner,
                     repo: backend_result.repo,
-                    repo_type: backend_result.source_type,
+                    repo_type: selected.source_type,
                     selected_branch: "",
                     branches: branches,
                     contributors: contributors,
