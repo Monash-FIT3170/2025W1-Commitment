@@ -22,7 +22,7 @@
     } = $props();
 
     let chart_container = $state<HTMLElement>();
-    let chart: echarts.ECharts | undefined;
+    let chart: echarts.ECharts | null = null;
     let filtered_people: any[] = [];
     let min_commits: number = 0;
     let max_commits: number = 1;
@@ -37,26 +37,6 @@
     let chart_height = $state(350);
     let is_transitioning = $state(false);
     let chart_key = $state("");
-
-    $effect(() => {
-        if (chart_container) {
-            chart = echarts.init(chart_container);
-            set_chart_options();
-            window.addEventListener("resize", () => {
-                chart.resize();
-                update_graphics();
-            });
-        }
-        return () => {
-            if (chart) {
-                window.removeEventListener("resize", () => {
-                    chart.resize();
-                    update_graphics();
-                });
-                chart.dispose();
-            }
-        };
-    });
 
     $effect(() => {
         chart_key =
@@ -645,8 +625,13 @@
 
     $effect(() => {
         if (chart_container) {
+            if (chart) {
+            window.removeEventListener("resize", resize_handler);
+            chart.dispose();
+        }
             chart = echarts.init(chart_container);
             set_chart_options();
+            window.addEventListener("resize", resize_handler);
 
             // Add click event listener to toggle staggered mode
             chart.on("click", () => {
@@ -686,21 +671,17 @@
         };
     });
 
-    onDestroy(() => {
-        window.removeEventListener("resize", resize_handler);
-        chart.dispose();
-    });
+    // onDestroy(() => {
+    //     window.removeEventListener("resize", resize_handler);
+    //     chart.dispose();
+    // });
 </script>
 
 {#key chart_key}
-    <div bind:this={chart_container} class="chart-container"></div>
+    <div bind:this={chart_container} class="chart-container"
+    style="height: {chart_height}px; transition: height 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);"></div>
 {/key}
 
-<div
-    bind:this={chart_container}
-    class="chart-container"
-    style="height: {chart_height}px; transition: height 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);"
-></div>
 
 <style>
     .chart-container {
