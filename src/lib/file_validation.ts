@@ -4,7 +4,7 @@ import addFormats from "ajv-formats";
 const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);
 
-// Schema: names → email(s)
+// Schema: names -> email(s)
 const schema = {
     type: "object",
     additionalProperties: {

@@ -55,8 +55,10 @@
                 } catch {
                     textarea_value = "Not valid JSON";
                 }
+
                 console.log("File contents:", textarea_value);
             };
+
             reader.readAsText(selected_files[0]);
             show_modal = false;
         }
@@ -267,17 +269,5 @@
             grid-template-columns: 16rem 16rem;
             padding-top: 4rem;
         }
-    }
-
-    .format-box {
-        width: 95%;
-        padding: 1em;
-        border-radius: 0.5em;
-        border: 1px solid #555;
-        background-color: #1e1e1e;
-        color: #fff;
-        font-size: 1em;
-        margin-top: 1em;
-        resize: vertical;
     }
 </style>
