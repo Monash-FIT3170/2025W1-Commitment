@@ -3,8 +3,8 @@
     import { create_dropdown_selection } from "$lib/stores/dropdown";
     import Icon from "@iconify/svelte";
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
-    import DropdownTintedMedium from "../global/DropdownTintedMedium.svelte";
-    import Tab from "../global/Tab.svelte";
+    import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
+    import Tab from "$lib/components/global/Tab.svelte";
 
     let { repo_path: repo_path, repo_type: repo_type = "github" } = $props();
 
