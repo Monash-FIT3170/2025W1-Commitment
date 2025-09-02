@@ -56,7 +56,7 @@
         await download_populated_file(contributors, current_upload);
         void info("[download] populated file saved");
     }
-
+  
     //let branch_selection = $bindable($state("#"));
     $effect(() => {
         console.log("EFFECT: branch_selection is", source_type);

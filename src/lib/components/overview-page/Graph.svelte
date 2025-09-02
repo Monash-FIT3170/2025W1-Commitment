@@ -629,6 +629,6 @@
     .chart-container {
         width: 100%;
         font-family: "DM Sans", sans-serif;
-        padding-bottom: 2rem;
+        padding-bottom: 0rem;
     }
 </style>

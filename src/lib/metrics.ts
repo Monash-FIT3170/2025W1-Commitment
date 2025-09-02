@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { info } from "@tauri-apps/plugin-log";
+import { show_token_modal } from "./stores/auth";
 
 export type Contacts = Readonly<String | String[]>;
 
@@ -16,10 +17,12 @@ export type Contributor = Readonly<{
 // Load branches for a repository
 export async function load_branches(repo: string): Promise<string[]> {
     const repo_path = `../.gitgauge/repositories/${repo}`;
+    console.log("PATH", repo_path);
     try {
         const real_branches = await invoke<string[]>("get_branch_names", {
             path: repo_path,
         });
+        console.log("REAL BRANCHES", real_branches);
         return ["All", ...real_branches];
     } catch (err) {
         console.error("Failed to load branches: ", err);
@@ -33,16 +36,24 @@ export async function load_commit_data(
     branch?: string
 ): Promise<Contributor[]> {
     info(`Loading contributor data for ${owner}/${repo}...`);
+    const repo_url = `https://github.com/${owner}/${repo}`;
 
-    const repo_path = `../.gitgauge/repositories/${repo}`;
+    const repo_path = `../.gitgauge/repositories/${owner}-${repo}`;
     try {
         await invoke("bare_clone", {
-            url: `https://github.com/${owner}/${repo}`,
+            url: repo_url,
             path: repo_path,
         });
         info(`Repository is cloned or already exists at ${repo_path}`);
     } catch (err) {
-        info(`Failed to clone the repository: ${err}`);
+        const error_message = String(err);
+        info(`Failed to clone the repository: ${error_message}`);
+
+        // Check if this is an authentication error that requires a token
+        if (error_message.includes("private and requires authentication")) {
+            show_token_modal(error_message, repo_url, repo_path);
+        }
+
         return [];
     }
 

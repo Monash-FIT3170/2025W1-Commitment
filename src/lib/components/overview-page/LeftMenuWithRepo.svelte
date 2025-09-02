@@ -1,9 +1,8 @@
 <script lang="ts">
     import Icon from "@iconify/svelte";
-    import { bookmarks } from "$lib/stores/bookmarks";
     import LeftMenu from "./LeftMenu.svelte";
-    import type { Repo } from "$lib/repo";
-    import { get_repo_type } from "$lib/repo";
+    import { manifest } from "$lib/stores/manifest";
+    import { invoke } from "@tauri-apps/api/core";
 
     let {
         repo_url,
@@ -13,17 +12,18 @@
         repo_path: string;
     } = $props();
 
-    let bookmarked = $state(bookmarks.contains(repo_url));
+    let bookmarked = $state(
+        $manifest.repository.some((r) => r.url === repo_url && r.bookmarked)
+    );
 
     function toggle_bookmark() {
         bookmarked = !bookmarked;
-        const bookmark: Repo = {
-            repo_path:
-                repo_url.split("/").pop()?.replace(".git", "") || repo_url,
-            repo_url: repo_url,
-            repo_type: get_repo_type(repo_url),
-        };
-        bookmarks.toggle(bookmark);
+        if (bookmarked) {
+            manifest.bookmark(repo_url);
+        } else {
+            manifest.unbookmark(repo_url);
+        }
+        invoke("save_manifest", { manifest: $manifest });
     }
 </script>
 
