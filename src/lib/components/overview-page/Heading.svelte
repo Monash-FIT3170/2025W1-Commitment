@@ -26,10 +26,6 @@
         selected_view = id;
     }
 
-    function open_config() {
-        //config logic
-    }
-
     function open_calendar() {
         //calendar logic
         //task for future sprint
