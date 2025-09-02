@@ -1,71 +1,85 @@
 use git2::{build::RepoBuilder, RemoteCallbacks};
 
-use crate::manifest::{create_repository, update_repository_last_accessed};
-
 fn clone_progress(cur_progress: usize, total_progress: usize) {
     println!("\rProgress: {cur_progress}/{total_progress}");
 }
 
-#[tauri::command(rename_all = "snake_case")]
-pub fn is_repo_cloned(path: &str) -> bool {
-    std::path::Path::new(path).exists()
-}
-
-#[tauri::command(rename_all = "snake_case")]
-pub async fn bare_clone(
-    owner: &str,
-    repo: &str,
-    source_type: i32,
-    path: &str,
-) -> Result<(), String> {
-    crate::manifest::check_manifest().await?;
-
-    // Ensure parent directories exist
-    if let Some(parent) = std::path::Path::new(path).parent() {
-        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-    }
-
-    // Check if path is a valid directory
-    if is_repo_cloned(path) {
-        log::info!("Repository already exists at: {}", path);
-        update_repository_last_accessed(format!("{}/{}", owner, repo).as_str()).await?;
-        return Ok(()); // Repository is already cloned, no need to clone again
-    }
-
-    if source_type == 2 {
-        // For local files, we just need to create the directory if it doesn't exist
-        std::fs::create_dir_all(path).map_err(|e| e.to_string())?;
-        log::info!("Local repository path created at: {}", path);
-        return create_repository(&format!("{}/{}", owner, repo), path, true).await;
-    }
-
-    let url_base = if source_type == 0 {
-        "https://github.com"
-    } else if source_type == 1 {
-        "https://gitlab.com"
-    } else {
-        return Err("Invalid source type".to_string());
-    };
-
-    let url = format!("{}/{}/{}", url_base, owner, repo);
-    create_repository(&url, path, false).await?;
+#[tauri::command]
+pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>) -> Result<(), String> {
+    log::info!("Starting try_clone_with_token: {} -> {}", url, path);
 
     let mut callbacks = RemoteCallbacks::new();
-
     callbacks.transfer_progress(|progress| {
         clone_progress(progress.received_objects(), progress.total_objects());
         true
     });
 
+    // Set up authentication if token is provided
+    if let Some(access_token) = token {
+        let token_owned = access_token.to_string();
+        callbacks.credentials(move |_url, _username_from_url, _allowed_types| {
+            log::info!("Attempting authentication with token");
+            git2::Cred::userpass_plaintext("git", &token_owned)
+        });
+    }
+
     let mut fetch_opts = git2::FetchOptions::new();
     fetch_opts.remote_callbacks(callbacks);
 
-    RepoBuilder::new()
-        .bare(true) // Set to true for a bare clone
-        .fetch_options(fetch_opts)
-        .clone(&url, std::path::Path::new(path))
-        .map_err(|e| e.to_string())?;
+    log::info!("Starting clone operation...");
 
-    log::info!("Repository cloned successfully at: {path}");
-    Ok(())
+    let result = RepoBuilder::new()
+        .bare(true)
+        .fetch_options(fetch_opts)
+        .clone(url, std::path::Path::new(path));
+
+    match result {
+        Ok(_repo) => {
+            log::info!("Clone completed successfully to {}", path);
+
+            // Verify the directory was created
+            if std::path::Path::new(path).exists() {
+                log::info!("Repository directory confirmed to exist at {}", path);
+            } else {
+                log::warn!("Repository directory does not exist after clone: {}", path);
+            }
+
+            Ok(())
+        }
+        Err(e) => {
+            log::error!("Clone failed with error: {}", e);
+            Err(e.to_string())
+        }
+    }
+}
+
+#[tauri::command]
+pub fn is_repo_cloned(path: &str) -> bool {
+    std::path::Path::new(path).exists()
+}
+
+#[tauri::command]
+pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
+    // Check if path already exists
+    if is_repo_cloned(path) {
+        log::info!("Repository already exists at: {}", path);
+        return Ok(());
+    }
+
+    log::info!("Cloning repository from {} to {}", url, path);
+
+    // Step 1: Try cloning without authentication (public repository)
+    log::info!("Attempting to clone as public repository");
+    match try_clone_with_token(url, path, None) {
+        Ok(()) => {
+            log::info!("Successfully cloned public repository at: {}", path);
+            return Ok(());
+        }
+        Err(e) => {
+            log::info!("Public clone failed: {}. Trying with access tokens", e);
+        }
+    }
+
+    // Step 4: Repository is private and requires authentication
+    Err("Repository appears to be private and requires authentication. Please use try_clone_with_token with a valid access token.".to_string())
 }

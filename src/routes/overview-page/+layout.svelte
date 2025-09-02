@@ -1,4 +1,13 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    import { installGlobalDnDGuards } from "$lib/dnd_guards";
+
+    onMount(() => {
+        const cleanup = installGlobalDnDGuards();
+        console.log("[DnD] global guards installed");
+        return cleanup;
+    });
+
     import { page } from "$app/state";
     import Banner from "$lib/components/overview-page/Banner.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
@@ -29,9 +38,5 @@
         height: 1.375rem;
         display: flex;
         justify-content: space-between;
-    }
-
-    .body {
-        min-height: calc(100vh - 1.375rem);
     }
 </style>

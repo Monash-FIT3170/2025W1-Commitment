@@ -2,8 +2,8 @@
     import { page } from "$app/state";
     import Icon from "@iconify/svelte";
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
-    import DropdownTintedMedium from "../global/DropdownTintedMedium.svelte";
-    import Tab from "../global/Tab.svelte";
+    import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
+    import Tab from "$lib/components/global/Tab.svelte";
     import { get } from "svelte/store";
     import { load_commit_data, type Contributor } from "$lib/metrics";
     import Calendar from "../global/Calendar.svelte";
@@ -29,10 +29,6 @@
 
     function select_view(id: string) {
         selected_view = id;
-    }
-
-    function open_config() {
-        //config logic
     }
 
     function open_calendar() {
