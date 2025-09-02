@@ -72,6 +72,6 @@
         flex-wrap: wrap;
         gap: 1rem;
         justify-content: center;
-        margin-top: 100px; /* Increased to prevent overlap with expanded graph x-axis */
+        margin-top: 80px; /* Increased to prevent overlap with expanded graph x-axis */
     }
 </style>

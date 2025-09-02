@@ -35,7 +35,7 @@
 
 <style>
     .container {
-        padding: 2rem;
+        padding: 0rem 2rem;
         display: flex;
         flex-direction: column;
         align-items: center;
