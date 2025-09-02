@@ -1,10 +1,9 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
     import { verify_and_extract_source_info } from "$lib/github_url_verifier.js";
-    import Icon from "@iconify/svelte";
     import { load_branches, load_commit_data } from "$lib/metrics";
     import { goto } from "$app/navigation";
-    import { get_repo_type } from "$lib/repo";
+    import { get_repo_type, get_repo_name } from "$lib/stores/repo";
     import RepoDropdown from "$lib/components/global/RepoDropdown.svelte";
     import { repo_options } from "$lib/stores/repo";
     import type { RepoOption } from "$lib/stores/repo";
@@ -15,32 +14,39 @@
     import Sidebar from "$lib/components/global/Sidebar.svelte";
     import RepoBookmarkList from "$lib/components/global/RepoBookmarkList.svelte";
 
-    interface RepoBookmark {
-        repo_name: string;
-        repo_url: string;
-    }
+    import { onMount } from "svelte";
+    import { manifest, type ManifestSchema } from "$lib/stores/manifest";
+
+    // only run on the browser
+    onMount(async () => {
+        try {
+            let data = await invoke<ManifestSchema>("read_manifest");
+            manifest.set(data);
+            console.log("page", data);
+        } catch (e: any) {
+            let err = typeof e === "string" ? e : (e?.message ?? String(e));
+            console.error("read_manifest failed", e);
+        }
+    });
 
     let profile_image_url = "/mock_profile_img.png";
     let username = "Baaset Moslih";
 
-    let bookmarked_repos: RepoBookmark[] = [
-        {
-            repo_name: "GitGuage",
-            repo_url: "https://github.com/Monash-FIT3170/2025W1-Commitment",
-        },
-        {
-            repo_name: "QualAI",
-            repo_url: "https://github.com/Monash-FIT3170/2025W1-QualAI",
-        },
-        {
-            repo_name: "PressUp",
-            repo_url: "https://github.com/Monash-FIT3170/2025W1-PressUp",
-        },
-        {
-            repo_name: "FindingNibbles",
-            repo_url: "https://github.com/Monash-FIT3170/2025W1-FindingNibbles",
-        },
-    ];
+    interface RepoBookmark {
+        repo_name: string;
+        repo_url: string;
+        repo_bookmarked: boolean;
+    }
+
+    let recent_repos: RepoBookmark[] = $derived(
+        $manifest["repository"].map((item) => {
+            return {
+                repo_name: item.name,
+                repo_url: item.url,
+                repo_bookmarked: item.bookmarked,
+            };
+        })
+    );
 
     let selected: RepoOption = $state(repo_options[0]); // Default to GitHub
 
@@ -52,6 +58,7 @@
     interface BackendVerificationResult {
         owner: string;
         repo: string;
+        source_type: 0 | 1 | 2;
     }
 
     async function select_bookmarked_repo(repo_url: string) {
@@ -103,7 +110,22 @@
                 backend_result.owner,
                 backend_result.repo
             );
-            const branches = await load_branches(backend_result.repo);
+            console.log(backend_result);
+            const branches = await load_branches(
+                `${backend_result.owner}-${backend_result.repo}`
+            );
+
+            // Check if the repository exists in the manifest
+            const repo_exists = $manifest["repository"].some(
+                (item) => item.url === repo_url_input
+            );
+
+            if (!repo_exists) {
+                manifest.create_repository(backend_result, repo_url_input);
+            }
+            manifest.update_repository_timestamp(repo_url_input);
+
+            await invoke("save_manifest", { manifest: $manifest });
 
             // Navigate to the overview page
             goto(`/overview-page`, {
@@ -111,8 +133,10 @@
                     repo_url: repo_url_input,
                     repo_path: new URL(repo_url_input).pathname.slice(1),
                     repo_type: get_repo_type(repo_url_input),
+                    selected_branch: "devel",
                     branches: branches,
                     contributors: contributors,
+                    source_type: backend_result.source_type,
                 },
             });
         } catch (error: any) {
@@ -154,7 +178,7 @@
 
             <!-- Repo link list -->
             <RepoBookmarkList
-                {bookmarked_repos}
+                bookmarked_repos={recent_repos}
                 onclick={select_bookmarked_repo}
             />
         </div>
