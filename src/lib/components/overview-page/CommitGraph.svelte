@@ -17,7 +17,7 @@
     //     selected_branch = "all";
     // }
 
-    let criteria: string[] = ["commits", "commit_size"];
+    let criteria: string[] = ["commits", "commit_size", "absolute_diff"];
     let selectedCriteria = $state(writable(criteria[0]));
 
     let sidebar_open = $state(false);
