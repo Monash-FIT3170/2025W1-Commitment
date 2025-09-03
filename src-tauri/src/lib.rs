@@ -39,6 +39,7 @@ pub fn run() {
             summary::get_ai_summary_with_config,
             summary::gemini_key_validation,
             summary::check_key_set
+            manifest::get_working_directory,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

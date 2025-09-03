@@ -48,6 +48,7 @@ url = { version = "2", features = ["serde"] }
 regex = { version = "1", features = ["unicode"] }
 dotenvy = "0.15"
 tokio = { version = "1", features = ["full"] }
+dirs = "5.0"
 
 [target.'cfg(unix)'.dependencies]
 openssl-sys = { version = "0.9", features = ["vendored"] }
