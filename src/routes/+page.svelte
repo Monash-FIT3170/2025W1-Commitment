@@ -188,7 +188,7 @@
             // Navigate to the overview page
             goto(`/overview-page`, {
                 state: {
-                    repo_path: `../.gitgauge/repositories/${backend_result.repo}`,
+                    repo_path: `${backend_result.owner}-${backend_result.repo}`,
                     repo_url: repo_url_input,
                     owner: backend_result.owner,
                     repo: backend_result.repo,

@@ -1,8 +1,5 @@
 use std::path::PathBuf;
 
-use serde::Serialize;
-use crate::url_verifier::{verify_and_extract_source_info};
-
 /*
 manifest.json is this format
 {

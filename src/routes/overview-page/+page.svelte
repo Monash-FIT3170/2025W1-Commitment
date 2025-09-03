@@ -10,7 +10,7 @@
     import { download_populated_file } from "$lib/utils/grading";
     import { load_branches, load_commit_data } from "$lib/metrics";
 
-    let repo_path = $state(page.state.repo_path || "");
+    let repo_path = $state(page.state.repo);
     let owner = $state(page.state.owner || "");
     let repo = $state(page.state.repo || "");
     let repo_type = $state(page.state.repo_type);
@@ -100,7 +100,6 @@
 
 <div class="page">
     <Heading
-        {repo_path}
         {repo}
         {repo_type}
         {branches}

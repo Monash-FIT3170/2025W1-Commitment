@@ -9,7 +9,6 @@
     import Calendar from "../global/Calendar.svelte";
 
     let {
-        repo_path: repo_path,
         repo: repo,
         repo_type: repo_type = "github",
         branches = [],
@@ -47,8 +46,8 @@
 <div class="page-header">
     <div class="top-container">
         <div class="repo-path-container">
-            <span class="repo-path display-title" title={repo_path}
-                >{repo_path}</span
+            <span class="repo-path display-title" title={repo}
+                >{repo}</span
             >
             <div class="repo-icon">
                 <Icon
