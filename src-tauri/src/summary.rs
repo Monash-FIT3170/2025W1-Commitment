@@ -13,8 +13,12 @@ struct SummaryProgress {
 
 #[tauri::command]
 pub async fn get_ai_summary(window: tauri::Window, path: &str) -> Result<(), String> {
+
     if let Ok(contributors) = get_all_contributors(path) {
         let total = contributors.len();
+        if total == 0 {
+            return Err("No contributors found in the repository.".into());
+        }
         window.emit("summary-total", total).unwrap();
 
         for (contributor_name, contributor_email) in contributors {
@@ -46,7 +50,8 @@ pub fn check_key_set() -> bool {
 }
 
 #[tauri::command]
-pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
+pub async fn gemini_key_validation() -> Result<bool, String> {
+    let api_key = std::env::var("GEMINI_API_KEY").map_err(|_| "GEMINI_API_KEY is not set.".to_string())?;
     println!("Validating Gemini API key...");
     let url: &str = "https://generativelanguage.googleapis.com/v1/models";
 
@@ -75,8 +80,7 @@ pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
                 // Removes the previously inputted valid key in case invalid key is entered.
                 env::remove_var("GEMINI_API_KEY");
             }
-            
-            Ok(false)
+            Err("Invalid Gemini API key.".to_string())
         }
         status => {
             let body = response.text().await.unwrap_or_default();

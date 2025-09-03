@@ -22,6 +22,7 @@
 	let total_summaries = $state(0);
 	let generated_summaries = $state(0);
 	let progress = $derived(total_summaries > 0 ? (generated_summaries / total_summaries) * 100 : 0);
+	let error_message = $state('');
 
 	async function generate_summaries() {
 		loading = true;
@@ -51,6 +52,14 @@
 		const repo_name = $current_repo.repo_path.split('/').pop();
 		const repo_path = `../.gitgauge/repositories/${repo_name}`;
 		if (repo_path) {
+			try {
+				await invoke("gemini_key_validation");
+			} catch (e) {
+				console.error("Key validation failed",e);
+				error_message = "Key Validation Failed"
+				loading = false;
+				return;
+			}
 			try {
 				await invoke('get_ai_summary', { path: repo_path });
 			} catch (e) {
@@ -94,6 +103,11 @@
 </script>
 
 <main class="container">
+	{#if error_message}
+    	<div class="error-message">
+			{error_message}
+		</div>
+	{/if}
 	{#if loading}
 		<div class="w-full max-w-2xl mx-auto">
 			<ProgressBar {progress} label={`Generating summaries... (${generated_summaries}/${total_summaries})`} />
@@ -169,5 +183,11 @@
 		justify-content: center;
 		height: calc(100vh - 26rem);
 		align-items: center;
+	}
+	.error-message {
+    color: #e53e3e;
+    margin-bottom: 1rem;
+    font-family: "DM Sans", sans-serif;
+    font-size: 1rem;
 	}
 </style>
