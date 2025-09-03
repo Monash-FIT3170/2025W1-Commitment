@@ -50,9 +50,9 @@
         })
     );
 
-    let selected: RepoOption = $state(repo_options[0]); // Default to GitHub
 
     let repo_url_input: string = $state("");
+    let selected: RepoOption = $state(repo_options[0]);
 
     let verification_message: string = $state("");
     let verification_error: boolean = $state(false);
@@ -144,6 +144,7 @@
         }
 
         try {
+            
             // Try frontend validation first
             const result = verify_and_extract_source_info(
                 repo_url_input,
@@ -153,24 +154,24 @@
             const backend_result = await invoke<BackendVerificationResult>(
                 "verify_and_extract_source_info",
                 {
-                    urlStr: repo_url_input,
-                    sourceType: selected.source_type,
-                }
+                    url_str: repo_url_input,
+                    source_type: selected.source_type,
+                },
             );
 
             verification_message = `Successfully verified! Owner: ${backend_result.owner}, Repo: ${backend_result.repo}`;
 
             // Update the repo store with the new URL
             set_repo_url(repo_url_input);
+
             // Call loadBranches and loadCommitData and wait for both to complete
             const contributors = await load_commit_data(
                 backend_result.owner,
-                backend_result.repo
+                backend_result.repo,
+                selected.source_type
             );
             console.log(backend_result);
-            const branches = await load_branches(
-                `${backend_result.owner}-${backend_result.repo}`
-            );
+            const branches = await load_branches(`${backend_result.owner}-${backend_result.repo}`);
 
             // Check if the repository exists in the manifest
             const repo_exists = $manifest["repository"].some(
@@ -187,10 +188,12 @@
             // Navigate to the overview page
             goto(`/overview-page`, {
                 state: {
+                    repo_path: `${backend_result.owner}-${backend_result.repo}`,
                     repo_url: repo_url_input,
-                    repo_path: new URL(repo_url_input).pathname.slice(1),
-                    repo_type: get_repo_type(repo_url_input),
-                    selected_branch: "devel",
+                    owner: backend_result.owner,
+                    repo: backend_result.repo,
+                    repo_type: selected.source_type,
+                    selected_branch: "",
                     branches: branches,
                     contributors: contributors,
                     source_type: backend_result.source_type,

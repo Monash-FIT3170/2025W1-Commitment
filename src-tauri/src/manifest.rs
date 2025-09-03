@@ -8,7 +8,7 @@ manifest.json is this format
             "name": "<repository-name>",
             "url": "<repository-url>"
             "path": "<repository-path>"
-            "last_accessed": "<timestamp>",
+            "last-accessed": "<timestamp>",
             "cloned": true/false (Indicates if the repository is cloned or if its a local repository)
             "bookmarked": true/false
             "email_mapping": {

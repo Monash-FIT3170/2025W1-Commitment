@@ -1,6 +1,6 @@
 use git2::Repository;
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn get_branch_names(path: &str) -> Result<Vec<String>, String> {
     let canonical_path = match std::path::Path::new(path).canonicalize() {
         Ok(p) => {

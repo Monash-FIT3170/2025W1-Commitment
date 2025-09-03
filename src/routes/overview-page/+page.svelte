@@ -10,10 +10,17 @@
     import { download_populated_file } from "$lib/utils/grading";
     import { load_branches, load_commit_data } from "$lib/metrics";
 
-    let repo_path = $state(page.state.repo_path || "");
-    let repo_type = $state(page.state.repo_type || "");
+    let repo_path = $state(page.state.repo);
+    let owner = $state(page.state.owner || "");
+    let repo = $state(page.state.repo || "");
+    let repo_type = $state(page.state.repo_type);
     let branches = $state(page.state.branches || []);
     let contributors = $state(page.state.contributors || []);
+
+    let branch_selection = $state("");
+    let start_date = $state("");
+    let end_date = $state("");
+
     let source_type = $state(page.state.source_type);
 
     let show_modal = $state(false);
@@ -59,44 +66,54 @@
   
     //let branch_selection = $bindable($state("#"));
     $effect(() => {
-        console.log("EFFECT: branch_selection is", source_type);
-        if (source_type && repo_path) {
+        if (
+            (branch_selection && branch_selection !== "") ||
+            (start_date && end_date)
+        ) {
             // Fetch new contributors for the selected branch
             (async () => {
-                console.log(
-                    "Calling load_commit_data with:",
-                    repo_path,
-                    source_type
+                const branch_arg =
+                    branch_selection === "" ? undefined : branch_selection;
+                const new_contributors = await load_commit_data(
+                    owner,
+                    repo,
+                    repo_type,
+                    branch_arg,
+                    start_date,
+                    end_date
                 );
-                const newContributors = await load_commit_data(
-                    repo_path.split("/")[0],
-                    repo_path.split("/")[1],
-                    source_type
-                );
-                contributors = [...newContributors];
+
+                contributors = [...new_contributors];
             })();
         }
     });
+
     $effect(() => {
-        if ((!branches || branches.length === 0) && repo_path) {
-            // You may need to adjust this to match your load_branches signature
+        if ((!branches || branches.length === 0) && repo) {
+            // Fetch branches for the repository
             (async () => {
-                branches = await load_branches(repo_path.split("/")[1]);
-                console.log("Fetched branches:", branches);
+                branches = await load_branches(repo);
             })();
         }
-    });
-    $effect(() => {
-        console.log("Page branch_selection", page.state.selected_branch);
-    });
-    $effect(() => {
-        console.log("Branches in +page.svelte:", branches);
     });
 </script>
 
-<div class="main">
-    <Heading repo_path={repo_path.split("/").pop() || repo_path} {repo_type} />
-    <CommitGraph {contributors} {branches} />
+<div class="page">
+    <Heading
+        {repo}
+        {repo_type}
+        {branches}
+        bind:branch_selection
+        bind:start_date
+        bind:end_date
+    />
+    <CommitGraph
+        {contributors}
+        {branches}
+        selected_branch={branch_selection}
+        {start_date}
+        {end_date}
+    />
     <div class="bottom-container">
         <ButtonPrimaryMedium
             icon="table-import"

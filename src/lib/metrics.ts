@@ -2,16 +2,20 @@ import { invoke } from "@tauri-apps/api/core";
 import { info } from "@tauri-apps/plugin-log";
 import { show_token_modal } from "./stores/auth";
 
-export type Contacts = Readonly<String | String[]>;
+export type Contacts =
+    | string
+    | string[]
+    | { Email: string }
+    | { [key: string]: string };
 
 export type Contributor = Readonly<{
-    username: String;
-    contacts: Contacts;
-    total_commits: number;
-    additions: number;
-    deletions: number;
-    bitmap_hash: String; // tmp use to store gravatar login
-    bitmap: String; // tmp use to store gravatar url
+    username: string,
+    contacts: Contacts,
+    total_commits: number,
+    additions: number,
+    deletions: number,
+    bitmap_hash: String,  // tmp use to store gravatar login
+    bitmap: String,       // tmp use to store gravatar url
 }>;
 
 // Load branches for a repository
@@ -30,11 +34,12 @@ export async function load_branches(repo: string): Promise<string[]> {
     }
 }
 
-export async function load_commit_data(
-    owner: string,
-    repo: string,
-    branch?: string
-): Promise<Contributor[]> {
+type DateRange = {
+    start: number;
+    end: number;
+};
+
+export async function load_commit_data(owner: string, repo: string, source_type: 0 | 1 | 2, branch?: string, start_date?: string, end_date?: string): Promise<Contributor[]> {
     info(`Loading contributor data for ${owner}/${repo}...`);
     const repo_url = `https://github.com/${owner}/${repo}`;
 
@@ -57,20 +62,30 @@ export async function load_commit_data(
         return [];
     }
 
+
     try {
-        const commit_data = await invoke<Contributor[]>(
-            "get_contributor_info",
-            {
-                path: repo_path,
-                branch: branch,
-            }
-        );
+        let date_range: DateRange | undefined = undefined
+
+        if (start_date && end_date) {
+            const start_ts = Math.floor(parseDate(start_date).getTime() / 1000);
+            const end_ts = Math.floor(parseDate(end_date).getTime() / 1000);
+            date_range = { start: start_ts, end: end_ts }; // Send as object
+        }
+
+        const commit_data = await invoke<Contributor[]>('get_contributor_info', { path: repo_path, branch: branch, date_range: date_range });
         const commit_array = Object.values(commit_data);
         return commit_array;
     } catch (err) {
-        info(`Failed to get contributor data`);
+        info(`Failed to get contributor data: ${err}`)
         return [];
     }
+}
+function parseDate(dateStr: string): Date {
+    //date is "DD-MM-YY", convert to "YYYY-MM-DD"
+    const [day, month, year] = dateStr.split("-");
+    // Assume year is "25" for 2025
+    const fullYear = year.length === 2 ? "20" + year : year;
+    return new Date(`${fullYear}-${month}-${day}`);
 }
 
 // 1. Total Commits for a user

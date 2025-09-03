@@ -1,20 +1,24 @@
 <script lang="ts">
     import { page } from "$app/state";
-    import { create_dropdown_selection } from "$lib/stores/dropdown";
     import Icon from "@iconify/svelte";
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
     import Tab from "$lib/components/global/Tab.svelte";
+    import { get } from "svelte/store";
+    import { load_commit_data, type Contributor } from "$lib/metrics";
+    import Calendar from "../global/Calendar.svelte";
 
-    let { repo_path: repo_path, repo_type: repo_type = "github" } = $props();
+    let {
+        repo: repo,
+        repo_type: repo_type = "github",
+        branches = [],
+        branch_selection = $bindable(),
+        start_date = $bindable(),
+        end_date = $bindable(),
+    } = $props();
 
-    let branches: string[] = $derived(page.state.branches || []);
-    let branch_selection = $derived(
-        create_dropdown_selection(branches[0] || "All")
-    );
+    let contributors: Contributor[] = [];
 
-    let start_date = $state("01-01-25");
-    let end_date = $state("20-01-25");
     let selected_view: string = $state("overview");
 
     const tabs = [
@@ -30,14 +34,19 @@
         //calendar logic
         //task for future sprint
     }
+
+    function handle_date_change(
+        event: CustomEvent<{ start: string; end: string }>
+    ) {
+        start_date = event.detail.start;
+        end_date = event.detail.end;
+    }
 </script>
 
 <div class="page-header">
     <div class="top-container">
         <div class="repo-path-container">
-            <span class="repo-path display-title" title={repo_path}
-                >{repo_path}</span
-            >
+            <span class="repo-path display-title" title={repo}>{repo}</span>
             <div class="repo-icon">
                 <Icon
                     icon={`tabler:brand-${repo_type}`}
@@ -62,26 +71,30 @@
         <div class="branch-dropdown heading-btn">
             <DropdownTintedMedium
                 options={branches}
-                selected={branch_selection.selected}
+                bind:selected={branch_selection}
                 disabled={false}
             />
         </div>
-
-        <!-- calendar btn -->
         <div class="calendar-btn heading-btn">
-            <ButtonTintedMedium
-                label="{start_date}  →  {end_date}"
-                icon="calendar-month"
-                label_class="body"
-                icon_first={false}
-                width="12rem"
+            <!-- calendar btn -->
+            <Calendar
+                initial_start={start_date}
+                initial_end={end_date}
+                date_format="d-m-Y"
+                icon="calendar"
+                icon_first={true}
+                label_class="body-accent"
+                label="Select Date Range"
+                disabled={false}
+                width="4rem"
+                on:change={handle_date_change}
             />
         </div>
-
-        <div class="heading-btn-spacer"></div>
-
-        <span class="subtitle display-subtitle">Contribution Statistics</span>
     </div>
+
+    <div class="heading-btn-spacer"></div>
+
+    <span class="subtitle display-subtitle">Contribution Statistics</span>
 
     <div class="page-select-btns">
         <!-- for each tab -->

@@ -1,6 +1,5 @@
-use git2::{BranchType, Repository, Sort};
+use git2::{BranchType, Oid, Repository, Sort};
 use serde::{Deserialize, Serialize};
-
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -21,12 +20,18 @@ pub struct Contributor {
     pub bitmap: String, // tmp until using actual bitmap type
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DateRange {
+    pub start: i64,
+    pub end: i64,
+}
+
 // date_range: Option<(i64, i64)> - Optional date range in UNIX timestamp format
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn get_contributor_info(
     path: &str,
     branch: Option<&str>,
-    date_range: Option<(i64, i64)>,
+    date_range: Option<DateRange>,
 ) -> Result<HashMap<String, Contributor>, String> {
     let canonical_path = std::path::Path::new(path)
         .canonicalize()
@@ -61,12 +66,7 @@ pub async fn get_contributor_info(
                 log::error!("Branch: {target} not found in the repository.");
                 return Err(format!("Branch: {target} not found in the repository."));
             }
-            repo.find_branch(target, BranchType::Local)
-                .map_err(|e| e.to_string())?
-                .get()
-                .target()
-                .ok_or(git2::Error::from_str("Invalid branch head"))
-                .map_err(|e| e.to_string())?
+            find_branch_oid(&repo, target)?
         }
         None => repo
             .head()
@@ -81,14 +81,17 @@ pub async fn get_contributor_info(
 
     let mut contributors: HashMap<String, Contributor> = HashMap::new();
 
+    // let custom_date_range = start_date.is_some() || end_date.is_some();
+
     for oid_result in revwalk {
         let oid = oid_result.map_err(|e| e.to_string())?;
         let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
         let time = commit.time().seconds();
 
-        if let Some((start, end)) = date_range {
-            if time < start || time > end {
-                continue; // Skip commits outside the date range
+        if let Some(ref date_range) = date_range {
+            // Check if commit time is within the specified date range
+            if time < date_range.start || time > date_range.end {
+                continue;
             }
         }
 
@@ -137,4 +140,22 @@ pub async fn get_contributor_info(
     }
 
     Ok(contributors)
+}
+
+fn find_branch_oid(repo: &Repository, branch: &str) -> Result<Oid, String> {
+    // Try local branch first
+    if let Ok(branch_ref) = repo.find_branch(branch, BranchType::Local) {
+        return branch_ref
+            .get()
+            .target()
+            .ok_or("Invalid local branch target".to_string());
+    }
+    // Try remote branch (origin/<branch>)
+    let remote_branch_name = format!("refs/remotes/{}", branch);
+    if let Ok(reference) = repo.find_reference(&remote_branch_name) {
+        return reference
+            .target()
+            .ok_or("Invalid remote branch target".to_string());
+    }
+    Err(format!("Branch '{}' not found as local or remote", branch))
 }
