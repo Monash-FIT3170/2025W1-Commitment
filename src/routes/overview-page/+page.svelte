@@ -9,6 +9,10 @@
     import { read_headers, validate_headers } from "$lib/utils/csv";
     import { download_populated_file } from "$lib/utils/grading";
     import { load_branches, load_commit_data } from "$lib/metrics";
+    import { invoke } from "@tauri-apps/api/core";
+    import { manifest } from "$lib/stores/manifest";
+    import type { Contributor } from "$lib/metrics";
+    import { onMount } from "svelte";
 
     let repo_path = $state(page.state.repo);
     let owner = $state(page.state.owner || "");
@@ -23,6 +27,25 @@
 
     let source_type = $state(page.state.source_type);
     let repo_url = $state(page.state.repo_url || "");
+    let email_mapping = $manifest.repository.filter(
+        (r) => r.url === repo_url
+    )[0].email_mapping;
+
+    onMount(async () => {
+        if (email_mapping) {
+            try {
+                contributors = await invoke<Contributor[]>(
+                    "group_contributors_by_config",
+                    {
+                        configJson: email_mapping,
+                        contributors: contributors,
+                    }
+                );
+            } catch (error) {
+                console.error("Error applying config:", error);
+            }
+        }
+    });
 
     let show_modal = $state(false);
     const open_modal = () => (show_modal = true);
