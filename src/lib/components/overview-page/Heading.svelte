@@ -46,9 +46,7 @@
 <div class="page-header">
     <div class="top-container">
         <div class="repo-path-container">
-            <span class="repo-path display-title" title={repo}
-                >{repo}</span
-            >
+            <span class="repo-path display-title" title={repo}>{repo}</span>
             <div class="repo-icon">
                 <Icon
                     icon={`tabler:brand-${repo_type}`}
@@ -97,18 +95,18 @@
     <div class="heading-btn-spacer"></div>
 
     <span class="subtitle display-subtitle">Contribution Statistics</span>
-</div>
 
-<div class="page-select-btns">
-    <!-- for each tab -->
-    {#each tabs as tab}
-        <Tab
-            label={tab.label}
-            icon={tab.icon}
-            selected={selected_view === tab.id}
-            width="100%"
-        />
-    {/each}
+    <div class="page-select-btns">
+        <!-- for each tab -->
+        {#each tabs as tab}
+            <Tab
+                label={tab.label}
+                icon={tab.icon}
+                selected={selected_view === tab.id}
+                width="100%"
+            />
+        {/each}
+    </div>
 </div>
 
 <style>
