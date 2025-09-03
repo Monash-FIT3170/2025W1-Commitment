@@ -159,26 +159,29 @@
             return;
         }
 
-        if (selected.source_type === 2) {
+        let source_type = get_source_type(repo_url_input);
+
+        if (source_type === 2) {
             await local_verification();
             return;
         }
 
         try {
-            const backend_result = get_repo_info(repo_url_input)
+            const repository_information = get_repo_info(repo_url_input)
 
             // Update the repo store with the new URL
             set_repo_url(repo_url_input);
 
             // Call loadBranches and loadCommitData and wait for both to complete
             const contributors = await load_commit_data(
-                backend_result.source,
-                backend_result.owner,
-                backend_result.repo,
-                selected.source_type
+                repository_information.source,
+                repository_information.owner,
+                repository_information.repo,
+                source_type
             );
-            console.log(backend_result);
-            const branches = await load_branches(`${backend_result.owner}-${backend_result.repo}`);
+            const branches = await load_branches(
+                `${repository_information.owner}-${repository_information.repo}`
+            );
 
             // Check if the repository exists in the manifest
             const repo_exists = $manifest["repository"].some(
@@ -186,7 +189,7 @@
             );
 
             if (!repo_exists) {
-                manifest.create_repository(backend_result, repo_url_input);
+                manifest.create_repository(repository_information, repo_url_input);
             }
             manifest.update_repository_timestamp(repo_url_input);
 
@@ -195,15 +198,15 @@
             // Navigate to the overview page
             goto(`/overview-page`, {
                 state: {
-                    repo_path: `${backend_result.owner}-${backend_result.repo}`,
+                    repo_path: `${repository_information.owner}-${repository_information.repo}`,
                     repo_url: repo_url_input,
-                    owner: backend_result.owner,
-                    repo: backend_result.repo,
+                    owner: repository_information.owner,
+                    repo: repository_information.repo,
                     repo_type: selected.source_type,
                     selected_branch: "",
                     branches: branches,
                     contributors: contributors,
-                    source_type: backend_result.source_type,
+                    source_type: repository_information.source_type,
                 },
             });
         } catch (error: any) {
