@@ -72,9 +72,11 @@
         ) {
             // Fetch new contributors for the selected branch
             (async () => {
+                const source = source_type === 0 ? "https://github.com" : source_type === 1 ? "https://gitlab.com" : "";
                 const branch_arg =
                     branch_selection === "" ? undefined : branch_selection;
                 const new_contributors = await load_commit_data(
+                    source,
                     owner,
                     repo,
                     repo_type,

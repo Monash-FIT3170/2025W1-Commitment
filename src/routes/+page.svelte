@@ -1,6 +1,7 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
-    import { verify_and_extract_source_info } from "$lib/github_url_verifier.js";
+    import { get_source_type, get_repo_info } from "$lib/github_url_verifier.js";
+    import Icon from "@iconify/svelte";
     import { load_branches, load_commit_data } from "$lib/metrics";
     import { goto } from "$app/navigation";
     import { get_repo_type, get_repo_name } from "$lib/stores/repo";
@@ -50,9 +51,15 @@
         })
     );
 
-
+    
+    let selected: RepoOption = $state(repo_options[2]); // Default to Local
+    
+    $effect(() => {
+        if (repo_url_input.trim() !== "") {
+            selected = repo_options[get_source_type(repo_url_input)];
+        }
+    });
     let repo_url_input: string = $state("");
-    let selected: RepoOption = $state(repo_options[0]);
 
     let verification_message: string = $state("");
     let verification_error: boolean = $state(false);
@@ -66,7 +73,7 @@
 
     async function select_bookmarked_repo(repo_url: string) {
         repo_url_input = repo_url;
-        handle_verification();
+        await handle_verification();
     }
 
     function reset_verification_result() {
@@ -128,6 +135,15 @@
         }
     }
 
+    function update_progress(progress: string) {
+        console.log(progress);
+    }
+
+    async function local_verification() {
+        console.log("Local verification called");
+        // Implement local verification logic here
+    }
+
     async function handle_verification() {
         console.log(
             "handleVerification called with:",
@@ -136,42 +152,36 @@
         );
         reset_verification_result();
 
-        if (!selected || !repo_url_input.trim()) {
+        if (!repo_url_input.trim()) {
             verification_error = true;
             verification_message =
-                "Please select a source type and enter a URL/path.";
+                "Please enter a URL/path.";
+            return;
+        }
+
+        let source_type = get_source_type(repo_url_input);
+
+        if (source_type === 2) {
+            await local_verification();
             return;
         }
 
         try {
-            
-            // Try frontend validation first
-            const result = verify_and_extract_source_info(
-                repo_url_input,
-                selected.source_type
-            );
-
-            const backend_result = await invoke<BackendVerificationResult>(
-                "verify_and_extract_source_info",
-                {
-                    url_str: repo_url_input,
-                    source_type: selected.source_type,
-                },
-            );
-
-            verification_message = `Successfully verified! Owner: ${backend_result.owner}, Repo: ${backend_result.repo}`;
+            const repository_information = get_repo_info(repo_url_input)
 
             // Update the repo store with the new URL
             set_repo_url(repo_url_input);
 
             // Call loadBranches and loadCommitData and wait for both to complete
             const contributors = await load_commit_data(
-                backend_result.owner,
-                backend_result.repo,
-                selected.source_type
+                repository_information.source,
+                repository_information.owner,
+                repository_information.repo,
+                source_type
             );
-            console.log(backend_result);
-            const branches = await load_branches(`${backend_result.owner}-${backend_result.repo}`);
+            const branches = await load_branches(
+                `${repository_information.owner}-${repository_information.repo}`
+            );
 
             // Check if the repository exists in the manifest
             const repo_exists = $manifest["repository"].some(
@@ -179,7 +189,7 @@
             );
 
             if (!repo_exists) {
-                manifest.create_repository(backend_result, repo_url_input);
+                manifest.create_repository(repository_information, repo_url_input);
             }
             manifest.update_repository_timestamp(repo_url_input);
 
@@ -188,15 +198,15 @@
             // Navigate to the overview page
             goto(`/overview-page`, {
                 state: {
-                    repo_path: `${backend_result.owner}-${backend_result.repo}`,
+                    repo_path: `${repository_information.owner}-${repository_information.repo}`,
                     repo_url: repo_url_input,
-                    owner: backend_result.owner,
-                    repo: backend_result.repo,
+                    owner: repository_information.owner,
+                    repo: repository_information.repo,
                     repo_type: selected.source_type,
                     selected_branch: "",
                     branches: branches,
                     contributors: contributors,
-                    source_type: backend_result.source_type,
+                    source_type: repository_information.source_type,
                 },
             });
         } catch (error: any) {

@@ -39,9 +39,9 @@ type DateRange = {
     end: number;
 };
 
-export async function load_commit_data(owner: string, repo: string, source_type: 0 | 1 | 2, branch?: string, start_date?: string, end_date?: string): Promise<Contributor[]> {
+export async function load_commit_data(source:string, owner: string, repo: string, source_type: 0 | 1 | 2, branch?: string, start_date?: string, end_date?: string): Promise<Contributor[]> {
     info(`Loading contributor data for ${owner}/${repo}...`);
-    const repo_url = `https://github.com/${owner}/${repo}`;
+    const repo_url = `${source}/${owner}/${repo}`;
 
     const repo_path = `../.gitgauge/repositories/${owner}-${repo}`;
     try {
