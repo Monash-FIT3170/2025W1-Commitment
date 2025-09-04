@@ -138,6 +138,7 @@
         bind:branch_selection
         bind:start_date
         bind:end_date
+        bind:contributors
     />
 
     {#key contributors}
