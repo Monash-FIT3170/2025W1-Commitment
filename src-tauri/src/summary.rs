@@ -16,11 +16,13 @@ pub async fn get_ai_summary(window: tauri::Window, path: &str) -> Result<(), Str
     match get_all_contributors(path) {
         Ok(contributors) => {
             let total = contributors.len();
+
             if total == 0 {
-                let msg = format!("No contributors found in the repository at path: {}", path);
-                log::error!("{}", msg);
-                return Err(msg.into());
+                let msg = format!("No contributors found in the repository at path: {path}");
+                log::error!("{msg}");
+                return Err(msg);
             }
+
             window.emit("summary-total", total).unwrap();
 
             for (contributor_name, contributor_email) in contributors {
@@ -32,12 +34,12 @@ pub async fn get_ai_summary(window: tauri::Window, path: &str) -> Result<(), Str
                                     email: contributor_email.clone(),
                                     summary,
                                 };
+
                                 window.emit("summary-progress", progress).unwrap();
                             }
                             Err(e) => {
                                 eprintln!(
-                                    "Failed to summarize commits for {}: {}",
-                                    contributor_name, e
+                                    "Failed to summarize commits for {contributor_name}: {e}"
                                 );
                             }
                         }
@@ -47,9 +49,9 @@ pub async fn get_ai_summary(window: tauri::Window, path: &str) -> Result<(), Str
             Ok(())
         }
         Err(e) => {
-            let msg = format!("Failed to get contributors for path {}: {}", path, e.to_string());
-            log::error!("{}", msg);
-            Err(msg.into())
+            let msg = format!("Failed to get contributors for path {path}: {e}");
+            log::error!("{msg}");
+            Err(msg)
         }
     }
 }
@@ -83,24 +85,25 @@ pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
             env::set_var("GEMINI_API_KEY", &api_key);
             Ok(true)
         }
-        reqwest::StatusCode::UNAUTHORIZED | reqwest::StatusCode::FORBIDDEN | reqwest::StatusCode::BAD_REQUEST => {
+        reqwest::StatusCode::UNAUTHORIZED
+        | reqwest::StatusCode::FORBIDDEN
+        | reqwest::StatusCode::BAD_REQUEST => {
             println!("INVALID API KEY");
 
             if env::var("GEMINI_API_KEY").is_ok() {
                 // Removes the previously inputted valid key in case invalid key is entered.
                 env::remove_var("GEMINI_API_KEY");
             }
-            
+
             Ok(false)
         }
         status => {
             let body = response.text().await.unwrap_or_default();
-            log::error!("Unexpected validation status {}: {}", body, status);
+            log::error!("Unexpected validation status {body}: {status}");
             Ok(false)
         }
     }
 }
-
 
 #[derive(Deserialize)]
 struct GeminiResponse {
@@ -128,15 +131,18 @@ pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> 
     dotenvy::dotenv().ok();
     let api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY must be set");
 
-    let models = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-2.5-flash-lite"];
+    let models = [
+        "gemini-2.0-flash",
+        "gemini-2.0-flash-lite",
+        "gemini-2.5-flash-lite",
+    ];
 
     let prompt = COMMIT_SUMMARY_PROMPT.replace("{commits}", commits);
     let client = reqwest::Client::new();
 
     for model in &models {
         let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent?key={}",
-            model, api_key
+            "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
         );
 
         let res = client
