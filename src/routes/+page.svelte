@@ -180,18 +180,19 @@
             );
 
             const branches = await load_branches(
-                `${repository_information.owner}-${repository_information.repo}`
+                `${source_type}-${repository_information.owner}-${repository_information.repo}`
             );
 
+            const url_trimmed = repository_information.source + "/" + repository_information.owner + "/" + repository_information.repo;
             // Check if the repository exists in the manifest
             const repo_exists = $manifest["repository"].some(
-                (item) => item.url === repo_url_input
+                (item) => item.url === url_trimmed
             );
 
             if (!repo_exists) {
                 manifest.create_repository(
                     repository_information,
-                    repo_url_input
+                    url_trimmed
                 );
             }
 

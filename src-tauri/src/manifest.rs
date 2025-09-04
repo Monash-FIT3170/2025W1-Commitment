@@ -24,8 +24,21 @@ manifest.json is this format
 }
     */
 
+use dirs::data_dir;
+
+#[tauri::command]
+pub async fn get_working_directory() -> String {
+    let mut path = data_dir().unwrap_or_else(|| PathBuf::from("."));
+    path.push("gitgauge");
+    path.to_str().unwrap_or_default().to_string()
+}
+
 async fn get_manifest_path() -> PathBuf {
-    PathBuf::from("../.gitgauge/manifest.json")
+    let mut path = data_dir().unwrap_or_else(|| PathBuf::from("."));  // Fallback to current dir if data_dir fails
+    path.push("gitgauge");
+    path.push("manifest.json");
+    log::info!("Manifest path: {:?}", path);
+    path
 }
 
 #[tauri::command(rename_all = "snake_case")]

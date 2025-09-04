@@ -21,7 +21,8 @@ export type Contributor = Readonly<{
 
 // Load branches for a repository
 export async function load_branches(repo: string): Promise<string[]> {
-    const repo_path = `../.gitgauge/repositories/${repo}`;
+    const working_dir = await invoke<string>("get_working_directory");
+    const repo_path = working_dir + `/repositories/${repo}`;
     console.log("PATH", repo_path);
     try {
         const real_branches = await invoke<string[]>("get_branch_names", {
@@ -52,7 +53,8 @@ export async function load_commit_data(
     info(`Loading contributor data for ${owner}/${repo}...`);
     const repo_url = `${source}/${owner}/${repo}`;
 
-    const repo_path = `../.gitgauge/repositories/${owner}-${repo}`;
+    const working_dir = await invoke<string>("get_working_directory");
+    const repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
     try {
         await invoke("bare_clone", {
             url: repo_url,
