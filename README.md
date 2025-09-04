@@ -4,57 +4,191 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-## Releases
+## Project Overview
 
-Check out our official releases on the releases tab of GitHub!
+**gitgauge** is a native desktop application built with **Tauri**, **Svelte**, and
+**Rust**, designed to help teaching assistants holistically assess student contributions
+within a Git repository.
+
+### Key Features:
+- Upload and parse Moodle-style grading sheets (`.csv`, `.tsv`)
+- Automatically link student names/emails to Git commit data
+- Scale and adjust grades based on contribution metrics
+- Download a populated grading file with contribution-weighted scores
+- Clean and responsive native UI powered by SvelteKit and Tailwind
+- Automatically scale student based on different attributes (e.g. number of commits,
+  lines of code (LOC), etc.)
+- Fully cross-platform (macOS, Windows, Linux)
+
+This app is designed for educational settings where group Git projects are assessed, and
+where traditional peer review or manual weighting is too slow or inconsistent.
+
+
+## Project Structure
+
+```
+gitgauge/
+├── .gitgauge/                     # App cache (safe to delete)
+├── .githooks/                     # Pre-commit hook scripts
+├── .svelte-kit/                   # SvelteKit build cache
+├── node_modules/                  # Node.js dependencies
+├── src/
+│   ├── lib/                       # Shared frontend logic
+│   │   ├── components/            # Reusable UI components
+│   │   │   ├── global/            # Global UI (e.g. buttons)
+│   │   │   └── overview-page/     # UI for overview route
+│   │   ├── stores/                # Global/local state stores
+│   │   └── utils/                 # Helpers (CSV, grading, etc.)
+│   ├── routes/                    # App pages (SvelteKit routing)
+│   │   ├── overview-page/         # Contributor stats page
+│   │   │   ├── +layout.svelte     # Route layout wrapper
+│   │   │   └── +page.svelte       # Route content
+│   │   ├── +layout.ts             # App-wide layout logic
+│   │   └── +page.svelte           # Upload page
+│   ├── app.html                   # Root HTML shell
+│   └── ...                        # Other routes/config
+├── src-tauri/                     # Rust backend for Tauri
+│   ├── src/
+│   │   ├── lib.rs                 # Shared Rust utils
+│   │   └── main.rs                # Tauri backend entry
+│   └── ...                        # Tauri configs/assets
+├── package.json                   # Scripts + dependencies
+└── README.md                      # Setup + handover docs
+```
 
 ## Developer Setup
 
-### Prerequisits
+### Prerequisites
 
 - Git
 - Rust v1.84.0
 - Tauri v2.4.0 ([Tauri prereqs](https://v2.tauri.app/start/prerequisites/))
+- Node.js v20+
+- Use `npm` for install speed and consistency
 
-To set up your device for developing gitgauge you will need clone the repo to your device
-and change into the newly created directory.
+To set up your device for developing gitgauge:
 
 ```sh
 git clone https://github.com/Monash-FIT3170/2025W1-Commitment.git gitgauge
 cd gitgauge
 ```
 
-Then you can run the `git-hooks.sh` shell script on macOS and Linux or the
-`git-hooks.ps1` PowerShell script on Windows to set up the Git Hooks.
+Install dependencies:
+
+```sh
+npm i
+```
+
+Then set up Git hooks:
 
 macOS and Linux:
 
 ```sh
-sh git-hooks.sh
+sh git-hooks.sh -l
 ```
 
-Windows PowerShell
+Windows PowerShell:
 
 ```ps
-.\git-hooks.ps1
+.\git-hooks.ps1 -Link
 ```
 
-> Note: The PowerShell script may need to run in an Admin shell or with elevated
-> privileges.
+> Note: The PowerShell script may require an Admin shell.
 
-Once you have done that you can set up and run the project up by changing to the repo
-directory and running the following commands.
+To run the app:
 
 ```sh
+npm run tauri dev
+```
+
+### Debugging & Clean Reinstall
+
+If you're running into persistent bugs, corrupted builds, or broken state, try a clean reinstall.
+
+#### Symptoms this fixes
+
+- Vite hangs or never finishes compiling
+- Plugin errors, missing module warnings
+- App doesn't load or WebView is blank
+- `npm run tauri dev` just exits or does nothing
+
+#### Full clean reinstall steps
+
+```sh
+rm -rf node_modules .gitgauge .svelte-kit src-tauri/target
 npm i
 npm run tauri dev
 ```
 
+This removes:
+
+- Node packages
+- gitgauge cache
+- SvelteKit builds
+- Rust/Tauri target cache
+
+Then reinstalls everything from scratch.
+
+If this doesn't work, check:
+
+- You’re using Node v20+: `node -v`
+- You have Rust installed correctly: `rustup show`
+- You have Tauri CLI installed: `cargo tauri --version`
+
+## Troubleshooting FAQ
+
+Common bugs and fixes during setup, development, and merge workflows.
+
+### Setup & Build Issues
+
+| Issue | Symptoms | Fix |
+|-------|----------|-----|
+| **Vite hangs or blank WebView** | - App stuck compiling<br>- White screen on load<br>- `npm run tauri dev` exits silently | `rm -rf node_modules .gitgauge .svelte-kit src-tauri/target`<br>`npm i`<br>`npm run tauri dev`<br> |
+| **`cargo` or `tauri` not found** | - Build fails on backend step<br>- Commands not recognised | - Check Rust: `rustup show`<br>- Install Tauri: `cargo install tauri-cli`<br>- Confirm you're in the project folder |
+| **Pre-commit hook isn’t firing** | - You can commit code that violates formatting or lint rules | - Run the correct Git hooks setup:<br>`sh git-hooks.sh -l`<br>`# or`<br>`.\git-hooks.ps1 -Link`<br> |
+| **Svelte reactivity isn't working** | - `$state` or `$store` values don’t update<br>- Derived values don't recompute<br>- `writable()` from older Svelte versions causes errors | - Only use **Svelte 5 Runes syntax**:<br>`let x = $state(0)` instead of `writable()`<br>- Use `$derived()` instead of `$:`<br>- Avoid mixing legacy and modern syntax in the same file |
+
+
+---
+
+
+### Merging & Branch Sync Issues
+
+| Issue | Symptoms | Fix |
+|-------|----------|-----|
+| **Working on stale branches** | - PRs show lots of unrelated diffs<br>- Functionality is mysteriously broken | - Always pull `devel` before starting new work:<br>`git checkout devel`<br>`git pull origin devel`<br>`git checkout your-branch`<br>`git merge devel`<br> |
+| **Merge conflicts everywhere** | - Even minor changes cause big conflicts | - Merge `devel` into your branch frequently, not just at the end<br>- Consider rebasing if you're confident: `git rebase devel` |
+| **Rebasing is confusing** | - Unsure how to safely update your branch<br>- Afraid of breaking commit history | - Use VS Code GitLens to visualise<br>- Ask a teammate to pair with you<br>- Use merge instead of rebase if unsure |
+| **Conflicting Svelte syntax** | - Some files use `runes`, others don’t<br>- `$state`, `store`, and `writable` cause confusion | - Stick to the syntax used in `devel`<br>- Don’t mix `runes` and `$store` reactivity<br>- If unsure, ask before adding new state logic |
+
+---
+
+### Tips for Avoiding Merge Issues
+
+- Start each day by pulling the latest `devel`
+- Merge `devel` into your feature branch *frequently* (every few hours if active)
+- Prefer small, focused PRs to large multi-feature branches
+- Keep component code modular to reduce merge conflicts
+- Communicate with your team before resolving merge conflicts solo
+
+---
+
 ## Contributing and Licensing
 
-Make sure to read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how you can
-contribute to the project. This project is licensed under GPLv3 with a copy of the
-license located in the root of the project called [LICENSE](./LICENSE).
+Before contributing to the project, **please read** [CONTRIBUTING.md](./CONTRIBUTING.md).  
+It includes:
+
+- Our naming conventions for structs, files, components, variables, etc.
+- Coding style and commit guidelines
+- Component structure and documentation expectations
+
+Following these guidelines keeps the codebase consistent and easy to maintain.
+
+This project is licensed under **GPLv3**, with the license located at the root of the repo: [LICENSE](./LICENSE).
+
+## Releases
+
+Check out our official releases on the releases tab of GitHub!
 
 ## Team Information
 
@@ -73,11 +207,14 @@ license located in the root of the project called [LICENSE](./LICENSE).
 | Prisha Verma           | pver0009@student.monash.edu | RTE              |
 | Mai Thao Hoang         | mhoa0013@student.monash.edu | RTE              |
 
-## Contributors
+---
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
+
+## Contributors
+
 <table>
   <tbody>
     <tr>
