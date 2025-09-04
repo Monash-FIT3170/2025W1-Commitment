@@ -27,6 +27,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             branches::get_branch_names,
             contributor::get_contributor_info,
+            contributor::group_contributors_by_config,
             repositories::bare_clone,
             repositories::try_clone_with_token,
             repositories::is_repo_cloned,

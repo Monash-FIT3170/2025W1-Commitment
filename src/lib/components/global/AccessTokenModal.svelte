@@ -1,6 +1,6 @@
 <script lang="ts">
     import ButtonPrimaryMedium from "./ButtonPrimaryMedium.svelte";
-    import Modal from "./Modal.svelte";
+    import Modal from "$lib/components/overview-page/Modal.svelte";
 
     let { show_modal = $bindable(), on_token_add } = $props();
 
@@ -20,25 +20,30 @@
 </script>
 
 <!-- Personal Access Token Modal -->
-<Modal bind:showModal={show_modal}>
-    <h2 id="modal-title" slot="header">Use Personal Access Token</h2>
-    <p>
-        It seems that the repository you are trying to access is private. Please
-        provide a Personal Access Token
-    </p>
-    <p class="permission-note">
-        Please ensure "Contents" permissions are granted for your Personal
-        Access Token
-    </p>
-    <input
-        type="password"
-        bind:value={personal_access_token}
-        placeholder="Personal Access Token"
-        class="token-input"
-    />
-    <div style="display: flex; justify-content: center; margin-top: 1rem;">
-        <ButtonPrimaryMedium label="Use" onclick={handle_add_token} />
-    </div>
+<Modal bind:show_modal>
+    {#snippet header()}
+        <h2 id="modal-title">Use Personal Access Token</h2>
+    {/snippet}
+
+    {#snippet body()}
+        <p>
+            It seems that the repository you are trying to access is private.
+            Please provide a Personal Access Token
+        </p>
+        <p class="permission-note">
+            Please ensure "Contents" permissions are granted for your Personal
+            Access Token
+        </p>
+        <input
+            type="password"
+            bind:value={personal_access_token}
+            placeholder="Personal Access Token"
+            class="token-input"
+        />
+        <div style="display: flex; justify-content: center; margin-top: 1rem;">
+            <ButtonPrimaryMedium label="Use" onclick={handle_add_token} />
+        </div>
+    {/snippet}
 </Modal>
 
 <style>

@@ -1,23 +1,25 @@
 <script lang="ts">
-    import { page } from "$app/state";
     import Icon from "@iconify/svelte";
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
     import Tab from "$lib/components/global/Tab.svelte";
-    import { get } from "svelte/store";
-    import { load_commit_data, type Contributor } from "$lib/metrics";
-    import Calendar from "../global/Calendar.svelte";
+    import Calendar from "$lib/components/global/Calendar.svelte";
+    import Modal from "$lib/components/overview-page/Modal.svelte";
+    import { validate_config_file } from "$lib/file_validation";
+    import { invoke } from "@tauri-apps/api/core";
+    import { manifest } from "$lib/stores/manifest";
+    import type { Contributor } from "$lib/metrics";
 
     let {
         repo: repo,
         repo_type: repo_type = "github",
+        repo_url,
         branches = [],
         branch_selection = $bindable(),
         start_date = $bindable(),
         end_date = $bindable(),
+        contributors = $bindable<Contributor[]>([]),
     } = $props();
-
-    let contributors: Contributor[] = [];
 
     let selected_view: string = $state("overview");
 
@@ -28,6 +30,63 @@
 
     function select_view(id: string) {
         selected_view = id;
+    }
+
+    let show_modal = $state(false);
+
+    let file_input: HTMLInputElement;
+
+    function trigger_file_input() {
+        file_input.click();
+    }
+
+    let textarea_value = "";
+
+    async function handle_file_change(event: Event) {
+        const selected_files = (event.target as HTMLInputElement).files;
+        if (selected_files && selected_files.length > 0) {
+            // Helper to read file as text using Promise
+            function read_file_async(file: File): Promise<string> {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target?.result as string);
+                    reader.onerror = reject;
+                    reader.readAsText(file);
+                });
+            }
+
+            try {
+                const text = await read_file_async(selected_files[0]);
+                const json = JSON.parse(text);
+                const { valid, errors } = validate_config_file(json);
+                if (valid) {
+                    try {
+                        const result = await invoke<Contributor[]>(
+                            "group_contributors_by_config",
+                            {
+                                config_json: json,
+                                contributors: contributors,
+                            }
+                        );
+
+                        console.log("Config applied successfully:", result);
+
+                        contributors = result;
+                        manifest.update_email_mapping(json, repo_url);
+                        await invoke("save_manifest", { manifest: $manifest });
+                    } catch (error) {
+                        console.error("Error applying config:", error);
+                    }
+                } else {
+                    textarea_value =
+                        "Invalid format:\n" + JSON.stringify(errors, null, 2);
+                }
+            } catch {
+                textarea_value = "Not valid JSON";
+            }
+
+            show_modal = false;
+        }
     }
 
     function open_calendar() {
@@ -64,8 +123,46 @@
                 label_class="body-accent"
                 icon_first={true}
                 width="4rem"
+                onclick={() => (show_modal = true)}
             />
         </div>
+
+        <!-- Modal -->
+        <Modal bind:show_modal>
+            {#snippet header()}
+                <h2 id="modal-title">Upload config file</h2>
+            {/snippet}
+
+            {#snippet body()}
+                <p>
+                    Upload a config file to group email addresses to
+                    contributors
+                </p>
+                <input
+                    type="file"
+                    bind:this={file_input}
+                    style="display: none;"
+                    onchange={handle_file_change}
+                />
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <ButtonTintedMedium
+                        label="Cancel"
+                        label_class="body"
+                        icon_first={true}
+                        width="4rem"
+                        onclick={() => (show_modal = false)}
+                    />
+                    <ButtonTintedMedium
+                        label="Upload"
+                        icon="upload"
+                        label_class="body-accent"
+                        icon_first={true}
+                        width="4rem"
+                        onclick={trigger_file_input}
+                    />
+                </div>
+            {/snippet}
+        </Modal>
 
         <!-- branch dropdown btn -->
         <div class="branch-dropdown heading-btn">

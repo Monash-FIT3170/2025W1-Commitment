@@ -1,25 +1,25 @@
 <script>
-    export let showModal = false;
-    let dialog;
+    let { show_modal = false } = $props();
+    let dialog = $state();
 
-    $: if (showModal && dialog && !dialog.open) {
-        dialog.showModal();
-    }
-
-    $: if (!showModal && dialog && dialog.open) {
-        dialog.close();
-    }
+    $effect(() => {
+        if (show_modal && dialog && !dialog.open) {
+            dialog.showModal();
+        }
+    });
 
     function close() {
-        showModal = false;
+        show_modal = false;
     }
 </script>
 
 <dialog
     bind:this={dialog}
-    onclose={() => (showModal = false)}
+    onclose={() => (show_modal = false)}
     onclick={(e) => {
-        if (e.target === dialog) close();
+        if (e.target === dialog) {
+            close();
+        }
     }}
 >
     <div>
@@ -32,7 +32,7 @@
 
 <style>
     dialog {
-        max-width: 32em;
+        max-width: 40em;
         width: 95vw;
         border-radius: 0.5em;
         border: none;
@@ -42,15 +42,19 @@
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         font-family: system-ui, sans-serif;
     }
+
     dialog::backdrop {
         background: rgba(0, 0, 0, 0.3);
     }
+
     dialog > div {
         padding: 1em;
     }
+
     dialog[open] {
         animation: zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+
     @keyframes zoom {
         from {
             transform: scale(0.95);
@@ -59,9 +63,11 @@
             transform: scale(1);
         }
     }
+
     dialog[open]::backdrop {
         animation: fade 0.2s ease-out;
     }
+
     @keyframes fade {
         from {
             opacity: 0;
@@ -70,6 +76,7 @@
             opacity: 1;
         }
     }
+
     button {
         display: block;
     }

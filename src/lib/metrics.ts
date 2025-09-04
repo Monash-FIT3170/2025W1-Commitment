@@ -9,13 +9,13 @@ export type Contacts =
     | { [key: string]: string };
 
 export type Contributor = Readonly<{
-    username: string,
-    contacts: Contacts,
-    total_commits: number,
-    additions: number,
-    deletions: number,
-    bitmap_hash: String,  // tmp use to store gravatar login
-    bitmap: String,       // tmp use to store gravatar url
+    username: string;
+    contacts: Contacts;
+    total_commits: number;
+    additions: number;
+    deletions: number;
+    bitmap_hash: String; // tmp use to store gravatar login
+    bitmap: String; // tmp use to store gravatar url
 }>;
 
 // Load branches for a repository
@@ -39,7 +39,15 @@ type DateRange = {
     end: number;
 };
 
-export async function load_commit_data(source:string, owner: string, repo: string, source_type: 0 | 1 | 2, branch?: string, start_date?: string, end_date?: string): Promise<Contributor[]> {
+export async function load_commit_data(
+    source: string,
+    owner: string,
+    repo: string,
+    source_type: 0 | 1 | 2,
+    branch?: string,
+    start_date?: string,
+    end_date?: string
+): Promise<Contributor[]> {
     info(`Loading contributor data for ${owner}/${repo}...`);
     const repo_url = `${source}/${owner}/${repo}`;
 
@@ -62,30 +70,35 @@ export async function load_commit_data(source:string, owner: string, repo: strin
         return [];
     }
 
-
     try {
-        let date_range: DateRange | undefined = undefined
+        let date_range: DateRange | undefined = undefined;
 
         if (start_date && end_date) {
-            const start_ts = Math.floor(parseDate(start_date).getTime() / 1000);
-            const end_ts = Math.floor(parseDate(end_date).getTime() / 1000);
+            const start_ts = Math.floor(
+                parse_date(start_date).getTime() / 1000
+            );
+            const end_ts = Math.floor(parse_date(end_date).getTime() / 1000);
             date_range = { start: start_ts, end: end_ts }; // Send as object
         }
 
-        const commit_data = await invoke<Contributor[]>('get_contributor_info', { path: repo_path, branch: branch, date_range: date_range });
+        const commit_data = await invoke<Contributor[]>(
+            "get_contributor_info",
+            { path: repo_path, branch: branch, date_range: date_range }
+        );
         const commit_array = Object.values(commit_data);
         return commit_array;
     } catch (err) {
-        info(`Failed to get contributor data: ${err}`)
+        info(`Failed to get contributor data: ${err}`);
         return [];
     }
 }
-function parseDate(dateStr: string): Date {
+
+function parse_date(dateStr: string): Date {
     //date is "DD-MM-YY", convert to "YYYY-MM-DD"
     const [day, month, year] = dateStr.split("-");
     // Assume year is "25" for 2025
-    const fullYear = year.length === 2 ? "20" + year : year;
-    return new Date(`${fullYear}-${month}-${day}`);
+    const full_year = year.length === 2 ? "20" + year : year;
+    return new Date(`${full_year}-${month}-${day}`);
 }
 
 // 1. Total Commits for a user
@@ -165,12 +178,12 @@ export function get_ref_points(mean: number, sd: number): number[] {
 
 // Calculate scaling factor
 export function calculate_scaling_factor(
-    numCommits: number,
+    num_commits: number,
     mean: number,
     sd: number
 ): number {
     if (sd === 0) return 1.0;
-    const z_score = (numCommits - mean) / sd;
+    const z_score = (num_commits - mean) / sd;
     const EPSILON = 1e-6;
     if (Math.abs(z_score) < EPSILON) {
         return 1.0;

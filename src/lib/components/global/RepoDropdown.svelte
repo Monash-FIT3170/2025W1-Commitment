@@ -34,10 +34,7 @@ This is a dropdown component that allows users to select a repository type.
 {/snippet}
 
 <div class="dropdown">
-    <button
-        type="button"
-        class={`dropdown-btn hide"}`}
-    >
+    <button type="button" class={`dropdown-btn hide"}`}>
         {#if selected}
             <div class="dropdown-option">
                 {@render DropdownItem(selected)}

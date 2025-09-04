@@ -1,10 +1,13 @@
 import { writable, get } from "svelte/store";
-import { invoke } from "@tauri-apps/api/core";
+
+export interface Config {
+    [group: string]: string[];
+}
 
 export interface RepoSchema {
     bookmarked: boolean;
     cloned: boolean;
-    email_mapping: string | null;
+    email_mapping: Config | null;
     grading_sheet: string | null;
     last_accessed: string;
     name: string;
@@ -30,7 +33,7 @@ function normalize(input: ManifestInput): ManifestSchema {
     return input;
 }
 
-function createManifestStore() {
+function create_manifest_store() {
     const { subscribe, set, update } = writable<ManifestSchema>({
         repository: [],
     });
@@ -101,7 +104,7 @@ function createManifestStore() {
         },
 
         /** Toggle bookmark. */
-        toggleBookmark(name: string): RepoSchema | undefined {
+        toggle_bookmark(name: string): RepoSchema | undefined {
             let changed: RepoSchema | undefined;
             update((m) => {
                 const next = m.repository.map((r) => {
@@ -154,7 +157,23 @@ function createManifestStore() {
                 return { repository: [...m.repository] };
             });
         },
+
+        /** Update email_mapping for repositories using a config object. */
+        update_email_mapping(config: Config, repo_url: string) {
+            update((m) => {
+                const next = m.repository.map((repo) => {
+                    if (repo.url === repo_url) {
+                        return {
+                            ...repo,
+                            email_mapping: config,
+                        };
+                    }
+                    return repo;
+                });
+                return { repository: next };
+            });
+        },
     };
 }
 
-export const manifest = createManifestStore();
+export const manifest = create_manifest_store();

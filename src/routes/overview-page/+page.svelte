@@ -9,8 +9,11 @@
     import { read_headers, validate_headers } from "$lib/utils/csv";
     import { download_populated_file } from "$lib/utils/grading";
     import { load_branches, load_commit_data } from "$lib/metrics";
+    import { invoke } from "@tauri-apps/api/core";
+    import { manifest, type Config } from "$lib/stores/manifest";
+    import type { Contributor } from "$lib/metrics";
+    import { onMount } from "svelte";
 
-    let repo_path = $state(page.state.repo);
     let owner = $state(page.state.owner || "");
     let repo = $state(page.state.repo || "");
     let repo_type = $state(page.state.repo_type);
@@ -22,6 +25,26 @@
     let end_date = $state("");
 
     let source_type = $state(page.state.source_type);
+    let repo_url = $state(page.state.repo_url || "");
+    let email_mapping: Config | null = $derived(
+        $manifest.repository.filter((r) => r.url === repo_url)[0].email_mapping
+    );
+
+    onMount(async () => {
+        if (email_mapping) {
+            try {
+                contributors = await invoke<Contributor[]>(
+                    "group_contributors_by_config",
+                    {
+                        config_json: email_mapping,
+                        contributors: contributors,
+                    }
+                );
+            } catch (error) {
+                console.error("Error applying config:", error);
+            }
+        }
+    });
 
     let show_modal = $state(false);
     const open_modal = () => (show_modal = true);
@@ -56,15 +79,16 @@
             void warn("[download] no contributors on page");
             return;
         }
+
         if (!current_upload) {
             void warn("[download] no uploaded file in memory");
             return;
         }
+
         await download_populated_file(contributors, current_upload);
         void info("[download] populated file saved");
     }
-  
-    //let branch_selection = $bindable($state("#"));
+
     $effect(() => {
         if (
             (branch_selection && branch_selection !== "") ||
@@ -72,10 +96,15 @@
         ) {
             // Fetch new contributors for the selected branch
             (async () => {
-                const source = source_type === 0 ? "https://github.com" : source_type === 1 ? "https://gitlab.com" : "";
+                const source =
+                    source_type === 0
+                        ? "https://github.com"
+                        : source_type === 1
+                          ? "https://gitlab.com"
+                          : "";
                 const branch_arg =
                     branch_selection === "" ? undefined : branch_selection;
-                const new_contributors = await load_commit_data(
+                let new_contributors = await load_commit_data(
                     source,
                     owner,
                     repo,
@@ -85,6 +114,23 @@
                     end_date
                 );
 
+                // Apply config grouping if email_mapping is present
+                if (email_mapping) {
+                    try {
+                        new_contributors = await invoke<Contributor[]>(
+                            "group_contributors_by_config",
+                            {
+                                config_json: email_mapping,
+                                contributors: new_contributors,
+                            }
+                        );
+                    } catch (error) {
+                        console.error(
+                            "Error applying config after branch change:",
+                            error
+                        );
+                    }
+                }
                 contributors = [...new_contributors];
             })();
         }
@@ -104,18 +150,24 @@
     <Heading
         {repo}
         {repo_type}
+        {repo_url}
         {branches}
         bind:branch_selection
         bind:start_date
         bind:end_date
+        bind:contributors
     />
-    <CommitGraph
-        {contributors}
-        {branches}
-        selected_branch={branch_selection}
-        {start_date}
-        {end_date}
-    />
+
+    {#key contributors}
+        <CommitGraph
+            {contributors}
+            {branches}
+            selected_branch={branch_selection}
+            {start_date}
+            {end_date}
+        />
+    {/key}
+
     <div class="bottom-container">
         <ButtonPrimaryMedium
             icon="table-import"

@@ -22,7 +22,7 @@
     }
 
     function select_option(option: any) {
-        selected = option;            
+        selected = option;
         open = false;
     }
 
@@ -53,7 +53,7 @@
         onclick={toggle_dropdown}
         {disabled}
     >
-    <span class="selected-label body"
+        <span class="selected-label body"
             >{selected ? get_label(selected) : "Select an option"}</span
         >
         <Icon

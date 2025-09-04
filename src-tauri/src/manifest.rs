@@ -28,7 +28,7 @@ async fn get_manifest_path() -> PathBuf {
     PathBuf::from("../.gitgauge/manifest.json")
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn read_manifest() -> Result<serde_json::Value, String> {
     let path = get_manifest_path().await;
     if !path.exists() {
@@ -126,7 +126,7 @@ async fn save_manifest_file(manifest: &serde_json::Value) -> Result<(), String> 
 // Exposed to the frontend. The frontend invokes this with the full manifest JSON
 // object (e.g. invoke('save_manifest', { manifest: $manifest })). This wrapper
 // forwards to the internal file writer.
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn save_manifest(manifest: serde_json::Value) -> Result<(), String> {
     save_manifest_file(&manifest).await
 }

@@ -8,7 +8,7 @@
         on_cancel = null,
     } = $props();
 
-    let panel_el: HTMLDivElement | null = null;
+    let panel_el = $state<HTMLDivElement | null>(null);
 
     function close() {
         on_cancel?.();
