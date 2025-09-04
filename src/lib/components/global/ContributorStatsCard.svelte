@@ -46,7 +46,6 @@ contributor statistics.
         display: flex;
         flex-wrap: wrap;
         gap: 0.3125rem 0.625rem;
-        width: 100%;
     }
 
     .contents > div {

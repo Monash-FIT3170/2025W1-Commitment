@@ -32,7 +32,26 @@
     let {
         contributors,
         branches,
-    }: { contributors: Contributor[]; branches: String[] } = $props();
+        selected_branch,
+        start_date,
+        end_date,
+    }: {
+        contributors: Contributor[];
+        branches: String[];
+        selected_branch?: string;
+        start_date?: string;
+        end_date?: string;
+    } = $props();
+
+    let criteria = ["total commits", "lines of code", "lines/commit"];
+    let selected_criteria = criteria[0];
+
+    let sidebar_open = $state(false);
+    let bookmarked_repo: { repo_name: string; repo_url: string }[] = [];
+
+    function toggle_sidebar() {
+        sidebar_open = !sidebar_open;
+    }
 </script>
 
 <main class="container">
@@ -51,14 +70,19 @@
             width="12rem"
         />
     </div>
-
-    <Graph contributors={contributors} metric={$selectedCriteria} />
-    <ContributorCards users={contributors} metric={$selectedCriteria} /> <!-- Add metric prop -->
+    <Graph {contributors} {selected_branch} {start_date} {end_date} metric={$selectedCriteria}/>
+    <ContributorCards
+        users={contributors}
+        selected_branch={selected_branch ?? ""}
+        start_date={start_date ?? ""}
+        end_date={end_date ?? ""}
+        metric={$selectedCriteria}
+    />
 </main>
 
 <style>
     .container {
-        padding: 2rem;
+        padding: 0rem 2rem;
         display: flex;
         flex-direction: column;
         align-items: center;

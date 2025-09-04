@@ -15,7 +15,10 @@
       {
         "title": "gitgauge",
         "width": 1280,
-        "height": 720
+        "height": 720,
+        "minWidth": 850,
+        "minHeight": 480,
+        "resizable": true
       }
     ],
     "security": {
@@ -32,5 +35,10 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "fs": {
+      "requireLiteralLeadingDot": false
+    }
   }
 }

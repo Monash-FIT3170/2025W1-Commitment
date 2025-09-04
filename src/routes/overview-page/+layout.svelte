@@ -1,4 +1,13 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    import { installGlobalDnDGuards } from "$lib/dnd_guards";
+
+    onMount(() => {
+        const cleanup = installGlobalDnDGuards();
+        console.log("[DnD] global guards installed");
+        return cleanup;
+    });
+
     import { page } from "$app/state";
     import Banner from "$lib/components/overview-page/Banner.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
@@ -8,8 +17,9 @@
 
     let { children } = $props();
 
-    let repo_url = $derived(page.state.repo_url);
-    let repo_path = $derived(page.state.repo_path);
+    const s = page.state as any;
+    let repo_url = $derived(s.repo_url);
+    let repo_path = $derived(s.repo_path);
 </script>
 
 <main class="page">
@@ -20,3 +30,14 @@
 </main>
 <Sidebar />
 
+<style>
+    .header {
+        padding-left: 2rem;
+        padding-right: 2rem;
+        padding-top: 2rem;
+        margin-bottom: 0.8125rem;
+        height: 1.375rem;
+        display: flex;
+        justify-content: space-between;
+    }
+</style>
