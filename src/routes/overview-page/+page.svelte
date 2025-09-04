@@ -31,7 +31,8 @@
     let source_type = $state(s.source_type);
     let repo_url = $state(s.repo_url || "");
     let email_mapping: Config | null = $derived(
-        $manifest.repository.filter((r) => r.url === repo_url)[0].email_mapping
+        $manifest.repository.filter((r) => r.url === repo_url)[0]
+            ?.email_mapping || null
     );
 
     let criteria = ["total commits", "lines of code", "lines/commit"];

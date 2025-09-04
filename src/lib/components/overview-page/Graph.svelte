@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount, onDestroy } from "svelte";
     import * as echarts from "echarts";
     import {
         get_average_commits,
@@ -13,7 +12,8 @@
         calculate_scaling_factor,
         type Contributor,
         type UserDisplayData,
-    } from "../../metrics";
+    } from "$lib/metrics";
+    import { onDestroy, onMount } from "svelte";
 
     let {
         contributors,
@@ -31,45 +31,32 @@
 
     let chart_container = $state<HTMLElement>();
     let chart: echarts.ECharts;
-    let filtered_people: UserDisplayData[] = $state([]);
-    let x_min: number = $state(0);
-    let x_max: number = $state(1);
-    let metric_mean: number = $state(0);
-    let sd: number = $state(0);
-    let ref_point_values: number[] = $state([]);
-    let ref_points: { label: string; value: number }[] = $state([]);
 
     let resize_handler: () => void;
     let is_staggered_mode = $state(false);
     let chart_height = $state(350);
     let is_transitioning = $state(false);
-    let chart_key = $state("");
 
-    $effect(() => {
-        chart_key =
-            contributors.map((c) => c.bitmap_hash).join(",") +
+    let chart_key = $derived(
+        contributors.map((c) => c.bitmap_hash).join(",") +
             selected_branch +
             start_date +
-            end_date;
-    });
+            end_date
+    );
 
-    $effect(() => {
+    let filtered_people: UserDisplayData[] = $derived.by(() => {
         switch (metric) {
             case "commits": {
-                filtered_people = get_users_total_commits(contributors);
-                break;
+                return get_users_total_commits(contributors);
             }
             case "commit_size": {
-                filtered_people = get_users_avg_commit_size(contributors);
-                break;
+                return get_users_avg_commit_size(contributors);
             }
             case "absolute_diff": {
-                filtered_people = get_users_absolute_diff(contributors);
-                break;
+                return get_users_absolute_diff(contributors);
             }
             default: {
-                filtered_people = get_users_total_commits(contributors);
-                break;
+                return get_users_total_commits(contributors);
             }
         }
     });
@@ -84,57 +71,42 @@
         }
     });
 
-    $effect(() => {
-        metric;
-        const min_max: { min: number; max: number } = get_metric_min_max(
-            contributors,
-            metric
-        );
-        x_min = min_max.min;
-        x_max = min_max.max;
-    });
+    let x_minmax: { min: number; max: number } = $derived(
+        get_metric_min_max(contributors, metric)
+    );
 
-    $effect(() => {
+    let metric_mean = $derived.by(() => {
         switch (metric) {
             case "commits": {
-                metric_mean = get_average_commits(contributors);
-                break;
+                return get_average_commits(contributors);
             }
             case "commit_size": {
-                metric_mean = get_average_commit_size(contributors);
-                break;
+                return get_average_commit_size(contributors);
             }
             case "absolute_diff": {
                 filtered_people = get_users_absolute_diff(contributors);
-                break;
             }
             default: {
-                metric_mean = get_average_commits(contributors);
-                break;
+                return get_average_commits(contributors);
             }
         }
     });
 
-    $effect(() => {
-        sd = get_sd(contributors, metric);
-    });
+    let sd: number = $derived(get_sd(contributors, metric));
 
-    $effect(() => {
-        ref_point_values = get_ref_points(metric_mean, sd);
-    });
+    let ref_point_values: number[] = $derived(get_ref_points(metric_mean, sd));
 
-    $effect(() => {
-        ref_points =
-            sd === 0
-                ? [{ label: "mean", value: ref_point_values[2] }]
-                : [
-                      { label: "-2σ", value: ref_point_values[0] },
-                      { label: "-σ", value: ref_point_values[1] },
-                      { label: "mean", value: ref_point_values[2] },
-                      { label: "+σ", value: ref_point_values[3] },
-                      { label: "+2σ", value: ref_point_values[4] },
-                  ];
-    });
+    let ref_points: { label: string; value: number }[] = $derived(
+        sd === 0
+            ? [{ label: "mean", value: ref_point_values[2] }]
+            : [
+                  { label: "-2σ", value: ref_point_values[0] },
+                  { label: "-σ", value: ref_point_values[1] },
+                  { label: "mean", value: ref_point_values[2] },
+                  { label: "+σ", value: ref_point_values[3] },
+                  { label: "+2σ", value: ref_point_values[4] },
+              ]
+    );
 
     $effect(() => {
         // Update chart height based on mode and number of contributors
@@ -142,6 +114,7 @@
         const new_height = is_staggered_mode
             ? 100 + filtered_people.length * 80
             : 350;
+
         console.log(
             "Height effect triggered. Old height:",
             old_height,
@@ -152,6 +125,7 @@
             "Contributors:",
             filtered_people.length
         );
+
         chart_height = new_height;
 
         // Trigger chart resize when height changes
@@ -217,13 +191,6 @@
             set_chart_options();
         }
     });
-
-    function handle_resize() {
-        if (chart) {
-            chart.resize();
-            update_graphics();
-        }
-    }
 
     function get_user_commits(users: Contributor[]) {
         if (users.length === 0) return [];
@@ -301,7 +268,8 @@
         function x_scale(value: number) {
             return (
                 margin_left +
-                ((value - x_min) / (x_max - x_min)) * drawable_width
+                ((value - x_minmax.min) / (x_minmax.max - x_minmax.min)) *
+                    drawable_width
             );
         }
 
@@ -474,6 +442,7 @@
             "Filtered people:",
             filtered_people.length
         );
+
         const option = {
             backgroundColor: "transparent", //#222',
             animation: true,
@@ -489,8 +458,8 @@
             },
             xAxis: {
                 type: "value",
-                min: x_min - 1 < 0 ? 0 : x_min,
-                max: x_max,
+                min: x_minmax.min - 1 < 0 ? 0 : x_minmax.min,
+                max: x_minmax.max,
                 name: metric,
                 nameTextStyle: {
                     fontSize: 20,
@@ -658,10 +627,21 @@
         };
     });
 
-    // onDestroy(() => {
-    //     window.removeEventListener("resize", resize_handler);
-    //     chart.dispose();
-    // });
+    onMount(() => {
+        chart = echarts.init(chart_container);
+        set_chart_options();
+        resize_handler = () => {
+            chart.resize();
+            update_graphics();
+        };
+
+        window.addEventListener("resize", resize_handler);
+    });
+
+    onDestroy(() => {
+        window.removeEventListener("resize", resize_handler);
+        chart.dispose();
+    });
 </script>
 
 {#key chart_key}
