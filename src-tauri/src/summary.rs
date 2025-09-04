@@ -298,7 +298,7 @@ pub async fn get_squashed_commits_by_config(
     revwalk.set_sorting(Sort::TIME)?;
 
     let mut email_to_user: HashMap<String, String> = HashMap::new();
-    
+
     if let Value::Object(ref map) = config_json {
         for (user_name, emails_value) in map.iter() {
             if let Value::Array(email_list) = emails_value {
@@ -324,7 +324,7 @@ pub async fn get_squashed_commits_by_config(
                     let commit_time = commit.time().seconds();
                     user_commits
                         .entry(user_name.clone())
-                        .or_insert_with(Vec::new)
+                        .or_default()
                         .push((commit_time, message.to_string()));
                 }
             }
@@ -332,16 +332,16 @@ pub async fn get_squashed_commits_by_config(
     }
 
     let mut result: HashMap<String, String> = HashMap::new();
-    
+
     for (user_name, mut commits) in user_commits {
         commits.sort_by(|a, b| a.0.cmp(&b.0));
-        
+
         let squashed_commits = commits
             .iter()
             .map(|(_, message)| message.clone())
             .collect::<Vec<String>>()
             .join("\n");
-            
+
         result.insert(user_name, squashed_commits);
     }
 
