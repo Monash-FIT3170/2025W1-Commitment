@@ -4,6 +4,22 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
+## Project Overview
+
+**GitGauge** is a native desktop application built with **Tauri**, **Svelte**, and **Rust**, designed to help teaching assistants holistically assess student contributions within a Git repository.
+
+### Key Features:
+- Upload and parse Moodle-style grading sheets (`.csv`, `.tsv`)
+- Automatically link student names/emails to Git commit data
+- Scale and adjust grades based on contribution metrics
+- Download a populated grading file with contribution-weighted scores
+- Clean and responsive native UI powered by SvelteKit and Tailwind
+- Fully cross-platform (macOS, Windows, Linux)
+
+This app is designed for educational settings where group Git projects are assessed, and where traditional peer review or manual weighting is too slow or inconsistent.
+
+---
+
 ## Releases
 
 Check out our official releases on the releases tab of GitHub!
