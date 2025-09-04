@@ -6,7 +6,9 @@
 
 ## Project Overview
 
-**gitgauge** is a native desktop application built with **Tauri**, **Svelte**, and **Rust**, designed to help teaching assistants holistically assess student contributions within a Git repository.
+**gitgauge** is a native desktop application built with **Tauri**, **Svelte**, and
+**Rust**, designed to help teaching assistants holistically assess student contributions
+within a Git repository.
 
 ### Key Features:
 - Upload and parse Moodle-style grading sheets (`.csv`, `.tsv`)
@@ -14,10 +16,12 @@
 - Scale and adjust grades based on contribution metrics
 - Download a populated grading file with contribution-weighted scores
 - Clean and responsive native UI powered by SvelteKit and Tailwind
-- Automatically scale student based on different attributes (e.g. number of commits, loc, etc.)
+- Automatically scale student based on different attributes (e.g. number of commits,
+  lines of code (LOC), etc.)
 - Fully cross-platform (macOS, Windows, Linux)
 
-This app is designed for educational settings where group Git projects are assessed, and where traditional peer review or manual weighting is too slow or inconsistent.
+This app is designed for educational settings where group Git projects are assessed, and
+where traditional peer review or manual weighting is too slow or inconsistent.
 
 
 ## Project Structure
@@ -62,7 +66,7 @@ gitgauge/
 - Node.js v20+
 - Use `npm` for install speed and consistency
 
-To set up your device for developing GitGauge:
+To set up your device for developing gitgauge:
 
 ```sh
 git clone https://github.com/Monash-FIT3170/2025W1-Commitment.git gitgauge
@@ -80,13 +84,13 @@ Then set up Git hooks:
 macOS and Linux:
 
 ```sh
-sh git-hooks.sh
+sh git-hooks.sh -l
 ```
 
 Windows PowerShell:
 
 ```ps
-.\git-hooks.ps1
+.\git-hooks.ps1 -Link
 ```
 
 > Note: The PowerShell script may require an Admin shell.
@@ -96,7 +100,6 @@ To run the app:
 ```sh
 npm run tauri dev
 ```
-
 
 ### Debugging & Clean Reinstall
 
@@ -120,13 +123,13 @@ npm run tauri dev
 This removes:
 
 - Node packages
-- GitGauge cache
+- gitgauge cache
 - SvelteKit builds
 - Rust/Tauri target cache
 
 Then reinstalls everything from scratch.
 
-If this doesn’t work, check:
+If this doesn't work, check:
 
 - You’re using Node v20+: `node -v`
 - You have Rust installed correctly: `rustup show`
@@ -140,9 +143,9 @@ Common bugs and fixes during setup, development, and merge workflows.
 
 | Issue | Symptoms | Fix |
 |-------|----------|-----|
-| **Vite hangs or blank WebView** | - App stuck compiling<br>- White screen on load<br>- `npm run tauri dev` exits silently | `sh`<br>`rm -rf node_modules .gitgauge .svelte-kit src-tauri/target`<br>`npm i`<br>`npm run tauri dev`<br> |
+| **Vite hangs or blank WebView** | - App stuck compiling<br>- White screen on load<br>- `npm run tauri dev` exits silently | `rm -rf node_modules .gitgauge .svelte-kit src-tauri/target`<br>`npm i`<br>`npm run tauri dev`<br> |
 | **`cargo` or `tauri` not found** | - Build fails on backend step<br>- Commands not recognised | - Check Rust: `rustup show`<br>- Install Tauri: `cargo install tauri-cli`<br>- Confirm you're in the project folder |
-| **Pre-commit hook isn’t firing** | - You can commit code that violates formatting or lint rules | - Run the correct Git hooks setup:<br>`sh`<br>`sh git-hooks.sh`<br>`# or`<br>`.\git-hooks.ps1`<br> |
+| **Pre-commit hook isn’t firing** | - You can commit code that violates formatting or lint rules | - Run the correct Git hooks setup:<br>`sh git-hooks.sh -l`<br>`# or`<br>`.\git-hooks.ps1 -Link`<br> |
 | **Svelte reactivity isn't working** | - `$state` or `$store` values don’t update<br>- Derived values don't recompute<br>- `writable()` from older Svelte versions causes errors | - Only use **Svelte 5 Runes syntax**:<br>`let x = $state(0)` instead of `writable()`<br>- Use `$derived()` instead of `$:`<br>- Avoid mixing legacy and modern syntax in the same file |
 
 
@@ -153,7 +156,7 @@ Common bugs and fixes during setup, development, and merge workflows.
 
 | Issue | Symptoms | Fix |
 |-------|----------|-----|
-| **Working on stale branches** | - PRs show lots of unrelated diffs<br>- Functionality is mysteriously broken | - Always pull `devel` before starting new work:<br>`sh`<br>`git checkout devel`<br>`git pull origin devel`<br>`git checkout your-branch`<br>`git merge devel`<br> |
+| **Working on stale branches** | - PRs show lots of unrelated diffs<br>- Functionality is mysteriously broken | - Always pull `devel` before starting new work:<br>`git checkout devel`<br>`git pull origin devel`<br>`git checkout your-branch`<br>`git merge devel`<br> |
 | **Merge conflicts everywhere** | - Even minor changes cause big conflicts | - Merge `devel` into your branch frequently, not just at the end<br>- Consider rebasing if you're confident: `git rebase devel` |
 | **Rebasing is confusing** | - Unsure how to safely update your branch<br>- Afraid of breaking commit history | - Use VS Code GitLens to visualise<br>- Ask a teammate to pair with you<br>- Use merge instead of rebase if unsure |
 | **Conflicting Svelte syntax** | - Some files use `runes`, others don’t<br>- `$state`, `store`, and `writable` cause confusion | - Stick to the syntax used in `devel`<br>- Don’t mix `runes` and `$store` reactivity<br>- If unsure, ask before adding new state logic |
