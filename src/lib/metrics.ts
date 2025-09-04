@@ -2,7 +2,11 @@ import { invoke } from "@tauri-apps/api/core";
 import { info } from "@tauri-apps/plugin-log";
 import { show_token_modal } from "./stores/auth";
 
-export type Contacts = Readonly<{ Email: string } | { [key: string]: string }>;
+export type Contacts =
+    | string
+    | string[]
+    | { Email: string }
+    | { [key: string]: string };
 
 export type Contributor = Readonly<{
     username: string;
@@ -16,11 +20,8 @@ export type Contributor = Readonly<{
 }>;
 
 // Load branches for a repository
-export async function load_branches(
-    owner: string,
-    repo: string
-): Promise<string[]> {
-    const repo_path = `../.gitgauge/repositories/${owner}-${repo}`;
+export async function load_branches(repo: string): Promise<string[]> {
+    const repo_path = `../.gitgauge/repositories/${repo}`;
     console.log("PATH", repo_path);
     try {
         const real_branches = await invoke<string[]>("get_branch_names", {
