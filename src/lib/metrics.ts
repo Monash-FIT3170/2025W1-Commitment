@@ -58,7 +58,7 @@ export async function load_commit_data(
     try {
         await invoke("bare_clone", {
             url: repo_url,
-            directory: repo_path,
+            path: repo_path,
         });
         info(`Repository is cloned or already exists at ${repo_path}`);
     } catch (err) {
