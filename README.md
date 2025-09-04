@@ -71,18 +71,18 @@ npm run tauri dev
 
 ---
 
-## Debugging & Clean Reinstall
+### Debugging & Clean Reinstall
 
 If you're running into persistent bugs, corrupted builds, or broken state, try a clean reinstall.
 
-### Symptoms this fixes
+#### Symptoms this fixes
 
 - Vite hangs or never finishes compiling
 - Plugin errors, missing module warnings
 - App doesn't load or WebView is blank
 - `npm run tauri dev` just exits or does nothing
 
-### Full clean reinstall steps
+#### Full clean reinstall steps
 
 ```sh
 rm -rf node_modules .gitgauge .svelte-kit src-tauri/target
@@ -109,8 +109,16 @@ If this doesn’t work, check:
 
 ## Contributing and Licensing
 
-Make sure to read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how you can contribute to the project. This project is licensed under GPLv3 with a copy of the license located in the root of the project called [LICENSE](./LICENSE).
+Before contributing to the project, **please read** [CONTRIBUTING.md](./CONTRIBUTING.md).  
+It includes:
 
+- Our naming conventions for structs, files, components, variables, etc.
+- Coding style and commit guidelines
+- Component structure and documentation expectations
+
+Following these guidelines keeps the codebase consistent and easy to maintain.
+
+This project is licensed under **GPLv3**, with the license located at the root of the repo: [LICENSE](./LICENSE).
 ---
 
 ## Team Information
