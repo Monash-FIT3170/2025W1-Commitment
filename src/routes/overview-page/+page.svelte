@@ -20,6 +20,7 @@
     let owner = $state(s.owner || "");
     let repo = $state(s.repo || "");
     let repo_type = $state(s.repo_type);
+    let repo_path = $state(s.repo_path || "");
     let branches = $state(s.branches || []);
     let contributors = $state(s.contributors || []);
 
@@ -155,7 +156,7 @@
         if ((!branches || branches.length === 0) && repo) {
             // Fetch branches for the repository
             (async () => {
-                branches = await load_branches(repo);
+                branches = await load_branches(owner, repo);
             })();
         }
     });
@@ -198,7 +199,7 @@
             />
         {/key}
     {:else if selected_view === "analysis"}
-        <ContributorAnalysis {contributors} />
+        <ContributorAnalysis {contributors} {repo_path} />
     {/if}
     <div class="bottom-container">
         <ButtonPrimaryMedium

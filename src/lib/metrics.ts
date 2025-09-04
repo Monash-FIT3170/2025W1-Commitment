@@ -20,8 +20,8 @@ export type Contributor = Readonly<{
 }>;
 
 // Load branches for a repository
-export async function load_branches(repo: string): Promise<string[]> {
-    const repo_path = `../.gitgauge/repositories/${repo}`;
+export async function load_branches(owner: string, repo: string): Promise<string[]> {
+    const repo_path = `../.gitgauge/repositories/${owner}-${repo}`;
     console.log("PATH", repo_path);
     try {
         const real_branches = await invoke<string[]>("get_branch_names", {

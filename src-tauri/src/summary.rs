@@ -13,34 +13,45 @@ struct SummaryProgress {
 
 #[tauri::command]
 pub async fn get_ai_summary(window: tauri::Window, path: &str) -> Result<(), String> {
+    match get_all_contributors(path) {
+        Ok(contributors) => {
+            let total = contributors.len();
+            if total == 0 {
+                let msg = format!("No contributors found in the repository at path: {}", path);
+                log::error!("{}", msg);
+                return Err(msg.into());
+            }
+            window.emit("summary-total", total).unwrap();
 
-    if let Ok(contributors) = get_all_contributors(path) {
-        let total = contributors.len();
-        if total == 0 {
-            return Err("No contributors found in the repository.".into());
-        }
-        window.emit("summary-total", total).unwrap();
-
-        for (contributor_name, contributor_email) in contributors {
-            if let Ok(commits) = get_contributor_commits(path, &contributor_name) {
-                if !commits.is_empty() {
-                    match summarize_commits(&commits).await {
-                        Ok(summary) => {
-                            let progress = SummaryProgress {
-                                email: contributor_email.clone(),
-                                summary,
-                            };
-                            window.emit("summary-progress", progress).unwrap();
-                        }
-                        Err(e) => {
-                            eprintln!("Failed to summarize commits for {}: {}", contributor_name, e);
+            for (contributor_name, contributor_email) in contributors {
+                if let Ok(commits) = get_contributor_commits(path, &contributor_name) {
+                    if !commits.is_empty() {
+                        match summarize_commits(&commits).await {
+                            Ok(summary) => {
+                                let progress = SummaryProgress {
+                                    email: contributor_email.clone(),
+                                    summary,
+                                };
+                                window.emit("summary-progress", progress).unwrap();
+                            }
+                            Err(e) => {
+                                eprintln!(
+                                    "Failed to summarize commits for {}: {}",
+                                    contributor_name, e
+                                );
+                            }
                         }
                     }
                 }
             }
+            Ok(())
+        }
+        Err(e) => {
+            let msg = format!("Failed to get contributors for path {}: {}", path, e.to_string());
+            log::error!("{}", msg);
+            Err(msg.into())
         }
     }
-    Ok(())
 }
 
 #[tauri::command]
@@ -50,8 +61,7 @@ pub fn check_key_set() -> bool {
 }
 
 #[tauri::command]
-pub async fn gemini_key_validation() -> Result<bool, String> {
-    let api_key = std::env::var("GEMINI_API_KEY").map_err(|_| "GEMINI_API_KEY is not set.".to_string())?;
+pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
     println!("Validating Gemini API key...");
     let url: &str = "https://generativelanguage.googleapis.com/v1/models";
 
@@ -80,7 +90,8 @@ pub async fn gemini_key_validation() -> Result<bool, String> {
                 // Removes the previously inputted valid key in case invalid key is entered.
                 env::remove_var("GEMINI_API_KEY");
             }
-            Err("Invalid Gemini API key.".to_string())
+            
+            Ok(false)
         }
         status => {
             let body = response.text().await.unwrap_or_default();
