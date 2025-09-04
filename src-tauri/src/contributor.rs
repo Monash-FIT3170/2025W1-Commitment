@@ -1,7 +1,7 @@
 use git2::{BranchType, Oid, Repository, Sort};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::HashMap;
+use std::{collections::HashMap, string};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Contacts {
@@ -45,6 +45,7 @@ pub async fn group_contributors_by_config(
             let mut contacts = Vec::new();
             let mut bitmap_hash = String::new();
             let mut bitmap = String::new();
+            let mut ai_summary = String::new();
 
             if let Value::Array(email_list) = emails_value {
                 for email_val in email_list {
@@ -81,6 +82,7 @@ pub async fn group_contributors_by_config(
                     deletions,
                     bitmap_hash,
                     bitmap,
+                    ai_summary
                 });
             }
         }
@@ -117,47 +119,38 @@ pub async fn get_contributor_info(
     branch: Option<&str>,
     date_range: Option<DateRange>,
 ) -> Result<HashMap<String, Contributor>, String> {
-    let mut contributors: HashMap<String, Contributor>;
-    {
-        let canonical_path = std::path::Path::new(path)
-            .canonicalize()
-            .map_err(|e| e.to_string())?;
+    let canonical_path = std::path::Path::new(path)
+        .canonicalize()
+        .map_err(|e| e.to_string())?;
 
-        let repo = match Repository::open(canonical_path) {
-            Ok(repo) => {
-                log::info!("Successfully opened repository at {path}");
-                repo
-            }
-            Err(e) => {
-                return Err(format!(
-                    "Error: {e}. Occurred when attempting to opening repository."
-                ))
-            }
-        };
-
-        let mut branches: Vec<String> = Vec::new();
-        for branch in repo.branches(None).map_err(|e| e.to_string())? {
-            let (branch, _branch_type) = branch.map_err(|e| e.to_string())?;
-            if let Some(name) = branch.name().map_err(|e| e.to_string())? {
-                branches.push(name.to_string());
-            }
+    let repo = match Repository::open(canonical_path) {
+        Ok(repo) => {
+            log::info!("Successfully opened repository at {path}");
+            repo
         }
+        Err(e) => {
+            return Err(format!(
+                "Error: {e}. Occurred when attempting to opening repository."
+            ))
+        }
+    };
 
-        // Resolve branch reference
-        let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
-        let head = match branch {
-            Some(target) => {
-                // Ensure the branch exists before proceeding
-                if !branches.contains(&target.to_string()) {
-                    log::error!("Branch: {target} not found in the repository.");
-                    return Err(format!("Branch: {target} not found in the repository."));
-                }
-                repo.find_branch(target, BranchType::Local)
-                    .map_err(|e| e.to_string())?
-                    .get()
-                    .target()
-                    .ok_or(git2::Error::from_str("Invalid branch head"))
-                    .map_err(|e| e.to_string())?
+    let mut branches: Vec<String> = Vec::new();
+    for branch in repo.branches(None).map_err(|e| e.to_string())? {
+        let (branch, _branch_type) = branch.map_err(|e| e.to_string())?;
+        if let Some(name) = branch.name().map_err(|e| e.to_string())? {
+            branches.push(name.to_string());
+        }
+    }
+
+    // Resolve branch reference
+    let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
+    let head = match branch {
+        Some(target) => {
+            // Ensure the branch exists before proceeding
+            if !branches.contains(&target.to_string()) {
+                log::error!("Branch: {target} not found in the repository.");
+                return Err(format!("Branch: {target} not found in the repository."));
             }
             find_branch_oid(&repo, target)?
         }
@@ -169,28 +162,28 @@ pub async fn get_contributor_info(
             .map_err(|e| e.to_string())?,
     };
 
-        revwalk.push(head).map_err(|e| e.to_string())?;
-        revwalk.set_sorting(Sort::TIME).map_err(|e| e.to_string())?;
+    revwalk.push(head).map_err(|e| e.to_string())?;
+    revwalk.set_sorting(Sort::TIME).map_err(|e| e.to_string())?;
 
-        contributors = HashMap::new();
+    let mut contributors: HashMap<String, Contributor> = HashMap::new();
 
-        for oid_result in revwalk {
-            let oid = oid_result.map_err(|e| e.to_string())?;
-            let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
-            let time = commit.time().seconds();
+    for oid_result in revwalk {
+        let oid = oid_result.map_err(|e| e.to_string())?;
+        let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
+        let time = commit.time().seconds();
 
         if let Some(ref date_range) = date_range {
             // Check if commit time is within the specified date range
             if time < date_range.start || time > date_range.end {
                 continue;
             }
+        }
 
-            let author_signature = commit.author();
-            let email = author_signature.email().unwrap_or("").to_string();
-            let gravatar_hash = md5::compute(email.clone().trim().to_lowercase());
-            let gravatar_login = author_signature.name().unwrap_or("Unknown").to_string();
-            let gravatar_url =
-                format!("https://www.gravatar.com/avatar/{gravatar_hash:x}?d=identicon");
+        let author_signature = commit.author();
+        let email = author_signature.email().unwrap_or("").to_string();
+        let gravatar_hash = md5::compute(email.clone().trim().to_lowercase());
+        let gravatar_login = author_signature.name().unwrap_or("Unknown").to_string();
+        let gravatar_url = format!("https://www.gravatar.com/avatar/{gravatar_hash:x}?d=identicon");
 
         // Normalize username for grouping
         let normalized_username = if email.ends_with("@users.noreply.github.com") {
@@ -227,13 +220,13 @@ pub async fn get_contributor_info(
             None
         };
 
-            let diff = repo
-                .diff_tree_to_tree(parent_tree.as_ref(), Some(&commit_tree), None)
-                .map_err(|e| e.to_string())?;
-            let stats = diff.stats().map_err(|e| e.to_string())?;
+        let diff = repo
+            .diff_tree_to_tree(parent_tree.as_ref(), Some(&commit_tree), None)
+            .map_err(|e| e.to_string())?;
+        let stats = diff.stats().map_err(|e| e.to_string())?;
 
-            let additions = stats.insertions() as u64;
-            let deletions = stats.deletions() as u64;
+        let additions = stats.insertions() as u64;
+        let deletions = stats.deletions() as u64;
 
         let entry = contributors
             .entry(normalized_username.clone())
@@ -245,6 +238,7 @@ pub async fn get_contributor_info(
                 deletions: 0,
                 bitmap_hash: gravatar_login.clone(), // tmp use to store gravatar login
                 bitmap: gravatar_url.clone(),        // tmp use to store gravatar url
+                ai_summary: String::from("")
             });
 
         // Add email to contacts if not already present
@@ -264,6 +258,7 @@ pub async fn get_contributor_info(
                         deletions: entry.deletions,
                         bitmap_hash: entry.bitmap_hash.clone(),
                         bitmap: entry.bitmap.clone(),
+                        ai_summary: String::from("")
                     };
                 }
             }

@@ -31,6 +31,18 @@
         $manifest.repository.filter((r) => r.url === repo_url)[0].email_mapping
     );
 
+    let selected_view: string = $state("overview");
+
+    const tabs = [
+        { id: "overview", label: "Overview", icon: "chart-line" },
+        { id: "analysis", label: "Contribution Analysis", icon: "id" },
+    ];
+
+    function select_view(id: string) {
+        selected_view = id;
+        console.log(selected_view);
+    }
+
     onMount(async () => {
         if (email_mapping) {
             try {
