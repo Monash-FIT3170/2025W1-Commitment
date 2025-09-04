@@ -10,7 +10,7 @@
     import { download_populated_file } from "$lib/utils/grading";
     import { load_branches, load_commit_data } from "$lib/metrics";
     import { invoke } from "@tauri-apps/api/core";
-    import { manifest } from "$lib/stores/manifest";
+    import { manifest, type Config } from "$lib/stores/manifest";
     import type { Contributor } from "$lib/metrics";
     import { onMount } from "svelte";
 
@@ -26,9 +26,9 @@
 
     let source_type = $state(page.state.source_type);
     let repo_url = $state(page.state.repo_url || "");
-    let email_mapping = $manifest.repository.filter(
-        (r) => r.url === repo_url
-    )[0].email_mapping;
+    let email_mapping: Config | null = $derived(
+        $manifest.repository.filter((r) => r.url === repo_url)[0].email_mapping
+    );
 
     onMount(async () => {
         if (email_mapping) {
@@ -104,7 +104,7 @@
                           : "";
                 const branch_arg =
                     branch_selection === "" ? undefined : branch_selection;
-                const new_contributors = await load_commit_data(
+                let new_contributors = await load_commit_data(
                     source,
                     owner,
                     repo,
@@ -114,6 +114,23 @@
                     end_date
                 );
 
+                // Apply config grouping if email_mapping is present
+                if (email_mapping) {
+                    try {
+                        new_contributors = await invoke<Contributor[]>(
+                            "group_contributors_by_config",
+                            {
+                                config_json: email_mapping,
+                                contributors: new_contributors,
+                            }
+                        );
+                    } catch (error) {
+                        console.error(
+                            "Error applying config after branch change:",
+                            error
+                        );
+                    }
+                }
                 contributors = [...new_contributors];
             })();
         }
