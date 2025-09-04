@@ -14,7 +14,6 @@
     import type { Contributor } from "$lib/metrics";
     import { onMount } from "svelte";
 
-    let repo_path = $state(page.state.repo);
     let owner = $state(page.state.owner || "");
     let repo = $state(page.state.repo || "");
     let repo_type = $state(page.state.repo_type);
@@ -37,7 +36,7 @@
                 contributors = await invoke<Contributor[]>(
                     "group_contributors_by_config",
                     {
-                        configJson: email_mapping,
+                        config_json: email_mapping,
                         contributors: contributors,
                     }
                 );
@@ -134,6 +133,7 @@
     <Heading
         {repo}
         {repo_type}
+        {repo_url}
         {branches}
         bind:branch_selection
         bind:start_date

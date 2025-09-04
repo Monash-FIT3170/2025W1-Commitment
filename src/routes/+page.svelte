@@ -4,10 +4,8 @@
         get_source_type,
         get_repo_info,
     } from "$lib/github_url_verifier.js";
-    import Icon from "@iconify/svelte";
     import { load_branches, load_commit_data } from "$lib/metrics";
     import { goto } from "$app/navigation";
-    import { get_repo_type, get_repo_name } from "$lib/stores/repo";
     import RepoDropdown from "$lib/components/global/RepoDropdown.svelte";
     import { repo_options } from "$lib/stores/repo";
     import type { RepoOption } from "$lib/stores/repo";

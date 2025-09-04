@@ -49,6 +49,7 @@ pub async fn group_contributors_by_config(
                 for email_val in email_list {
                     if let Some(email) = email_val.as_str() {
                         grouped_emails.insert(email.to_string());
+
                         if let Some(contrib) = contributors.iter().find(|c| match &c.contacts {
                             Contacts::Email(e) => e == email,
                             Contacts::EmailList(list) => list.contains(&email.to_string()),
@@ -57,9 +58,11 @@ pub async fn group_contributors_by_config(
                             additions += contrib.additions;
                             deletions += contrib.deletions;
                             contacts.push(email.to_string());
+
                             if bitmap_hash.is_empty() {
                                 bitmap_hash = contrib.bitmap_hash.clone();
                             }
+
                             if bitmap.is_empty() {
                                 bitmap = contrib.bitmap.clone();
                             }
@@ -97,6 +100,7 @@ pub async fn group_contributors_by_config(
                 }
             }
         }
+
         if !is_grouped {
             result.push(c.clone());
         }
@@ -272,11 +276,11 @@ fn find_branch_oid(repo: &Repository, branch: &str) -> Result<Oid, String> {
             .ok_or("Invalid local branch target".to_string());
     }
     // Try remote branch (origin/<branch>)
-    let remote_branch_name = format!("refs/remotes/{}", branch);
+    let remote_branch_name = format!("refs/remotes/{branch}");
     if let Ok(reference) = repo.find_reference(&remote_branch_name) {
         return reference
             .target()
             .ok_or("Invalid remote branch target".to_string());
     }
-    Err(format!("Branch '{}' not found as local or remote", branch))
+    Err(format!("Branch '{branch}' not found as local or remote"))
 }

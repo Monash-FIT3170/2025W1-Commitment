@@ -13,6 +13,7 @@
     let {
         repo: repo,
         repo_type: repo_type = "github",
+        repo_url,
         branches = [],
         branch_selection = $bindable(),
         start_date = $bindable(),
@@ -41,7 +42,7 @@
 
     let textarea_value = "";
 
-    async function handleFileChange(event: Event) {
+    async function handle_file_change(event: Event) {
         const selected_files = (event.target as HTMLInputElement).files;
         if (selected_files && selected_files.length > 0) {
             // Helper to read file as text using Promise
