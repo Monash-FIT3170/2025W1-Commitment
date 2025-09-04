@@ -199,7 +199,7 @@
             />
         {/key}
     {:else if selected_view === "analysis"}
-        <ContributorAnalysis {contributors} {repo_path} />
+        <ContributorAnalysis {contributors} {repo_path} {email_mapping} />
     {/if}
     <div class="bottom-container">
         <ButtonPrimaryMedium

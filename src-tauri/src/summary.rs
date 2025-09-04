@@ -1,7 +1,7 @@
-use git2::Repository;
+use git2::{Repository, Sort};
 use serde::Deserialize;
-use serde_json::json;
-use std::collections::HashSet;
+use serde_json::{json, Value};
+use std::collections::{HashMap, HashSet};
 use std::env;
 use tauri::Emitter;
 
@@ -50,6 +50,69 @@ pub async fn get_ai_summary(window: tauri::Window, path: &str) -> Result<(), Str
         }
         Err(e) => {
             let msg = format!("Failed to get contributors for path {path}: {e}");
+            log::error!("{msg}");
+            Err(msg)
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn get_ai_summary_with_config(
+    window: tauri::Window,
+    path: &str,
+    config_json: Value,
+) -> Result<(), String> {
+    match get_squashed_commits_by_config(path, config_json.clone()).await {
+        Ok(squashed_commits) => {
+            let total = squashed_commits.len();
+
+            if total == 0 {
+                let msg = format!("No contributors found in config for repository at path: {path}");
+                log::error!("{msg}");
+                return Err(msg);
+            }
+
+            window.emit("summary-total", total).unwrap();
+
+            // Get email mapping from config
+            let mut user_to_emails: HashMap<String, Vec<String>> = HashMap::new();
+            if let Value::Object(ref map) = config_json {
+                for (user_name, emails_value) in map.iter() {
+                    if let Value::Array(email_list) = emails_value {
+                        let emails: Vec<String> = email_list
+                            .iter()
+                            .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                            .collect();
+                        user_to_emails.insert(user_name.clone(), emails);
+                    }
+                }
+            }
+
+            for (user_name, commit_data) in squashed_commits {
+                if !commit_data.is_empty() {
+                    match summarize_commits(&commit_data).await {
+                        Ok(summary) => {
+                            // Send progress for each email associated with this user
+                            if let Some(emails) = user_to_emails.get(&user_name) {
+                                for email in emails {
+                                    let progress = SummaryProgress {
+                                        email: email.clone(),
+                                        summary: summary.clone(),
+                                    };
+                                    window.emit("summary-progress", progress).unwrap();
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to summarize commits for {user_name}: {e}");
+                        }
+                    }
+                }
+            }
+            Ok(())
+        }
+        Err(e) => {
+            let msg = format!("Failed to get squashed commits for path {path}: {e}");
             log::error!("{msg}");
             Err(msg)
         }
@@ -223,4 +286,64 @@ pub fn get_all_contributors(repo_path: &str) -> Result<HashSet<(String, String)>
     }
 
     Ok(contributors)
+}
+
+pub async fn get_squashed_commits_by_config(
+    repo_path: &str,
+    config_json: Value,
+) -> Result<HashMap<String, String>, git2::Error> {
+    let repo = Repository::open(repo_path)?;
+    let mut revwalk = repo.revwalk()?;
+    revwalk.push_head()?;
+    revwalk.set_sorting(Sort::TIME)?;
+
+    let mut email_to_user: HashMap<String, String> = HashMap::new();
+    
+    if let Value::Object(ref map) = config_json {
+        for (user_name, emails_value) in map.iter() {
+            if let Value::Array(email_list) = emails_value {
+                for email_val in email_list {
+                    if let Some(email) = email_val.as_str() {
+                        email_to_user.insert(email.to_string(), user_name.clone());
+                    }
+                }
+            }
+        }
+    }
+
+    let mut user_commits: HashMap<String, Vec<(i64, String)>> = HashMap::new();
+
+    for oid in revwalk {
+        let oid = oid?;
+        let commit = repo.find_commit(oid)?;
+        let author_signature = commit.author();
+
+        if let Some(email) = author_signature.email() {
+            if let Some(user_name) = email_to_user.get(email) {
+                if let Some(message) = commit.summary() {
+                    let commit_time = commit.time().seconds();
+                    user_commits
+                        .entry(user_name.clone())
+                        .or_insert_with(Vec::new)
+                        .push((commit_time, message.to_string()));
+                }
+            }
+        }
+    }
+
+    let mut result: HashMap<String, String> = HashMap::new();
+    
+    for (user_name, mut commits) in user_commits {
+        commits.sort_by(|a, b| a.0.cmp(&b.0));
+        
+        let squashed_commits = commits
+            .iter()
+            .map(|(_, message)| message.clone())
+            .collect::<Vec<String>>()
+            .join("\n");
+            
+        result.insert(user_name, squashed_commits);
+    }
+
+    Ok(result)
 }

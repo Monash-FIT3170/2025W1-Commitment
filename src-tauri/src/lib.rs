@@ -36,6 +36,7 @@ pub fn run() {
             manifest::read_manifest,
             manifest::save_manifest,
             summary::get_ai_summary,
+            summary::get_ai_summary_with_config,
             summary::gemini_key_validation,
             summary::check_key_set
         ])

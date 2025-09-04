@@ -14,7 +14,7 @@
 	import { listen } from '@tauri-apps/api/event';
 	import ProgressBar from '../global/ProgressBar.svelte';
 
-	let { contributors, repo_path }: { contributors: Contributor[], repo_path: string } = $props();
+	let { contributors, repo_path, email_mapping }: { contributors: Contributor[], repo_path: string, email_mapping?: any } = $props();
 
 	let commit_mean = get_average_commits(contributors);
 	let sd = get_sd(contributors);
@@ -65,7 +65,14 @@
 		if (repo_path) {
 			
 			try {
-				await invoke('get_ai_summary', { path: full_repo_path });
+				if (email_mapping) {
+					await invoke('get_ai_summary_with_config', { 
+						path: full_repo_path,
+						configJson: email_mapping
+					});
+				} else {
+					await invoke('get_ai_summary', { path: full_repo_path });
+				}
 			} catch (e) {
 				console.error(e);
 			} finally {
