@@ -137,6 +137,19 @@ If this doesn’t work, check:
 - You have Tauri CLI installed: `cargo tauri --version`
 
 
+### 🪛 Troubleshooting FAQ
+
+| Problem                                                                 | Fix                                                                 |
+|------------------------------------------------------------------------|----------------------------------------------------------------------|
+| App doesn't launch or just exits silently                              | Make sure you're using Node.js v20+ and Rust is installed correctly |
+| Vite hangs or never compiles                                           | Run clean reinstall (see above)                                     |
+| WebView shows blank or flickers                                        | Clear `.gitgauge`, `.svelte-kit`, and rerun                         |
+| Plugin not found / `plugin-log` missing                                | Check `tauri.conf.json` plugin section and reinstall deps           |
+| Permission denied on `git-hooks.sh`                                    | Run `chmod +x git-hooks.sh` and try again                           |
+| File dialogs not working (e.g. upload doesn't open file selector)      | Check plugin versions match Tauri 2.x and OS supports native dialogs|
+| Windows PowerShell can't run script                                    | Open PowerShell as admin and set: `Set-ExecutionPolicy RemoteSigned`|
+| New components aren't being picked up by the build                     | Restart dev server with `npm run tauri dev`                         |
+
 ## Contributing and Licensing
 
 Before contributing to the project, **please read** [CONTRIBUTING.md](./CONTRIBUTING.md).  
