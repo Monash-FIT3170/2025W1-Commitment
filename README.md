@@ -6,7 +6,7 @@
 
 ## Project Overview
 
-**GitGauge** is a native desktop application built with **Tauri**, **Svelte**, and **Rust**, designed to help teaching assistants holistically assess student contributions within a Git repository.
+**gitgauge** is a native desktop application built with **Tauri**, **Svelte**, and **Rust**, designed to help teaching assistants holistically assess student contributions within a Git repository.
 
 ### Key Features:
 - Upload and parse Moodle-style grading sheets (`.csv`, `.tsv`)
@@ -14,46 +14,42 @@
 - Scale and adjust grades based on contribution metrics
 - Download a populated grading file with contribution-weighted scores
 - Clean and responsive native UI powered by SvelteKit and Tailwind
+- Automatically scale student based on different attributes (e.g. number of commits, loc, etc.)
 - Fully cross-platform (macOS, Windows, Linux)
 
 This app is designed for educational settings where group Git projects are assessed, and where traditional peer review or manual weighting is too slow or inconsistent.
 
 
-## Releases
-
-Check out our official releases on the releases tab of GitHub!
-
 ## Project Structure
-
 
 ```
 gitgauge/
-├── .gitgauge/                     # App cache directory (safe to delete)
-├── .githooks/                     #
+├── .gitgauge/                     # App cache (safe to delete)
+├── .githooks/                     # Pre-commit hook scripts
 ├── .svelte-kit/                   # SvelteKit build cache
-├── node_modules/                  # Node dependencies
+├── node_modules/                  # Node.js dependencies
 ├── src/
-│   ├── lib/                       # Shared libraries and app logic
-│   │   ├── components/            # Reusable Svelte components
-│   │   │   ├── global/            # Global UI components
-│   │   │   └── overview-page/     # Components specific to overview UI
-│   │   ├── stores/                # Svelte stores for reactive state
-│   │   └── utils/                 # Utility scripts and logic
-│   ├── routes/                    # Page routes (SvelteKit routing)
-│   │   ├── overview-page/         # Route for contributor overview screen
-│   │   │   ├── +layout.svelte
-│   │   │   └── +page.svelte
-│   │   ├── +layout.ts             # App-wide layout script
-│   │   └── +page.svelte           # Default home screen
-│   ├── app.html                   #
-│   └── ...
-├── src-tauri/                     # Tauri Rust backend
+│   ├── lib/                       # Shared frontend logic
+│   │   ├── components/            # Reusable UI components
+│   │   │   ├── global/            # Global UI (e.g. buttons)
+│   │   │   └── overview-page/     # UI for overview route
+│   │   ├── stores/                # Global/local state stores
+│   │   └── utils/                 # Helpers (CSV, grading, etc.)
+│   ├── routes/                    # App pages (SvelteKit routing)
+│   │   ├── overview-page/         # Contributor stats page
+│   │   │   ├── +layout.svelte     # Route layout wrapper
+│   │   │   └── +page.svelte       # Route content
+│   │   ├── +layout.ts             # App-wide layout logic
+│   │   └── +page.svelte           # Upload page
+│   ├── app.html                   # Root HTML shell
+│   └── ...                        # Other routes/config
+├── src-tauri/                     # Rust backend for Tauri
 │   ├── src/
-│   │   ├── lib.rs                 # 
-│   │   └── main.rs                # Rust entry point (backend commands)
-│   └── ...                        
-├── package.json                   # App dependencies and scripts
-└── README.md                      # Project setup and handover docs
+│   │   ├── lib.rs                 # Shared Rust utils
+│   │   └── main.rs                # Tauri backend entry
+│   └── ...                        # Tauri configs/assets
+├── package.json                   # Scripts + dependencies
+└── README.md                      # Setup + handover docs
 ```
 
 ## Developer Setup
@@ -136,19 +132,43 @@ If this doesn’t work, check:
 - You have Rust installed correctly: `rustup show`
 - You have Tauri CLI installed: `cargo tauri --version`
 
+## Troubleshooting FAQ
 
-### 🪛 Troubleshooting FAQ
+Common bugs and fixes during setup, development, and merge workflows.
 
-| Problem                                                                 | Fix                                                                 |
-|------------------------------------------------------------------------|----------------------------------------------------------------------|
-| App doesn't launch or just exits silently                              | Make sure you're using Node.js v20+ and Rust is installed correctly |
-| Vite hangs or never compiles                                           | Run clean reinstall (see above)                                     |
-| WebView shows blank or flickers                                        | Clear `.gitgauge`, `.svelte-kit`, and rerun                         |
-| Plugin not found / `plugin-log` missing                                | Check `tauri.conf.json` plugin section and reinstall deps           |
-| Permission denied on `git-hooks.sh`                                    | Run `chmod +x git-hooks.sh` and try again                           |
-| File dialogs not working (e.g. upload doesn't open file selector)      | Check plugin versions match Tauri 2.x and OS supports native dialogs|
-| Windows PowerShell can't run script                                    | Open PowerShell as admin and set: `Set-ExecutionPolicy RemoteSigned`|
-| New components aren't being picked up by the build                     | Restart dev server with `npm run tauri dev`                         |
+### Setup & Build Issues
+
+| Issue | Symptoms | Fix |
+|-------|----------|-----|
+| **Vite hangs or blank WebView** | - App stuck compiling<br>- White screen on load<br>- `npm run tauri dev` exits silently | `sh`<br>`rm -rf node_modules .gitgauge .svelte-kit src-tauri/target`<br>`npm i`<br>`npm run tauri dev`<br> |
+| **`cargo` or `tauri` not found** | - Build fails on backend step<br>- Commands not recognised | - Check Rust: `rustup show`<br>- Install Tauri: `cargo install tauri-cli`<br>- Confirm you're in the project folder |
+| **Pre-commit hook isn’t firing** | - You can commit code that violates formatting or lint rules | - Run the correct Git hooks setup:<br>`sh`<br>`sh git-hooks.sh`<br>`# or`<br>`.\git-hooks.ps1`<br> |
+| **Svelte reactivity isn't working** | - `$state` or `$store` values don’t update<br>- Derived values don't recompute<br>- `writable()` from older Svelte versions causes errors | - Only use **Svelte 5 Runes syntax**:<br>`let x = $state(0)` instead of `writable()`<br>- Use `$derived()` instead of `$:`<br>- Avoid mixing legacy and modern syntax in the same file |
+
+
+---
+
+
+### Merging & Branch Sync Issues
+
+| Issue | Symptoms | Fix |
+|-------|----------|-----|
+| **Working on stale branches** | - PRs show lots of unrelated diffs<br>- Functionality is mysteriously broken | - Always pull `devel` before starting new work:<br>`sh`<br>`git checkout devel`<br>`git pull origin devel`<br>`git checkout your-branch`<br>`git merge devel`<br> |
+| **Merge conflicts everywhere** | - Even minor changes cause big conflicts | - Merge `devel` into your branch frequently, not just at the end<br>- Consider rebasing if you're confident: `git rebase devel` |
+| **Rebasing is confusing** | - Unsure how to safely update your branch<br>- Afraid of breaking commit history | - Use VS Code GitLens to visualise<br>- Ask a teammate to pair with you<br>- Use merge instead of rebase if unsure |
+| **Conflicting Svelte syntax** | - Some files use `runes`, others don’t<br>- `$state`, `store`, and `writable` cause confusion | - Stick to the syntax used in `devel`<br>- Don’t mix `runes` and `$store` reactivity<br>- If unsure, ask before adding new state logic |
+
+---
+
+### Tips for Avoiding Merge Issues
+
+- Start each day by pulling the latest `devel`
+- Merge `devel` into your feature branch *frequently* (every few hours if active)
+- Prefer small, focused PRs to large multi-feature branches
+- Keep component code modular to reduce merge conflicts
+- Communicate with your team before resolving merge conflicts solo
+
+---
 
 ## Contributing and Licensing
 
@@ -163,7 +183,9 @@ Following these guidelines keeps the codebase consistent and easy to maintain.
 
 This project is licensed under **GPLv3**, with the license located at the root of the repo: [LICENSE](./LICENSE).
 
+## Releases
 
+Check out our official releases on the releases tab of GitHub!
 
 ## Team Information
 
