@@ -76,27 +76,13 @@
             );
 
             const branches = await load_branches(
-                `${repository_information.owner}-${repository_information.repo}`
+                `${source_type}-${repository_information.owner}-${repository_information.repo}`
             );
-
-            // Check if the repository exists in the manifest
-            const repo_exists = $manifest["repository"].some(
-                (item) => item.url === repo_url_input
-            );
-
-            if (!repo_exists) {
-                manifest.create_repository(
-                    repository_information,
-                    repo_url_input
-                );
-            }
-
-            manifest.update_repository_timestamp(repo_url_input);
-
-            await invoke("save_manifest", { manifest: $manifest });
-
+            
             // Navigate to the overview page
-            goto(`/overview-page`, {
+            await goto('/')
+            await goto(`/overview-page`, {
+                replaceState: true,
                 state: {
                     repo_path: `${repository_information.owner}-${repository_information.repo}`,
                     repo_url: repo_url_input,
