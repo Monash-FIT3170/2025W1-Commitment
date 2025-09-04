@@ -21,17 +21,6 @@
         contributors = $bindable<Contributor[]>([]),
     } = $props();
 
-    let selected_view: string = $state("overview");
-
-    const tabs = [
-        { id: "overview", label: "Overview", icon: "chart-line" },
-        { id: "analysis", label: "Contribution Analysis", icon: "id" },
-    ];
-
-    function select_view(id: string) {
-        selected_view = id;
-    }
-
     let show_modal = $state(false);
 
     let file_input: HTMLInputElement;
@@ -183,7 +172,7 @@
                 label_class="body-accent"
                 label="Select Date Range"
                 disabled={false}
-                width="4rem"
+                width="7rem"
                 on:change={handle_date_change}
             />
         </div>
@@ -192,18 +181,6 @@
     <div class="heading-btn-spacer"></div>
 
     <span class="subtitle display-subtitle">Contribution Statistics</span>
-
-    <div class="page-select-btns">
-        <!-- for each tab -->
-        {#each tabs as tab}
-            <Tab
-                label={tab.label}
-                icon={tab.icon}
-                selected={selected_view === tab.id}
-                width="100%"
-            />
-        {/each}
-    </div>
 </div>
 
 <style>

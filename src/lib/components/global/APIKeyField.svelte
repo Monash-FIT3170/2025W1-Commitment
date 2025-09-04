@@ -43,10 +43,9 @@
             if (!error) {
                 api_input = "";
                 return;
-            }
-            else {
-            input_field.disabled = true;
-            editing = false;
+            } else {
+                input_field.disabled = true;
+                editing = false;
             }
         } else {
             input_field.disabled = false;

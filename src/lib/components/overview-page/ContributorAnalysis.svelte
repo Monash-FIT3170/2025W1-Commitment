@@ -1,193 +1,208 @@
 <script lang="ts">
-	import ContributorCard from '../global/ContributorCard.svelte';
-	import type { Contributor } from '$lib/metrics';
-	import {
-		calculate_scaling_factor,
-		get_average_commits,
-		get_sd,
-		get_user_total_commits
-	} from '../../metrics';
-	import ButtonPrimaryMedium from '../global/ButtonPrimaryMedium.svelte';
-	import { invoke } from '@tauri-apps/api/core';
-	import { current_repo } from '$lib/stores/repo';
-	import { summaries_store } from '$lib/stores/summaries';
-	import { listen } from '@tauri-apps/api/event';
-	import ProgressBar from '../global/ProgressBar.svelte';
+    import ContributorCard from "../global/ContributorCard.svelte";
+    import type { Contributor } from "$lib/metrics";
+    import {
+        calculate_scaling_factor,
+        get_average_commits,
+        get_sd,
+        get_user_total_commits,
+    } from "../../metrics";
+    import ButtonPrimaryMedium from "../global/ButtonPrimaryMedium.svelte";
+    import { invoke } from "@tauri-apps/api/core";
+    import { current_repo } from "$lib/stores/repo";
+    import { summaries_store } from "$lib/stores/summaries";
+    import { listen } from "@tauri-apps/api/event";
+    import ProgressBar from "../global/ProgressBar.svelte";
 
-	let { contributors }: { contributors: Contributor[] } = $props();
+    let { contributors }: { contributors: Contributor[] } = $props();
 
-	let commit_mean = get_average_commits(contributors);
-	let sd = get_sd(contributors);
-	let loading = $state(false);
-	let total_summaries = $state(0);
-	let generated_summaries = $state(0);
-	let progress = $derived(total_summaries > 0 ? (generated_summaries / total_summaries) * 100 : 0);
-	let error_message = $state('');
+    let commit_mean = get_average_commits(contributors);
+    let sd = get_sd(contributors);
+    let loading = $state(false);
+    let total_summaries = $state(0);
+    let generated_summaries = $state(0);
+    let progress = $derived(
+        total_summaries > 0 ? (generated_summaries / total_summaries) * 100 : 0
+    );
+    let error_message = $state("");
 
-	async function generate_summaries() {
-		loading = true;
-		generated_summaries = 0;
-		total_summaries = 0;
+    async function generate_summaries() {
+        loading = true;
+        generated_summaries = 0;
+        total_summaries = 0;
         summaries_store.update((store) => {
             store.set($current_repo.repo_path, new Map());
             return store;
         });
 
+        const unlisten_total = await listen("summary-total", (event) => {
+            total_summaries = event.payload as number;
+        });
 
-		const unlisten_total = await listen('summary-total', (event) => {
-			total_summaries = event.payload as number;
-		});
+        const unlisten_progress = await listen("summary-progress", (event) => {
+            const { email, summary } = event.payload as {
+                email: string;
+                summary: string;
+            };
+            summaries_store.update((store) => {
+                const repo_summaries =
+                    store.get($current_repo.repo_path) || new Map();
+                repo_summaries.set(email, summary);
+                store.set($current_repo.repo_path, repo_summaries);
+                return store;
+            });
+            generated_summaries++;
+        });
 
-		const unlisten_progress = await listen('summary-progress', (event) => {
-			const { email, summary } = event.payload as { email: string; summary: string };
-			summaries_store.update((store) => {
-				const repo_summaries = store.get($current_repo.repo_path) || new Map();
-				repo_summaries.set(email, summary);
-				store.set($current_repo.repo_path, repo_summaries);
-				return store;
-			});
-			generated_summaries++;
-		});
+        const repo_name = $current_repo.repo_path.split("/").pop();
+        const repo_path = `../.gitgauge/repositories/${repo_name}`;
+        if (repo_path) {
+            try {
+                await invoke("gemini_key_validation");
+            } catch (e) {
+                console.error("Key validation failed", e);
+                error_message = "Key Validation Failed";
+                loading = false;
+                return;
+            }
+            try {
+                await invoke("get_ai_summary", { path: repo_path });
+            } catch (e) {
+                console.error(e);
+            } finally {
+                loading = false;
+                unlisten_total();
+                unlisten_progress();
+            }
+        }
+    }
 
-		const repo_name = $current_repo.repo_path.split('/').pop();
-		const repo_path = `../.gitgauge/repositories/${repo_name}`;
-		if (repo_path) {
-			try {
-				await invoke("gemini_key_validation");
-			} catch (e) {
-				console.error("Key validation failed",e);
-				error_message = "Key Validation Failed"
-				loading = false;
-				return;
-			}
-			try {
-				await invoke('get_ai_summary', { path: repo_path });
-			} catch (e) {
-				console.error(e);
-			} finally {
-				loading = false;
-				unlisten_total();
-				unlisten_progress();
-			}
-		}
-	}
+    let repo_summaries = $derived(
+        $summaries_store.get($current_repo.repo_path)
+    );
+    let people_with_analysis = $derived(
+        contributors.map((user: Contributor) => {
+            const num_commits = get_user_total_commits(user);
+            const scaling_factor = calculate_scaling_factor(
+                num_commits,
+                commit_mean,
+                sd
+            );
+            let analysis = "";
+            if (repo_summaries && "Email" in user.contacts) {
+                analysis =
+                    repo_summaries.get(user.contacts.Email as string) ||
+                    "No summary available";
+            } else if (!repo_summaries) {
+                analysis = "Click 'Generate AI Summaries'";
+            }
 
-	let repo_summaries = $derived($summaries_store.get($current_repo.repo_path));
-	let people_with_analysis = $derived(
-		contributors.map((user: Contributor) => {
-			const num_commits = get_user_total_commits(user);
-			const scaling_factor = calculate_scaling_factor(num_commits, commit_mean, sd);
-			let analysis = '';
-			if (repo_summaries && 'Email' in user.contacts) {
-				analysis =
-					repo_summaries.get(user.contacts.Email as string) || 'No summary available';
-			} else if (!repo_summaries) {
-				analysis = "Click 'Generate AI Summaries'";
-			}
+            return {
+                username: user.bitmap_hash,
+                image: user.bitmap,
+                analysis: analysis,
+                scaling_factor: scaling_factor.toFixed(1),
+            };
+        })
+    );
 
-			return {
-				username: user.bitmap_hash,
-				image: user.bitmap,
-				analysis: analysis,
-				scaling_factor: scaling_factor.toFixed(1)
-			};
-		})
-	);
-
-	// Sort users by username alphabetically
-	function contributors_sorted() {
-		return people_with_analysis.sort((a, b) => {
-			return a.username < b.username ? -1 : 1;
-		});
-	}
+    // Sort users by username alphabetically
+    function contributors_sorted() {
+        return people_with_analysis.sort((a, b) => {
+            return a.username < b.username ? -1 : 1;
+        });
+    }
 </script>
 
 <main class="container">
-	{#if error_message}
-    	<div class="error-message">
-			{error_message}
-		</div>
-	{/if}
-	{#if loading}
-		<div class="w-full max-w-2xl mx-auto">
-			<ProgressBar {progress} label={`Generating summaries... (${generated_summaries}/${total_summaries})`} />
-		</div>
-	{/if}
-	{#if !loading}
-		{#if repo_summaries && repo_summaries.size > 0}
-			<div class="cards-container">
-				{#each contributors_sorted() as person}
-					<ContributorCard
-						username={person.username}
-						image={person.image}
-						scaling_factor={person.scaling_factor}
-					>
-						{#snippet content()}
-							<div class="contents body">
-								<div>{person.analysis}</div>
-							</div>
-						{/snippet}
-					</ContributorCard>
-				{/each}
-			</div>
-			<div class="button-container">
-				<div>
-					<ButtonPrimaryMedium
-						label={'Regenerate AI Summaries'}
-						onclick={generate_summaries}
-						disabled={loading}
-					/>
-				</div>
-			</div>
-		{:else}
-			<div class="button-container">
-				<div>
-					<ButtonPrimaryMedium
-						label={'Generate AI Summaries'}
-						onclick={generate_summaries}
-						disabled={loading}
-					/>
-				</div>
-			</div>
-		{/if}
-	{/if}
+    {#if error_message}
+        <div class="error-message">
+            {error_message}
+        </div>
+    {/if}
+    {#if loading}
+        <div class="w-full max-w-2xl mx-auto">
+            <ProgressBar
+                {progress}
+                label={`Generating summaries... (${generated_summaries}/${total_summaries})`}
+            />
+        </div>
+    {/if}
+    {#if !loading}
+        {#if repo_summaries && repo_summaries.size > 0}
+            <div class="cards-container">
+                {#each contributors_sorted() as person}
+                    <ContributorCard
+                        username={person.username}
+                        image={person.image}
+                        scaling_factor={person.scaling_factor}
+                    >
+                        {#snippet content()}
+                            <div class="contents body">
+                                <div>{person.analysis}</div>
+                            </div>
+                        {/snippet}
+                    </ContributorCard>
+                {/each}
+            </div>
+            <div class="button-container">
+                <div>
+                    <ButtonPrimaryMedium
+                        label={"Regenerate AI Summaries"}
+                        onclick={generate_summaries}
+                        disabled={loading}
+                    />
+                </div>
+            </div>
+        {:else}
+            <div class="button-container">
+                <div>
+                    <ButtonPrimaryMedium
+                        label={"Generate AI Summaries"}
+                        onclick={generate_summaries}
+                        disabled={loading}
+                    />
+                </div>
+            </div>
+        {/if}
+    {/if}
 </main>
 
 <style>
-	.container {
-		padding: 2rem 2rem 2rem 2rem;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-		min-height: auto;
-	}
+    .container {
+        padding: 2rem 2rem 2rem 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        min-height: auto;
+    }
 
-	.contents {
-		text-align: start;
-	}
+    .contents {
+        text-align: start;
+    }
 
-	.cards-container {
-		margin-top: 1rem;
-		display: grid;
-		grid-template-columns: repeat(auto-fill, 26rem);
-		gap: 1rem;
-		padding: 1rem;
-		width: 100%;
-		justify-items: center;
-		justify-content: center;
-	}
+    .cards-container {
+        margin-top: 1rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 26rem);
+        gap: 1rem;
+        padding: 1rem;
+        width: 100%;
+        justify-items: center;
+        justify-content: center;
+    }
 
-	.button-container {
-		display: flex;
-		justify-content: center;
-		height: calc(100vh - 26rem);
-		align-items: center;
-	}
-	.error-message {
-    color: #e53e3e;
-    margin-bottom: 1rem;
-    font-family: "DM Sans", sans-serif;
-    font-size: 1rem;
-	}
+    .button-container {
+        display: flex;
+        justify-content: center;
+        height: calc(100vh - 26rem);
+        align-items: center;
+    }
+    .error-message {
+        color: #e53e3e;
+        margin-bottom: 1rem;
+        font-family: "DM Sans", sans-serif;
+        font-size: 1rem;
+    }
 </style>

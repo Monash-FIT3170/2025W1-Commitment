@@ -5,6 +5,7 @@
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import CommitGraph from "$lib/components/overview-page/CommitGraph.svelte";
     import Heading from "$lib/components/overview-page/Heading.svelte";
+    import Tab from "$lib/components/global/Tab.svelte";
     import UploadFileModal from "$lib/components/overview-page/UploadFileModal.svelte";
     import type { UploadedGradingFile } from "$lib/stores/gradingFile";
     import { read_headers, validate_headers } from "$lib/utils/csv";
@@ -172,6 +173,19 @@
         bind:contributors
     />
 
+    <div class="page-select-btns">
+        <!-- for each tab -->
+        {#each tabs as tab}
+            <Tab
+                label={tab.label}
+                icon={tab.icon}
+                selected={selected_view === tab.id}
+                width="100%"
+                onclick={() => select_view(tab.id)}
+            />
+        {/each}
+    </div>
+
     <!-- commit graph -->
     {#if selected_view === "overview"}
         {#key contributors}
@@ -216,5 +230,22 @@
         padding-top: 2rem;
         padding-bottom: 6rem;
         gap: 1rem;
+    }
+
+    .page-select-btns {
+        display: grid;
+        grid-template-columns: 20rem 20rem;
+        column-gap: 1rem;
+        padding-top: 2rem;
+        z-index: 1;
+        padding: 0rem 4rem;
+    }
+
+    @media (max-width: 75rem) {
+        .page-select-btns {
+            grid-template-columns: 16rem 16rem;
+            padding-top: 0rem;
+            padding-bottom: 1rem;
+        }
     }
 </style>
