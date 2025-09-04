@@ -35,7 +35,8 @@
             ?.email_mapping || null
     );
 
-    let criteria = ["total commits", "lines of code", "lines/commit"];
+    //let criteria = ["total commits", "lines of code", "lines/commit"];
+    let criteria: string[] = ["commits", "commit_size", "absolute_diff"];
     let selected_criteria = $state(criteria[0]);
 
     let selected_view: string = $state("overview");
@@ -160,7 +161,7 @@
         if ((!branches || branches.length === 0) && repo) {
             // Fetch branches for the repository
             (async () => {
-                branches = await load_branches();
+                branches = await load_branches(repo_path);
             })();
         }
     });

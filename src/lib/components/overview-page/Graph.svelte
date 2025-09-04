@@ -13,7 +13,7 @@
         type Contributor,
         type UserDisplayData,
     } from "$lib/metrics";
-    import { onDestroy, onMount } from "svelte";
+    import { info } from "@tauri-apps/plugin-log";
 
     let {
         contributors,
@@ -45,6 +45,7 @@
     );
 
     let filtered_people: UserDisplayData[] = $derived.by(() => {
+        info(`metric: ${metric}`);
         switch (metric) {
             case "commits": {
                 return get_users_total_commits(contributors);
@@ -82,9 +83,6 @@
             }
             case "commit_size": {
                 return get_average_commit_size(contributors);
-            }
-            case "absolute_diff": {
-                filtered_people = get_users_absolute_diff(contributors);
             }
             default: {
                 return get_average_commits(contributors);
@@ -186,8 +184,7 @@
     });
 
     $effect(() => {
-        metric;
-        if (chart) {
+        if (metric && chart) {
             set_chart_options();
         }
     });
@@ -585,6 +582,7 @@
                 window.removeEventListener("resize", resize_handler);
                 chart.dispose();
             }
+
             chart = echarts.init(chart_container);
             set_chart_options();
             window.addEventListener("resize", resize_handler);
@@ -625,22 +623,6 @@
                 chart.dispose();
             }
         };
-    });
-
-    onMount(() => {
-        chart = echarts.init(chart_container);
-        set_chart_options();
-        resize_handler = () => {
-            chart.resize();
-            update_graphics();
-        };
-
-        window.addEventListener("resize", resize_handler);
-    });
-
-    onDestroy(() => {
-        window.removeEventListener("resize", resize_handler);
-        chart.dispose();
     });
 </script>
 

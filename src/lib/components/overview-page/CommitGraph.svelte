@@ -2,7 +2,7 @@
     import Graph from "$lib/components/overview-page/Graph.svelte";
     import ContributorCards from "$lib/components/overview-page/ContributorCards.svelte";
     import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
-    import ButtonTintedMedium from "../global/ButtonTintedMedium.svelte";
+    import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import type { Contributor } from "$lib/metrics";
 
     let {
