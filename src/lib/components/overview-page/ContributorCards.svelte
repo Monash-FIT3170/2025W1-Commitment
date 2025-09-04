@@ -5,8 +5,11 @@
         get_user_lines_per_commit,
         get_user_total_additions,
         get_user_total_deletions,
+        get_user_absolute_diff,
         calculate_scaling_factor,
         get_average_commits,
+        get_average_commit_size,
+        get_average_absolute_diff,
         get_sd,
         type Contributor,
     } from "../../metrics";
@@ -15,33 +18,63 @@
 
     let {
         users,
-        // selected_branch: selected_branch,
+        metric,
     }: {
         users: Contributor[];
-        // selected_branch: string;
+        metric: string;
     } = $props();
 
-    // Calculate metrics for each user
-    let commit_mean = get_average_commits(users);
-    let sd = get_sd(users, "commits");
+    // Calculate metrics based on selected metric - WITH EXPLICIT TYPES
+    let metric_mean = $derived(() => {
+        switch (metric) {
+            case "commits":
+                return get_average_commits(users);
+            case "commit_size":
+                return get_average_commit_size(users);
+            case "absolute_diff":
+                return get_average_absolute_diff(users);
+            default:
+                return get_average_commits(users);
+        }
+    });
+
+    let sd_value: number = $derived(get_sd(users, metric));
 
     let people_with_metrics = $derived(
         users.map((user: Contributor) => {
-            const num_commits = get_user_total_commits(user);
+            // Get the appropriate data value based on selected metric
+            let data_value: number;
+            switch (metric) {
+                case "commits":
+                    data_value = get_user_total_commits(user);
+                    break;
+                case "commit_size":
+                    data_value = user.total_commits === 0 ? 0 : get_user_total_lines_of_code(user) / user.total_commits;
+                    break;
+                case "absolute_diff":
+                    data_value = get_user_absolute_diff(user);
+                    break;
+                default:
+                    data_value = get_user_total_commits(user);
+            }
+
             const scaling_factor = calculate_scaling_factor(
-                num_commits,
-                commit_mean,
-                sd,
+                data_value,
+                metric_mean(),  
+                sd_value,     
             );
+            
             return {
                 username: user.bitmap_hash,
                 image: user.bitmap,
-                num_commits: num_commits,
+                num_commits: get_user_total_commits(user),
                 total_lines_of_code: get_user_total_lines_of_code(user),
                 lines_per_commit: get_user_lines_per_commit(user),
                 total_additions: get_user_total_additions(user),
                 total_deletions: get_user_total_deletions(user),
                 scaling_factor: scaling_factor.toFixed(1),
+                metric_value: data_value,
+                metric_name: metric,
             };
         }),
     );
@@ -52,7 +85,7 @@
             let scaling_a = Number(a.scaling_factor);
             let scaling_b = Number(b.scaling_factor);
             if (scaling_a === scaling_b) {
-                return b.num_commits - a.num_commits;
+                return b.metric_value - a.metric_value;
             }
             return scaling_b - scaling_a;
         });

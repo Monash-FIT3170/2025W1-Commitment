@@ -37,8 +37,6 @@
 
 <main class="container">
     <div class="header-row">
-
-
         <DropdownTintedMedium
             options={criteria}
             bind:selected={selectedCriteria}
@@ -52,13 +50,10 @@
             icon="chevron-down"
             width="12rem"
         />
-
     </div>
 
-
     <Graph contributors={contributors} metric={$selectedCriteria} />
-    <ContributorCards users={contributors} />
-
+    <ContributorCards users={contributors} metric={$selectedCriteria} /> <!-- Add metric prop -->
 </main>
 
 <style>
