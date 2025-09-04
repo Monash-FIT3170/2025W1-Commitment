@@ -178,6 +178,7 @@
                 repository_information.repo,
                 source_type
             );
+
             const branches = await load_branches(
                 `${repository_information.owner}-${repository_information.repo}`
             );
@@ -193,6 +194,7 @@
                     repo_url_input
                 );
             }
+
             manifest.update_repository_timestamp(repo_url_input);
 
             await invoke("save_manifest", { manifest: $manifest });
@@ -280,7 +282,7 @@
     }
 
     .main {
-        height: calc(100vh - 4.1875rem);
+        height: calc(100vh);
         display: flex;
         justify-content: center;
         align-items: center;

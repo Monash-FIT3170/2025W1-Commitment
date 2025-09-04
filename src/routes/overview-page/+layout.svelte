@@ -17,8 +17,9 @@
 
     let { children } = $props();
 
-    let repo_url = $derived(page.state.repo_url);
-    let repo_path = $derived(page.state.repo_path);
+    const s = page.state as any;
+    let repo_url = $derived(s.repo_url);
+    let repo_path = $derived(s.repo_path);
 </script>
 
 <main class="page">

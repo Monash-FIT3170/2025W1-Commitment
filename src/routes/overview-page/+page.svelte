@@ -1,9 +1,11 @@
 <script lang="ts">
     import { info, warn } from "@tauri-apps/plugin-log";
+    import ContributorAnalysis from "$lib/components/overview-page/ContributorAnalysis.svelte";
     import { page } from "$app/state";
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import CommitGraph from "$lib/components/overview-page/CommitGraph.svelte";
     import Heading from "$lib/components/overview-page/Heading.svelte";
+    import Tab from "$lib/components/global/Tab.svelte";
     import UploadFileModal from "$lib/components/overview-page/UploadFileModal.svelte";
     import type { UploadedGradingFile } from "$lib/stores/gradingFile";
     import { read_headers, validate_headers } from "$lib/utils/csv";
@@ -14,21 +16,35 @@
     import type { Contributor } from "$lib/metrics";
     import { onMount } from "svelte";
 
-    let owner = $state(page.state.owner || "");
-    let repo = $state(page.state.repo || "");
-    let repo_type = $state(page.state.repo_type);
-    let branches = $state(page.state.branches || []);
-    let contributors = $state(page.state.contributors || []);
+    const s = page.state as any;
+    let owner = $state(s.owner || "");
+    let repo = $state(s.repo || "");
+    let repo_type = $state(s.repo_type);
+    let repo_path = $state(s.repo_path || "");
+    let branches = $state(s.branches || []);
+    let contributors = $state(s.contributors || []);
 
     let branch_selection = $state("");
     let start_date = $state("");
     let end_date = $state("");
 
-    let source_type = $state(page.state.source_type);
-    let repo_url = $state(page.state.repo_url || "");
+    let source_type = $state(s.source_type);
+    let repo_url = $state(s.repo_url || "");
     let email_mapping: Config | null = $derived(
         $manifest.repository.filter((r) => r.url === repo_url)[0].email_mapping
     );
+
+    let selected_view: string = $state("overview");
+
+    const tabs = [
+        { id: "overview", label: "Overview", icon: "chart-line" },
+        { id: "analysis", label: "Contribution Analysis", icon: "id" },
+    ];
+
+    function select_view(id: string) {
+        selected_view = id;
+        console.log(selected_view);
+    }
 
     onMount(async () => {
         if (email_mapping) {
@@ -140,7 +156,7 @@
         if ((!branches || branches.length === 0) && repo) {
             // Fetch branches for the repository
             (async () => {
-                branches = await load_branches(repo);
+                branches = await load_branches(owner, repo);
             })();
         }
     });
@@ -158,16 +174,33 @@
         bind:contributors
     />
 
-    {#key contributors}
-        <CommitGraph
-            {contributors}
-            {branches}
-            selected_branch={branch_selection}
-            {start_date}
-            {end_date}
-        />
-    {/key}
+    <div class="page-select-btns">
+        <!-- for each tab -->
+        {#each tabs as tab}
+            <Tab
+                label={tab.label}
+                icon={tab.icon}
+                selected={selected_view === tab.id}
+                width="100%"
+                onclick={() => select_view(tab.id)}
+            />
+        {/each}
+    </div>
 
+    <!-- commit graph -->
+    {#if selected_view === "overview"}
+        {#key contributors}
+            <CommitGraph
+                {contributors}
+                {branches}
+                selected_branch={branch_selection}
+                {start_date}
+                {end_date}
+            />
+        {/key}
+    {:else if selected_view === "analysis"}
+        <ContributorAnalysis {contributors} {repo_path} {email_mapping} />
+    {/if}
     <div class="bottom-container">
         <ButtonPrimaryMedium
             icon="table-import"
@@ -198,5 +231,22 @@
         padding-top: 2rem;
         padding-bottom: 6rem;
         gap: 1rem;
+    }
+
+    .page-select-btns {
+        display: grid;
+        grid-template-columns: 20rem 20rem;
+        column-gap: 1rem;
+        padding-top: 2rem;
+        z-index: 1;
+        padding: 0rem 4rem;
+    }
+
+    @media (max-width: 75rem) {
+        .page-select-btns {
+            grid-template-columns: 16rem 16rem;
+            padding-top: 0rem;
+            padding-bottom: 1rem;
+        }
     }
 </style>

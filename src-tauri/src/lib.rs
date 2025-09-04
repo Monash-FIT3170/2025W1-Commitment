@@ -3,6 +3,7 @@ mod config;
 mod contributor;
 mod manifest;
 mod repositories;
+mod summary;
 mod url_verifier;
 
 // use tauri_plugin_fs;
@@ -33,7 +34,11 @@ pub fn run() {
             repositories::is_repo_cloned,
             url_verifier::verify_and_extract_source_info,
             manifest::read_manifest,
-            manifest::save_manifest
+            manifest::save_manifest,
+            summary::get_ai_summary,
+            summary::get_ai_summary_with_config,
+            summary::gemini_key_validation,
+            summary::check_key_set
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

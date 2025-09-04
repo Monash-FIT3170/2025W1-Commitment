@@ -19,6 +19,7 @@ pub struct Contributor {
     // pub changes: u64,
     pub bitmap_hash: String,
     pub bitmap: String, // tmp until using actual bitmap type
+    pub ai_summary: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -44,6 +45,7 @@ pub async fn group_contributors_by_config(
             let mut contacts = Vec::new();
             let mut bitmap_hash = String::new();
             let mut bitmap = String::new();
+            let ai_summary = String::new();
 
             if let Value::Array(email_list) = emails_value {
                 for email_val in email_list {
@@ -80,6 +82,7 @@ pub async fn group_contributors_by_config(
                     deletions,
                     bitmap_hash,
                     bitmap,
+                    ai_summary,
                 });
             }
         }
@@ -235,6 +238,7 @@ pub async fn get_contributor_info(
                 deletions: 0,
                 bitmap_hash: gravatar_login.clone(), // tmp use to store gravatar login
                 bitmap: gravatar_url.clone(),        // tmp use to store gravatar url
+                ai_summary: String::from(""),
             });
 
         // Add email to contacts if not already present
@@ -254,6 +258,7 @@ pub async fn get_contributor_info(
                         deletions: entry.deletions,
                         bitmap_hash: entry.bitmap_hash.clone(),
                         bitmap: entry.bitmap.clone(),
+                        ai_summary: String::from(""),
                     };
                 }
             }

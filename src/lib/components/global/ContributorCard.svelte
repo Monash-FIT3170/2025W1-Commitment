@@ -42,8 +42,7 @@ This is a contributor card component that displays a user's profile information.
         background: var(--Fill-Tint-00, rgba(31, 31, 31, 0.9));
         border-radius: 0.5rem;
         padding: 1.5rem;
-        min-width: 20rem;
-        max-width: 24rem;
+        width: 23rem;
         box-shadow: 0 0.125rem 9.5rem rgba(0, 0, 0, 0.08);
         gap: 1rem;
     }

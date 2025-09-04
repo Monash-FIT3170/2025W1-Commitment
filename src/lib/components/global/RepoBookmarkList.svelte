@@ -34,14 +34,14 @@
         padding-left: 1.5rem;
         padding-right: 1.5rem;
         margin: 0px;
-        /* width: 693px; */
         display: grid;
         grid-template-columns: 32.5rem;
         grid-template-rows: repeat(5);
         row-gap: 1rem;
+        padding-bottom: 2rem;
 
         /* let the list overflow and can be scrolll */
-        max-height: 10.875rem; /* adjust height to fit your layout */
+        max-height: 10.875rem;
         overflow-y: auto; /* enables vertical scrolling */
         overflow-x: hidden;
         scroll-padding-bottom: 10.875rem;
@@ -66,7 +66,7 @@
     }
 
     .repo-list-btn {
-        height: 22px;
+        height: 1.375rem;
         width: inherit;
         background-color: transparent; /*#181818; */
         border: none;
