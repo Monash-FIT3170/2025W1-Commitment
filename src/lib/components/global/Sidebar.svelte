@@ -6,6 +6,10 @@
     import { onMount } from "svelte";
     import { invoke } from "@tauri-apps/api/core";
     import ButtonPrimaryMedium from "./ButtonPrimaryMedium.svelte";
+    import { get_repo_info, get_source_type } from "$lib/github_url_verifier";
+    import { set_repo_url } from "$lib/stores/repo";
+    import { load_branches, load_commit_data } from "$lib/metrics";
+    import { goto } from "$app/navigation";
 
     interface RepoBookmark {
         repo_name: string;
@@ -51,6 +55,64 @@
             api_error = true;
         }
         return is_valid_key;
+    }
+
+    async function bookmark_open(repo_url_input: string) {
+
+        let source_type = get_source_type(repo_url_input);
+
+        try {
+            const repository_information = get_repo_info(repo_url_input);
+
+            // Update the repo store with the new URL
+            set_repo_url(repo_url_input);
+
+            // Call loadBranches and loadCommitData and wait for both to complete
+            const contributors = await load_commit_data(
+                repository_information.source,
+                repository_information.owner,
+                repository_information.repo,
+                source_type
+            );
+
+            const branches = await load_branches(
+                `${repository_information.owner}-${repository_information.repo}`
+            );
+
+            // Check if the repository exists in the manifest
+            const repo_exists = $manifest["repository"].some(
+                (item) => item.url === repo_url_input
+            );
+
+            if (!repo_exists) {
+                manifest.create_repository(
+                    repository_information,
+                    repo_url_input
+                );
+            }
+
+            manifest.update_repository_timestamp(repo_url_input);
+
+            await invoke("save_manifest", { manifest: $manifest });
+
+            // Navigate to the overview page
+            goto(`/overview-page`, {
+                state: {
+                    repo_path: `${repository_information.owner}-${repository_information.repo}`,
+                    repo_url: repo_url_input,
+                    owner: repository_information.owner,
+                    repo: repository_information.repo,
+                    repo_type: source_type,
+                    selected_branch: "",
+                    branches: branches,
+                    contributors: contributors,
+                    source_type: repository_information.source_type,
+                },
+            });
+        } catch (error: any) {
+            const error_message = error.message || "Verification failed.";
+            console.error("Verification failed:", error);
+        }
     }
 </script>
 
@@ -98,7 +160,7 @@
 
         {#each bookmarked_repos as repo (repo.repo_name)}
             {#if repo.repo_bookmarked}
-                <button class="bookmark-item" type="button">
+                <button class="bookmark-item" type="button" onclick={() => {bookmark_open(repo.repo_url)}}>
                     <h6 class="heading-2 repo-name label-secondary">
                         {repo.repo_name}
                     </h6>
