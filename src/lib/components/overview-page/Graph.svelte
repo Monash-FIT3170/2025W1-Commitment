@@ -29,7 +29,7 @@
         metric: string;
     } = $props();
 
-    let chart_container: HTMLElement;
+    let chart_container = $state<HTMLElement>();
     let chart: echarts.ECharts;
     let filtered_people: UserDisplayData[] = $state([]);
     let x_min: number = $state(0);
@@ -217,7 +217,8 @@
             set_chart_options();
         }
     });
-    function handleResize() {
+
+    function handle_resize() {
         if (chart) {
             chart.resize();
             update_graphics();

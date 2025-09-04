@@ -34,6 +34,9 @@
         $manifest.repository.filter((r) => r.url === repo_url)[0].email_mapping
     );
 
+    let criteria = ["total commits", "lines of code", "lines/commit"];
+    let selected_criteria = $state(criteria[0]);
+
     let selected_view: string = $state("overview");
 
     const tabs = [
@@ -156,7 +159,7 @@
         if ((!branches || branches.length === 0) && repo) {
             // Fetch branches for the repository
             (async () => {
-                branches = await load_branches(owner, repo);
+                branches = await load_branches();
             })();
         }
     });
@@ -196,10 +199,17 @@
                 selected_branch={branch_selection}
                 {start_date}
                 {end_date}
+                {criteria}
+                bind:selected_criteria
             />
         {/key}
     {:else if selected_view === "analysis"}
-        <ContributorAnalysis {contributors} {repo_path} {email_mapping} />
+        <ContributorAnalysis
+            {contributors}
+            {repo_path}
+            {email_mapping}
+            {selected_criteria}
+        />
     {/if}
     <div class="bottom-container">
         <ButtonPrimaryMedium

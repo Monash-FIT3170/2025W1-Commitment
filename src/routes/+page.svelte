@@ -183,17 +183,19 @@
                 `${source_type}-${repository_information.owner}-${repository_information.repo}`
             );
 
-            const url_trimmed = repository_information.source + "/" + repository_information.owner + "/" + repository_information.repo;
+            const url_trimmed =
+                repository_information.source +
+                "/" +
+                repository_information.owner +
+                "/" +
+                repository_information.repo;
             // Check if the repository exists in the manifest
             const repo_exists = $manifest["repository"].some(
                 (item) => item.url === url_trimmed
             );
 
             if (!repo_exists) {
-                manifest.create_repository(
-                    repository_information,
-                    url_trimmed
-                );
+                manifest.create_repository(repository_information, url_trimmed);
             }
 
             manifest.update_repository_timestamp(repo_url_input);
@@ -203,7 +205,7 @@
             // Navigate to the overview page
             goto(`/overview-page`, {
                 state: {
-                    repo_path: `${repository_information.owner}-${repository_information.repo}`,
+                    repo_path: `${repository_information.source_type}-${repository_information.owner}-${repository_information.repo}`,
                     repo_url: repo_url_input,
                     owner: repository_information.owner,
                     repo: repository_information.repo,

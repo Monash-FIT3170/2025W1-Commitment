@@ -34,10 +34,10 @@ pub async fn get_working_directory() -> String {
 }
 
 async fn get_manifest_path() -> PathBuf {
-    let mut path = data_dir().unwrap_or_else(|| PathBuf::from("."));  // Fallback to current dir if data_dir fails
+    let mut path = data_dir().unwrap_or_else(|| PathBuf::from(".")); // Fallback to current dir if data_dir fails
     path.push("gitgauge");
     path.push("manifest.json");
-    log::info!("Manifest path: {:?}", path);
+    log::info!("Manifest path: {path:?}");
     path
 }
 

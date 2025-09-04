@@ -17,11 +17,16 @@
         contributors,
         repo_path,
         email_mapping,
-    }: { contributors: Contributor[]; repo_path: string; email_mapping?: any } =
-        $props();
+        selected_criteria,
+    }: {
+        contributors: Contributor[];
+        repo_path: string;
+        email_mapping?: any;
+        selected_criteria: string;
+    } = $props();
 
     let commit_mean = get_average_commits(contributors);
-    let sd = get_sd(contributors);
+    let sd = get_sd(contributors, selected_criteria);
     let loading = $state(false);
     let total_summaries = $state(0);
     let generated_summaries = $state(0);
@@ -62,7 +67,7 @@
         }
 
         const working_dir = await invoke<string>("get_working_directory");
-        const full_repo_path = `${working_dir}/${repo_path}`;
+        const full_repo_path = `${working_dir}/repositories/${repo_path}`;
         if (repo_path) {
             try {
                 if (email_mapping) {

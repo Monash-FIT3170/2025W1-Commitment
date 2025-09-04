@@ -1,33 +1,9 @@
 <script lang="ts">
     import Graph from "$lib/components/overview-page/Graph.svelte";
     import ContributorCards from "$lib/components/overview-page/ContributorCards.svelte";
-    import { info } from "@tauri-apps/plugin-log";
-    import { page } from "$app/stores"; // Import the $page store
-    import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte"
-    import { create_dropdown_selection } from "$lib/stores/dropdown";
+    import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
     import ButtonTintedMedium from "../global/ButtonTintedMedium.svelte";
-    import { writable } from "svelte/store";
     import type { Contributor } from "$lib/metrics";
-
-    // Initialize from $page.state
-    // let contributors: Contributor[] = $state(($page.state as any).commitData || []);
-    // let branches: string[] = $state(($page.state as any).branches || []);
-    // let selected_branch = $state("all");
-    // if (branches.length > 0 && !branches.includes(selected_branch)) {
-    //     selected_branch = "all";
-    // }
-
-    let criteria: string[] = ["commits", "commit_size", "absolute_diff"];
-    let selectedCriteria = $state(writable(criteria[0]));
-
-    let sidebar_open = $state(false);
-    let bookmarked_repo: { repo_name: string; repo_url: string }[] = [];
-
-    function toggleSidebar() {
-        sidebar_open = !sidebar_open;
-    }
-
-    
 
     let {
         contributors,
@@ -35,16 +11,17 @@
         selected_branch,
         start_date,
         end_date,
+        criteria,
+        selected_criteria = $bindable(),
     }: {
         contributors: Contributor[];
         branches: String[];
         selected_branch?: string;
         start_date?: string;
         end_date?: string;
+        criteria: string[];
+        selected_criteria: string;
     } = $props();
-
-    let criteria = ["total commits", "lines of code", "lines/commit"];
-    let selected_criteria = criteria[0];
 
     let sidebar_open = $state(false);
     let bookmarked_repo: { repo_name: string; repo_url: string }[] = [];
@@ -58,7 +35,7 @@
     <div class="header-row">
         <DropdownTintedMedium
             options={criteria}
-            bind:selected={selectedCriteria}
+            bind:selected={selected_criteria}
             disabled={false}
         />
 
@@ -70,13 +47,19 @@
             width="12rem"
         />
     </div>
-    <Graph {contributors} {selected_branch} {start_date} {end_date} metric={$selectedCriteria}/>
+    <Graph
+        {contributors}
+        {selected_branch}
+        {start_date}
+        {end_date}
+        metric={selected_criteria}
+    />
     <ContributorCards
         users={contributors}
         selected_branch={selected_branch ?? ""}
         start_date={start_date ?? ""}
         end_date={end_date ?? ""}
-        metric={$selectedCriteria}
+        metric={selected_criteria}
     />
 </main>
 
