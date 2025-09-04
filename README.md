@@ -10,22 +10,28 @@ Check out our official releases on the releases tab of GitHub!
 
 ## Developer Setup
 
-### Prerequisits
+### Prerequisites
 
 - Git
 - Rust v1.84.0
 - Tauri v2.4.0 ([Tauri prereqs](https://v2.tauri.app/start/prerequisites/))
+- Node.js v20+
+- Preferably use `pnpm` instead of `npm` for install speed and consistency
 
-To set up your device for developing gitgauge you will need clone the repo to your device
-and change into the newly created directory.
+To set up your device for developing GitGauge:
 
 ```sh
 git clone https://github.com/Monash-FIT3170/2025W1-Commitment.git gitgauge
 cd gitgauge
 ```
 
-Then you can run the `git-hooks.sh` shell script on macOS and Linux or the
-`git-hooks.ps1` PowerShell script on Windows to set up the Git Hooks.
+Install dependencies:
+
+```sh
+npm i
+```
+
+Then set up Git hooks:
 
 macOS and Linux:
 
@@ -33,28 +39,63 @@ macOS and Linux:
 sh git-hooks.sh
 ```
 
-Windows PowerShell
+Windows PowerShell:
 
 ```ps
 .\git-hooks.ps1
 ```
 
-> Note: The PowerShell script may need to run in an Admin shell or with elevated
-> privileges.
+> Note: The PowerShell script may require an Admin shell.
 
-Once you have done that you can set up and run the project up by changing to the repo
-directory and running the following commands.
+To run the app:
 
 ```sh
+npm run tauri dev
+```
+
+---
+
+## Debugging & Clean Reinstall
+
+If you're running into persistent bugs, corrupted builds, or broken state, try a clean reinstall.
+
+### Symptoms this fixes
+
+- Vite hangs or never finishes compiling
+- Plugin errors, missing module warnings
+- App doesn't load or WebView is blank
+- `npm run tauri dev` just exits or does nothing
+
+### Full clean reinstall steps
+
+```sh
+rm -rf node_modules .gitgauge .svelte-kit src-tauri/target
 npm i
 npm run tauri dev
 ```
 
+This removes:
+
+- Node packages
+- GitGauge cache
+- SvelteKit builds
+- Rust/Tauri target cache
+
+Then reinstalls everything from scratch.
+
+If this doesn’t work, check:
+
+- You’re using Node v20+: `node -v`
+- You have Rust installed correctly: `rustup show`
+- You have Tauri CLI installed: `cargo tauri --version`
+
+---
+
 ## Contributing and Licensing
 
-Make sure to read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how you can
-contribute to the project. This project is licensed under GPLv3 with a copy of the
-license located in the root of the project called [LICENSE](./LICENSE).
+Make sure to read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how you can contribute to the project. This project is licensed under GPLv3 with a copy of the license located in the root of the project called [LICENSE](./LICENSE).
+
+---
 
 ## Team Information
 
@@ -73,7 +114,7 @@ license located in the root of the project called [LICENSE](./LICENSE).
 | Prisha Verma           | pver0009@student.monash.edu | RTE              |
 | Mai Thao Hoang         | mhoa0013@student.monash.edu | RTE              |
 
-## Contributors
+---
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
