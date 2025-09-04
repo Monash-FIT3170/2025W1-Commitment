@@ -18,11 +18,43 @@
 
 This app is designed for educational settings where group Git projects are assessed, and where traditional peer review or manual weighting is too slow or inconsistent.
 
----
 
 ## Releases
 
 Check out our official releases on the releases tab of GitHub!
+
+## Project Structure
+
+
+```
+gitgauge/
+├── .gitgauge/                     # App cache directory (safe to delete)
+├── .githooks/                     #
+├── .svelte-kit/                   # SvelteKit build cache
+├── node_modules/                  # Node dependencies
+├── src/
+│   ├── lib/                       # Shared libraries and app logic
+│   │   ├── components/            # Reusable Svelte components
+│   │   │   ├── global/            # Global UI components
+│   │   │   └── overview-page/     # Components specific to overview UI
+│   │   ├── stores/                # Svelte stores for reactive state
+│   │   └── utils/                 # Utility scripts and logic
+│   ├── routes/                    # Page routes (SvelteKit routing)
+│   │   ├── overview-page/         # Route for contributor overview screen
+│   │   │   ├── +layout.svelte
+│   │   │   └── +page.svelte
+│   │   ├── +layout.ts             # App-wide layout script
+│   │   └── +page.svelte           # Default home screen
+│   ├── app.html                   #
+│   └── ...
+├── src-tauri/                     # Tauri Rust backend
+│   ├── src/
+│   │   ├── lib.rs                 # 
+│   │   └── main.rs                # Rust entry point (backend commands)
+│   └── ...                        
+├── package.json                   # App dependencies and scripts
+└── README.md                      # Project setup and handover docs
+```
 
 ## Developer Setup
 
@@ -32,7 +64,7 @@ Check out our official releases on the releases tab of GitHub!
 - Rust v1.84.0
 - Tauri v2.4.0 ([Tauri prereqs](https://v2.tauri.app/start/prerequisites/))
 - Node.js v20+
-- Preferably use `pnpm` instead of `npm` for install speed and consistency
+- Use `npm` for install speed and consistency
 
 To set up your device for developing GitGauge:
 
@@ -69,7 +101,6 @@ To run the app:
 npm run tauri dev
 ```
 
----
 
 ### Debugging & Clean Reinstall
 
@@ -105,7 +136,6 @@ If this doesn’t work, check:
 - You have Rust installed correctly: `rustup show`
 - You have Tauri CLI installed: `cargo tauri --version`
 
----
 
 ## Contributing and Licensing
 
@@ -119,7 +149,8 @@ It includes:
 Following these guidelines keeps the codebase consistent and easy to maintain.
 
 This project is licensed under **GPLv3**, with the license located at the root of the repo: [LICENSE](./LICENSE).
----
+
+
 
 ## Team Information
 
@@ -143,6 +174,9 @@ This project is licensed under **GPLv3**, with the license located at the root o
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
+
+## Contributors
+
 <table>
   <tbody>
     <tr>
