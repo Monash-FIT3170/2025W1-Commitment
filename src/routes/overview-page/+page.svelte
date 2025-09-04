@@ -15,18 +15,19 @@
     import type { Contributor } from "$lib/metrics";
     import { onMount } from "svelte";
 
-    let owner = $state(page.state.owner || "");
-    let repo = $state(page.state.repo || "");
-    let repo_type = $state(page.state.repo_type);
-    let branches = $state(page.state.branches || []);
-    let contributors = $state(page.state.contributors || []);
+    const s = page.state as any;
+    let owner = $state(s.owner || "");
+    let repo = $state(s.repo || "");
+    let repo_type = $state(s.repo_type);
+    let branches = $state(s.branches || []);
+    let contributors = $state(s.contributors || []);
 
     let branch_selection = $state("");
     let start_date = $state("");
     let end_date = $state("");
 
-    let source_type = $state(page.state.source_type);
-    let repo_url = $state(page.state.repo_url || "");
+    let source_type = $state(s.source_type);
+    let repo_url = $state(s.repo_url || "");
     let email_mapping: Config | null = $derived(
         $manifest.repository.filter((r) => r.url === repo_url)[0].email_mapping
     );
@@ -171,19 +172,17 @@
         bind:contributors
     />
 
-    {#key contributors}
-        <CommitGraph
-            {contributors}
-            {branches}
-            selected_branch={branch_selection}
-            {start_date}
-            {end_date}
-        />
-    {/key}
-
     <!-- commit graph -->
     {#if selected_view === "overview"}
-        <CommitGraph {contributors} {branches} />
+        {#key contributors}
+            <CommitGraph
+                {contributors}
+                {branches}
+                selected_branch={branch_selection}
+                {start_date}
+                {end_date}
+            />
+        {/key}
     {:else if selected_view === "analysis"}
         <ContributorAnalysis {contributors} />
     {/if}
@@ -209,19 +208,13 @@
 </div>
 
 <style>
-    .page-select-btns {
-        display: grid;
-        grid-template-columns: 20rem 20rem;
-        column-gap: 1rem;
+    .bottom-container {
+        flex-direction: row;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         padding-top: 2rem;
-        z-index: 1;
-        padding: 0rem 4rem;
-    }
-
-    @media (max-width: 75rem) {
-        .page-select-btns {
-            grid-template-columns: 16rem 16rem;
-            padding-top: 4rem;
-        }
+        padding-bottom: 6rem;
+        gap: 1rem;
     }
 </style>

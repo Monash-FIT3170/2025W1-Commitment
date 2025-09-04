@@ -10,7 +10,6 @@
 
     import { page } from "$app/state";
     import Banner from "$lib/components/overview-page/Banner.svelte";
-    import ButtonFooter from "$lib/components/overview-page/ButtonFooter.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
 
     let profile_image_url = "/mock_profile_img.png";
@@ -18,20 +17,16 @@
 
     let { children } = $props();
 
-    let repo_url = $derived(page.state.repo_url);
-    let repo_path = $derived(page.state.repo_path);
+    const s = page.state as any;
+    let repo_url = $derived(s.repo_url);
+    let repo_path = $derived(s.repo_path);
 </script>
 
 <main class="page">
     <header class="header">
         <Banner {repo_url} {repo_path} {username} {profile_image_url} />
     </header>
-    <div class="content">
-        {@render children()}
-    </div>
-    <footer class="footer">
-        <ButtonFooter />
-    </footer>
+    {@render children()}
 </main>
 <Sidebar />
 
@@ -44,15 +39,5 @@
         height: 1.375rem;
         display: flex;
         justify-content: space-between;
-    }
-    
-    .footer {
-        /* position: fixed; */
-        bottom: 0;
-        width: 100%;
-    }
-
-    .content {
-        min-height: 100vh;
     }
 </style>
