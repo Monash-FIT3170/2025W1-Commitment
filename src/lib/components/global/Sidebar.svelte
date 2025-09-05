@@ -58,7 +58,6 @@
     }
 
     async function bookmark_open(repo_url_input: string) {
-
         let source_type = get_source_type(repo_url_input);
 
         try {
@@ -78,9 +77,9 @@
             const branches = await load_branches(
                 `${source_type}-${repository_information.owner}-${repository_information.repo}`
             );
-            
+
             // Navigate to the overview page
-            await goto('/')
+            await goto("/");
             await goto(`/overview-page`, {
                 replaceState: true,
                 state: {
@@ -146,7 +145,13 @@
 
         {#each bookmarked_repos as repo (repo.repo_name)}
             {#if repo.repo_bookmarked}
-                <button class="bookmark-item" type="button" onclick={() => {bookmark_open(repo.repo_url)}}>
+                <button
+                    class="bookmark-item"
+                    type="button"
+                    onclick={() => {
+                        bookmark_open(repo.repo_url);
+                    }}
+                >
                     <h6 class="heading-2 repo-name label-secondary">
                         {repo.repo_name}
                     </h6>

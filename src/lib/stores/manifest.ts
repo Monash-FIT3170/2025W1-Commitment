@@ -1,3 +1,4 @@
+import { invoke } from "@tauri-apps/api/core";
 import { writable, get } from "svelte/store";
 
 export interface Config {
@@ -54,10 +55,14 @@ function create_manifest_store() {
         /** Add or update a repo by name (merges fields). */
         upsert(repo: RepoSchema) {
             update((m) => {
-                const idx = m.repository.findIndex((r) => r.name === repo.name);
+                const idx = m.repository.findIndex(
+                    (r: any) => r.name === repo.name
+                );
+
                 if (idx === -1) {
                     return { repository: [...m.repository, repo] };
                 }
+
                 const next = m.repository.slice();
                 next[idx] = { ...next[idx], ...repo };
                 return { repository: next };
@@ -124,18 +129,16 @@ function create_manifest_store() {
         },
 
         /** Create a new repository inside of the manifest file */
-        create_repository(
+        async create_repository(
             backendResult: BackendVerificationResult,
             repo_url: string
         ) {
+            const working_dir = await invoke<string>("get_working_directory");
+
             const new_repo: RepoSchema = {
                 name: backendResult.repo,
                 url: repo_url,
-                path:
-                    "../.gitguage/repositories/" +
-                    repo_url.split("/")[3] +
-                    "-" +
-                    repo_url.split("/")[4],
+                path: `${working_dir}/gitguage/repositories/${repo_url.split("/")[3]}-${repo_url.split("/")[4]}`,
                 bookmarked: false,
                 cloned: true,
                 email_mapping: null,

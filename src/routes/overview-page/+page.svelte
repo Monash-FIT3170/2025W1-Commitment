@@ -31,8 +31,13 @@
     let source_type = $state(s.source_type);
     let repo_url = $state(s.repo_url || "");
     let email_mapping: Config | null = $derived(
-        $manifest.repository.filter((r) => r.url === repo_url)[0].email_mapping
+        $manifest.repository.filter((r) => r.url === repo_url)[0]
+            ?.email_mapping || null
     );
+
+    //let criteria = ["total commits", "lines of code", "lines/commit"];
+    let criteria: string[] = ["commits", "commit_size", "absolute_diff"];
+    let selected_criteria = $state(criteria[0]);
 
     let selected_view: string = $state("overview");
 
@@ -156,7 +161,7 @@
         if ((!branches || branches.length === 0) && repo) {
             // Fetch branches for the repository
             (async () => {
-                branches = await load_branches(owner, repo);
+                branches = await load_branches(repo_path);
             })();
         }
     });
@@ -196,11 +201,19 @@
                 selected_branch={branch_selection}
                 {start_date}
                 {end_date}
+                {criteria}
+                bind:selected_criteria
             />
         {/key}
     {:else if selected_view === "analysis"}
-        <ContributorAnalysis {contributors} {repo_path} {email_mapping} />
+        <ContributorAnalysis
+            {contributors}
+            {repo_path}
+            {email_mapping}
+            {selected_criteria}
+        />
     {/if}
+
     <div class="bottom-container">
         <ButtonPrimaryMedium
             icon="table-import"

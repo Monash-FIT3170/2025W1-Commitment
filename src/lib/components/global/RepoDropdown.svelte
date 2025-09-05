@@ -1,7 +1,6 @@
 <script lang="ts">
     import Icon from "@iconify/svelte";
-    import { repo_options } from "../../stores/repo";
-    import type { RepoOption } from "../../stores/repo";
+    import type { RepoOption } from "$lib/stores/repo";
 
     let { selected = $bindable<RepoOption>(), action = () => {} } = $props();
 </script>

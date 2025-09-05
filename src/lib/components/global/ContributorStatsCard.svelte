@@ -1,5 +1,5 @@
 <script lang="ts">
-    import ContributorCard from "../global/ContributorCard.svelte";
+    import ContributorCard from "$lib/components/global/ContributorCard.svelte";
 
     let {
         username,
