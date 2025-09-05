@@ -1,6 +1,6 @@
 {
   "name": "gitgauge",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "pretty gui for git contribution stats",
   "type": "module",
   "scripts": {
