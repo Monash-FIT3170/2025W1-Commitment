@@ -54,6 +54,7 @@
         {end_date}
         metric={selected_criteria}
     />
+
     <ContributorCards
         users={contributors}
         selected_branch={selected_branch ?? ""}

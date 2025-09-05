@@ -213,6 +213,7 @@
             {selected_criteria}
         />
     {/if}
+
     <div class="bottom-container">
         <ButtonPrimaryMedium
             icon="table-import"

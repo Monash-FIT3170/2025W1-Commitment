@@ -31,6 +31,7 @@ export async function load_branches(repo: string): Promise<string[]> {
     const working_dir = await invoke<string>("get_working_directory");
     const repo_path = `${working_dir}/repositories/${repo}`;
     console.log("PATH", repo_path);
+
     try {
         const real_branches = await invoke<string[]>("get_branch_names", {
             path: repo_path,

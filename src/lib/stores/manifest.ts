@@ -58,9 +58,11 @@ function create_manifest_store() {
                 const idx = m.repository.findIndex(
                     (r: any) => r.name === repo.name
                 );
+
                 if (idx === -1) {
                     return { repository: [...m.repository, repo] };
                 }
+
                 const next = m.repository.slice();
                 next[idx] = { ...next[idx], ...repo };
                 return { repository: next };

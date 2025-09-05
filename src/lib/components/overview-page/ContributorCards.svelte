@@ -103,7 +103,6 @@
 
     function get_display_name(user: Contributor): string {
         let name = "";
-
         if (user.username && user.username.trim() !== "") {
             name = user.username;
         } else if (
@@ -118,7 +117,6 @@
         } else if (Array.isArray(user.contacts) && user.contacts.length > 0) {
             name = user.contacts[0];
         }
-
         // Extract username from GitHub noreply email if present
         const githubNoreplyMatch = name.match(
             /^\d+\+([a-zA-Z0-9-]+)@users\.noreply\.github\.com$/
