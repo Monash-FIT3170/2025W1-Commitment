@@ -12,17 +12,20 @@
     import { listen } from "@tauri-apps/api/event";
     import ProgressBar from "$lib/components/global/ProgressBar.svelte";
     import { SvelteMap } from "svelte/reactivity";
+    import { get_source_type } from "$lib/github_url_verifier";
 
     let {
         contributors,
         repo_path,
         email_mapping,
         selected_criteria,
+        source_type,
     }: {
         contributors: Contributor[];
         repo_path: string;
         email_mapping?: any;
         selected_criteria: string;
+        source_type: number;
     } = $props();
 
     let commit_mean = get_average_commits(contributors);
@@ -66,8 +69,9 @@
             return;
         }
 
-        const working_dir = await invoke<string>("get_working_directory");
-        const full_repo_path = `${working_dir}/repositories/${repo_path}`;
+        const working_dir = await invoke("get_working_directory");
+        const full_repo_path = `${working_dir}/repositories/${source_type}-${repo_path}`;
+
         if (repo_path) {
             try {
                 if (email_mapping) {

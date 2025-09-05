@@ -210,6 +210,7 @@
             {contributors}
             {repo_path}
             {email_mapping}
+            {source_type}
             {selected_criteria}
         />
     {/if}
