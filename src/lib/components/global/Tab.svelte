@@ -8,15 +8,17 @@
         width = "auto",
         icon_first = true,
         selected = false,
+        onclick = null,
     } = $props();
 </script>
 
 <button
-    class="bottom-border-btn"
+    class="tab"
     class:active-style={selected}
     {disabled}
+    {onclick}
     style="
-		width: {width};
+        width: {width};
 		border-bottom: {selected
         ? '2px solid var(--label-primary)'
         : '1px solid var(--label-secondary)'};
@@ -53,7 +55,7 @@
 </button>
 
 <style>
-    .bottom-border-btn {
+    .tab {
         all: unset;
         display: inline-flex;
         align-items: center;
@@ -71,12 +73,11 @@
         text-align: left;
     }
 
-    .bottom-border-btn.active-style {
+    .tab.active-style {
         font-weight: 500;
     }
 
-    .bottom-border-btn:disabled {
+    .tab:disabled {
         cursor: not-allowed;
     }
 </style>
-

@@ -1,10 +1,17 @@
-<script>
+<script lang="ts">
     import Icon from "@iconify/svelte";
 
-    let { icon = null, label, disabled = false } = $props();
+    type $Props = {
+        icon?: string | null;
+        label: string;
+        disabled?: boolean;
+        onclick?: (event: MouseEvent) => void;
+    };
+
+    let { icon = null, label, disabled = false, onclick }: $Props = $props();
 </script>
 
-<button class="medium" {disabled}>
+<button class="medium" {disabled} {onclick}>
     {#if icon}
         <Icon
             icon={`tabler:${icon}`}

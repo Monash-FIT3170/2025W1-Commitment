@@ -7,10 +7,11 @@
         disabled = false,
         width = "100%",
         icon_first = true,
+        onclick = undefined,
     } = $props();
 </script>
 
-<button class="medium" {disabled} style="width: {width}">
+<button class="medium" {disabled} style="width: {width}" {onclick}>
     {#if icon_first}
         {#if icon}
             <Icon

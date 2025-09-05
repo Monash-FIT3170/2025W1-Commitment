@@ -1,21 +1,8 @@
 <script lang="ts">
     import Icon from "@iconify/svelte";
-    import { repo_options } from "../../stores/repo";
-    import type { RepoOption } from "../../stores/repo";
+    import type { RepoOption } from "$lib/stores/repo";
 
     let { selected = $bindable<RepoOption>(), action = () => {} } = $props();
-
-    let dropdown_open = $state(false);
-
-    function toggle_dropdown() {
-        dropdown_open = !dropdown_open;
-    }
-
-    function select_option(option: RepoOption) {
-        selected = option;
-        dropdown_open = false;
-        action(option);
-    }
 </script>
 
 <!--
@@ -46,11 +33,7 @@ This is a dropdown component that allows users to select a repository type.
 {/snippet}
 
 <div class="dropdown">
-    <button
-        type="button"
-        class={`dropdown-btn ${dropdown_open ? "show" : "hide"}`}
-        onclick={toggle_dropdown}
-    >
+    <button type="button" class={`dropdown-btn hide"}`}>
         {#if selected}
             <div class="dropdown-option">
                 {@render DropdownItem(selected)}
@@ -59,25 +42,7 @@ This is a dropdown component that allows users to select a repository type.
             <!-- This case should not happen with a default selected value -->
             <h6 class="display-body">Select an option</h6>
         {/if}
-        <Icon
-            icon={`tabler:chevron-down`}
-            class="icon-medium"
-            style="color: white"
-        />
     </button>
-
-    {#if dropdown_open}
-        <div class="dropdown-content">
-            {#each repo_options as option}
-                <button
-                    class="dropdown-option"
-                    onclick={() => select_option(option)}
-                >
-                    {@render DropdownItem(option)}
-                </button>
-            {/each}
-        </div>
-    {/if}
 </div>
 
 <style>
@@ -94,7 +59,6 @@ This is a dropdown component that allows users to select a repository type.
         padding: 0.625rem 0.75rem 0.5rem 0rem;
         background: var(--tint-00);
         border: none;
-        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -146,7 +110,6 @@ This is a dropdown component that allows users to select a repository type.
         padding: 0.625rem 0.75rem 0.625rem 1rem;
         background: none;
         border: none;
-        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: start;
@@ -157,4 +120,3 @@ This is a dropdown component that allows users to select a repository type.
         margin-left: 0.5rem;
     }
 </style>
-

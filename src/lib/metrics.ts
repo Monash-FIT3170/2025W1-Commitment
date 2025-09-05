@@ -1,51 +1,115 @@
 import { invoke } from "@tauri-apps/api/core";
 import { info } from "@tauri-apps/plugin-log";
+import { show_token_modal } from "./stores/auth";
 
-export type Contacts = Readonly<String | String[]>;
+export type Contacts =
+    | string
+    | string[]
+    | { Email: string }
+    | { [key: string]: string };
 
 export type Contributor = Readonly<{
-    username: String,
-    contacts: Contacts,
-    total_commits: number,
-    additions: number,
-    deletions: number,
-    bitmap_hash: String,  // tmp use to store gravatar login
-    bitmap: String,       // tmp use to store gravatar url
+    username: string;
+    contacts: Contacts;
+    total_commits: number;
+    additions: number;
+    deletions: number;
+    bitmap_hash: string; // tmp use to store gravatar login
+    bitmap: string; // tmp use to store gravatar url
+    ai_summary: string;
+}>;
+
+export type UserDisplayData = Readonly<{
+    username: string;
+    image: string;
+    data_to_display: number;
+    offsetIndex?: number;
 }>;
 
 // Load branches for a repository
 export async function load_branches(repo: string): Promise<string[]> {
-    const repo_path = `../.gitgauge/repositories/${repo}`;
-    try {
-        const real_branches = await invoke<string[]>('get_branch_names', { path: repo_path });
-        return ['All', ...real_branches];
+    const working_dir = await invoke<string>("get_working_directory");
+    const repo_path = `${working_dir}/repositories/${repo}`;
+    console.log("PATH", repo_path);
 
+    try {
+        const real_branches = await invoke<string[]>("get_branch_names", {
+            path: repo_path,
+        });
+        console.log("REAL BRANCHES", real_branches);
+        return ["All", ...real_branches];
     } catch (err) {
-        console.error('Failed to load branches: ', err);
-        return ['All'];
+        console.error("Failed to load branches: ", err);
+        return ["All"];
     }
 }
 
-export async function load_commit_data(owner: string, repo: string, branch?: string): Promise<Contributor[]> {
-    info(`Loading contributor data for ${owner}/${repo}...`);
+type DateRange = {
+    start: number;
+    end: number;
+};
 
-    const repo_path = `../.gitgauge/repositories/${repo}`;
+export async function load_commit_data(
+    source: string,
+    owner: string,
+    repo: string,
+    source_type: 0 | 1 | 2,
+    branch?: string,
+    start_date?: string,
+    end_date?: string
+): Promise<Contributor[]> {
+    info(`Loading contributor data for ${owner}/${repo}...`);
+    const repo_url = `${source}/${owner}/${repo}`;
+
+    const working_dir = await invoke<string>("get_working_directory");
+    const repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
     try {
-        await invoke('bare_clone', { url: `https://github.com/${owner}/${repo}`, path: repo_path });
+        await invoke("bare_clone", {
+            url: repo_url,
+            path: repo_path,
+        });
         info(`Repository is cloned or already exists at ${repo_path}`);
     } catch (err) {
-        info(`Failed to clone the repository: ${err}`);
+        const error_message = String(err);
+        info(`Failed to clone the repository: ${error_message}`);
+
+        // Check if this is an authentication error that requires a token
+        if (error_message.includes("private and requires authentication")) {
+            show_token_modal(error_message, repo_url, repo_path);
+        }
+
         return [];
     }
 
     try {
-        const commit_data = await invoke<Contributor[]>('get_contributor_info', { path: repo_path, branch: branch });
+        let date_range: DateRange | undefined = undefined;
+
+        if (start_date && end_date) {
+            const start_ts = Math.floor(
+                parse_date(start_date).getTime() / 1000
+            );
+            const end_ts = Math.floor(parse_date(end_date).getTime() / 1000);
+            date_range = { start: start_ts, end: end_ts }; // Send as object
+        }
+
+        const commit_data = await invoke<Contributor[]>(
+            "get_contributor_info",
+            { path: repo_path, branch: branch, date_range: date_range }
+        );
         const commit_array = Object.values(commit_data);
         return commit_array;
     } catch (err) {
-        info(`Failed to get contributor data`)
+        info(`Failed to get contributor data: ${err}`);
         return [];
     }
+}
+
+function parse_date(dateStr: string): Date {
+    //date is "DD-MM-YY", convert to "YYYY-MM-DD"
+    const [day, month, year] = dateStr.split("-");
+    // Assume year is "25" for 2025
+    const full_year = year.length === 2 ? "20" + year : year;
+    return new Date(`${full_year}-${month}-${day}`);
 }
 
 // 1. Total Commits for a user
@@ -83,31 +147,85 @@ export function get_user_total_deletions(user: Contributor): number {
     return user.deletions;
 }
 
+// Calculate absolute value of diff for a user
+export function get_user_absolute_diff(user: Contributor): number {
+    return Math.abs(user.additions - user.deletions);
+}
+
 // Calculate average commits
 export function get_average_commits(users: Contributor[]): number {
     if (users.length === 0) return 0;
-    const commit_mean: number = users.reduce((acc, curr) => {
-        return acc + curr.total_commits;
-    }, 0) / users.length;
+    const commit_mean: number =
+        users.reduce((acc, curr) => {
+            return acc + curr.total_commits;
+        }, 0) / users.length;
 
     return commit_mean;
 }
 
+// Calculate average size of commits
+export function get_average_commit_size(users: Contributor[]): number {
+    if (users.length === 0) return 0;
+    const size_mean: number =
+        users.reduce((acc, curr) => {
+            return (
+                acc + get_user_total_lines_of_code(curr) / curr.total_commits
+            );
+        }, 0) / users.length;
+
+    return size_mean;
+}
+
+// Calculate average absolute diff
+export function get_average_absolute_diff(users: Contributor[]): number {
+    if (users.length === 0) return 0;
+    const abs_diff_mean: number =
+        users.reduce((acc, curr) => {
+            return acc + get_user_absolute_diff(curr);
+        }, 0) / users.length;
+
+    return abs_diff_mean;
+}
+
 // Calculate standard deviation
-export function get_sd(users: Contributor[]): number {
+export function get_sd(users: Contributor[], metric: string): number {
     if (users.length === 0) return 0;
     let commits: number[] = [];
 
     // Get the list of total commits for each user
-    users.forEach(user => {
+    users.forEach((user) => {
         commits.push(user.total_commits);
     });
 
     // Creating the mean with Array.reduce
     const n: number = users.length;
-    const mean = get_average_commits(users);
 
-    const variance: number = commits.reduce((acc: number, val: number) => acc + Math.pow(val - mean, 2), 0) / n;
+    // Determine the mean of the given metric
+    let mean: number;
+    switch (metric) {
+        case "commit_size": {
+            mean = get_average_commit_size(users);
+            break;
+        }
+        case "commits": {
+            mean = get_average_commits(users);
+            break;
+        }
+        case "absolute_diff": {
+            mean = get_average_absolute_diff(users);
+            break;
+        }
+        default: {
+            mean = get_average_commits(users);
+            break;
+        }
+    }
+
+    const variance: number =
+        commits.reduce(
+            (acc: number, val: number) => acc + Math.pow(val - mean, 2),
+            0
+        ) / n;
 
     return Math.sqrt(variance);
 }
@@ -115,19 +233,17 @@ export function get_sd(users: Contributor[]): number {
 // Calculate reference points
 export function get_ref_points(mean: number, sd: number): number[] {
     if (sd === 0) return [mean, mean, mean, mean, mean];
-    return [
-        (mean - (2 * sd)),
-        (mean - sd),
-        mean,
-        (mean + sd),
-        (mean + (2 * sd))
-    ];
+    return [mean - 2 * sd, mean - sd, mean, mean + sd, mean + 2 * sd];
 }
 
 // Calculate scaling factor
-export function calculate_scaling_factor(numCommits: number, mean: number, sd: number): number {
+export function calculate_scaling_factor(
+    num_commits: number,
+    mean: number,
+    sd: number
+): number {
     if (sd === 0) return 1.0;
-    const z_score = (numCommits - mean) / sd;
+    const z_score = (num_commits - mean) / sd;
     const EPSILON = 1e-6;
     if (Math.abs(z_score) < EPSILON) {
         return 1.0;
@@ -140,4 +256,199 @@ export function calculate_scaling_factor(numCommits: number, mean: number, sd: n
     } else {
         return z_score < 0 ? 0.8 : 1.2;
     }
-} 
+}
+
+export function get_metric_min_max(
+    users: Contributor[],
+    metric: string
+): {
+    min: number;
+    max: number;
+} {
+    if (users.length === 0) return { min: 0, max: 0 };
+
+    let result: { min: number; max: number };
+    switch (metric) {
+        case "commits": {
+            const minCommits: number = users.reduce(
+                (min, user) => Math.min(min, user.total_commits),
+                0
+            );
+            const maxCommits: number = users.reduce(
+                (max, user) => Math.max(max, user.total_commits),
+                0
+            );
+            result = { min: minCommits, max: maxCommits };
+            break;
+        }
+        case "commit_size": {
+            const minSize: number = users.reduce(
+                (min, user) =>
+                    Math.min(
+                        min,
+                        get_user_total_lines_of_code(user) / user.total_commits
+                    ),
+                0
+            );
+            const maxSize: number = users.reduce(
+                (max, user) =>
+                    Math.max(
+                        max,
+                        get_user_total_lines_of_code(user) / user.total_commits
+                    ),
+                0
+            );
+            result = { min: minSize, max: maxSize };
+            break;
+        }
+        case "absolute_diff": {
+            const minDiff: number = users.reduce(
+                (min, user) => Math.min(min, get_user_absolute_diff(user)),
+                0
+            );
+            const maxDiff: number = users.reduce(
+                (max, user) => Math.max(max, get_user_absolute_diff(user)),
+                0
+            );
+            result = { min: minDiff, max: maxDiff };
+            break;
+        }
+        default: {
+            const minCommits: number = users.reduce(
+                (min, user) => Math.min(min, user.total_commits),
+                0
+            );
+            const maxCommits: number = users.reduce(
+                (max, user) => Math.max(max, user.total_commits),
+                0
+            );
+            result = { min: minCommits, max: maxCommits };
+            break;
+        }
+    }
+
+    return result;
+}
+
+export function get_users_total_commits(
+    users: Contributor[]
+): UserDisplayData[] {
+    if (users.length === 0) return [];
+    let userTotalCommits: UserDisplayData[] = [];
+    users.forEach((user) => {
+        userTotalCommits.push({
+            username: user.bitmap_hash,
+            image: user.bitmap,
+            data_to_display: user.total_commits,
+        });
+    });
+    const sortedCommits = userTotalCommits.sort(
+        (a, b) => a.data_to_display - b.data_to_display
+    );
+    const groups = new Map<number, any[]>();
+    sortedCommits.forEach((user) => {
+        if (!groups.has(user.data_to_display)) {
+            groups.set(user.data_to_display, []);
+        }
+        groups.get(user.data_to_display)!.push(user);
+    });
+    const result: any[] = [];
+    groups.forEach((users, _) => {
+        if (users.length === 1) {
+            result.push(users[0]);
+        } else {
+            users.forEach((user, index) => {
+                result.push({
+                    ...user,
+                    offsetIndex: index - (users.length - 1) / 2,
+                });
+            });
+        }
+    });
+    return result;
+}
+
+export function get_users_avg_commit_size(
+    users: Contributor[]
+): UserDisplayData[] {
+    if (users.length === 0) return [];
+    let userAvgCommitSize: UserDisplayData[] = [];
+    users.forEach((user) => {
+        userAvgCommitSize.push({
+            username: user.bitmap_hash,
+            image: user.bitmap,
+            data_to_display: Number(
+                (
+                    get_user_total_lines_of_code(user) / user.total_commits
+                ).toFixed(2)
+            ),
+        });
+    });
+
+    const sortedCommits = userAvgCommitSize.sort(
+        (a, b) => a.data_to_display - b.data_to_display
+    );
+    const groups = new Map<number, any[]>();
+    sortedCommits.forEach((user) => {
+        if (!groups.has(user.data_to_display)) {
+            groups.set(user.data_to_display, []);
+        }
+        groups.get(user.data_to_display)!.push(user);
+    });
+    const result: UserDisplayData[] = [];
+
+    groups.forEach((users, _) => {
+        if (users.length === 1) {
+            result.push(users[0]);
+        } else {
+            users.forEach((user, index) => {
+                result.push({
+                    ...user,
+                    offsetIndex: index - (users.length - 1) / 2,
+                });
+            });
+        }
+    });
+    return result;
+}
+
+// Get users absolute diff data
+export function get_users_absolute_diff(
+    users: Contributor[]
+): UserDisplayData[] {
+    if (users.length === 0) return [];
+    let userAbsoluteDiff: UserDisplayData[] = [];
+    users.forEach((user) => {
+        userAbsoluteDiff.push({
+            username: user.bitmap_hash,
+            image: user.bitmap,
+            data_to_display: get_user_absolute_diff(user),
+        });
+    });
+
+    const sortedDiffs = userAbsoluteDiff.sort(
+        (a, b) => a.data_to_display - b.data_to_display
+    );
+    const groups = new Map<number, any[]>();
+    sortedDiffs.forEach((user) => {
+        if (!groups.has(user.data_to_display)) {
+            groups.set(user.data_to_display, []);
+        }
+        groups.get(user.data_to_display)!.push(user);
+    });
+    const result: UserDisplayData[] = [];
+
+    groups.forEach((users, _) => {
+        if (users.length === 1) {
+            result.push(users[0]);
+        } else {
+            users.forEach((user, index) => {
+                result.push({
+                    ...user,
+                    offsetIndex: index - (users.length - 1) / 2,
+                });
+            });
+        }
+    });
+    return result;
+}

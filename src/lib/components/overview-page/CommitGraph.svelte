@@ -1,24 +1,42 @@
 <script lang="ts">
     import Graph from "$lib/components/overview-page/Graph.svelte";
     import ContributorCards from "$lib/components/overview-page/ContributorCards.svelte";
-    import ButtonTintedMedium from "../global/ButtonTintedMedium.svelte";
+    import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
+    import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import type { Contributor } from "$lib/metrics";
 
     let {
         contributors,
         branches,
-    }: { contributors: Contributor[]; branches: String[] } = $props();
+        selected_branch,
+        start_date,
+        end_date,
+        criteria,
+        selected_criteria = $bindable(),
+    }: {
+        contributors: Contributor[];
+        branches: String[];
+        selected_branch?: string;
+        start_date?: string;
+        end_date?: string;
+        criteria: string[];
+        selected_criteria: string;
+    } = $props();
+
+    let sidebar_open = $state(false);
+    let bookmarked_repo: { repo_name: string; repo_url: string }[] = [];
+
+    function toggle_sidebar() {
+        sidebar_open = !sidebar_open;
+    }
 </script>
 
 <main class="container">
     <div class="header-row">
-        <!-- faking the dropdown button -->
-        <ButtonTintedMedium
-            label="commits"
-            label_class="body"
-            icon_first={false}
-            icon="chevron-down"
-            width="12rem"
+        <DropdownTintedMedium
+            options={criteria}
+            bind:selected={selected_criteria}
+            disabled={false}
         />
 
         <ButtonTintedMedium
@@ -29,13 +47,26 @@
             width="12rem"
         />
     </div>
-    <Graph {contributors} />
-    <ContributorCards users={contributors} selected_branch={""} />
+    <Graph
+        {contributors}
+        {selected_branch}
+        {start_date}
+        {end_date}
+        metric={selected_criteria}
+    />
+
+    <ContributorCards
+        users={contributors}
+        selected_branch={selected_branch ?? ""}
+        start_date={start_date ?? ""}
+        end_date={end_date ?? ""}
+        metric={selected_criteria}
+    />
 </main>
 
 <style>
     .container {
-        padding: 2rem;
+        padding: 0rem 2rem;
         display: flex;
         flex-direction: column;
         align-items: center;

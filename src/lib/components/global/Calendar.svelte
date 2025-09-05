@@ -7,12 +7,13 @@
     let {
         initial_start = "",
         initial_end = "",
-        date_format = "d-m-y",
+        date_format = "d-m-Y",
         icon = "calendar-month",
         icon_first = false,
         label_class = "body",
         disabled = false,
         width = "auto",
+        label = "Select Date Range",
     }: {
         initial_start: string;
         initial_end: string;
@@ -22,6 +23,7 @@
         label_class: string;
         disabled: boolean;
         width: string;
+        label: string;
     } = $props();
 
     let start = initial_start;
@@ -31,7 +33,9 @@
     let input_elem: HTMLInputElement;
     let picker: flatpickr.Instance;
 
-    let label = $state(start && end ? `${start} → ${end}` : "Select dates");
+    let displayLabel = $state(
+        start && end ? `${start} → ${end}` : "Select dates"
+    );
 
     onMount(() => {
         picker = flatpickr(input_elem, {
@@ -41,7 +45,7 @@
             onClose: (selected_dates) => {
                 if (selected_dates.length === 2) {
                     const [s, e] = selected_dates.map((d) =>
-                        flatpickr.formatDate(d, date_format),
+                        flatpickr.formatDate(d, date_format)
                     );
                     start = s;
                     end = e;
@@ -71,9 +75,9 @@
         {#if icon}
             <Icon icon={`tabler:${icon}`} class="icon-medium" />
         {/if}
-        <div class="label"><span class={label_class}>{label}</span></div>
+        <div class="label"><span class={label_class}>{displayLabel}</span></div>
     {:else}
-        <div class="label"><span class={label_class}>{label}</span></div>
+        <div class="label"><span class={label_class}>{displayLabel}</span></div>
         {#if icon}
             <Icon icon={`tabler:${icon}`} class="icon-medium" />
         {/if}

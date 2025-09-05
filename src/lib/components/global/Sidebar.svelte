@@ -1,7 +1,104 @@
 <script lang="ts">
     import { sidebar_open, close_sidebar } from "$lib/stores/sidebar";
-    import { bookmarks } from "$lib/stores/bookmarks";
     import Icon from "@iconify/svelte";
+    import ApiKeyField from "./APIKeyField.svelte";
+    import { manifest, type ManifestSchema } from "$lib/stores/manifest";
+    import { onMount } from "svelte";
+    import { invoke } from "@tauri-apps/api/core";
+    import ButtonPrimaryMedium from "./ButtonPrimaryMedium.svelte";
+    import { get_repo_info, get_source_type } from "$lib/github_url_verifier";
+    import { set_repo_url } from "$lib/stores/repo";
+    import { load_branches, load_commit_data } from "$lib/metrics";
+    import { goto } from "$app/navigation";
+
+    interface RepoBookmark {
+        repo_name: string;
+        repo_url: string;
+        repo_bookmarked: boolean;
+    }
+    onMount(async () => {
+        try {
+            let data = await invoke<ManifestSchema>("read_manifest");
+            manifest.set(data);
+            console.log("page", data);
+        } catch (e: any) {
+            let err = typeof e === "string" ? e : (e?.message ?? String(e));
+            console.error("read_manifest failed", e);
+        }
+    });
+    let bookmarked_repos: RepoBookmark[] = $derived(
+        $manifest["repository"].map((item) => {
+            return {
+                repo_name: item.name,
+                repo_url: item.url,
+                repo_bookmarked: item.bookmarked,
+            };
+        })
+    );
+    let api_input = $state("");
+    let api_error = $state(false);
+
+    async function on_submit(): Promise<Boolean> {
+        // Key validation
+        let is_valid_key = await invoke<Boolean>("gemini_key_validation", {
+            apiKey: api_input,
+        });
+
+        // If key is valid, store securely
+        if (is_valid_key) {
+            console.log("Valid API Key");
+            api_error = false;
+            // Store key securely
+        } else {
+            // Else, prompt user to re-enter
+            console.log("Invalid API Key");
+            api_error = true;
+        }
+        return is_valid_key;
+    }
+
+    async function bookmark_open(repo_url_input: string) {
+        let source_type = get_source_type(repo_url_input);
+
+        try {
+            const repository_information = get_repo_info(repo_url_input);
+
+            // Update the repo store with the new URL
+            set_repo_url(repo_url_input);
+
+            // Call loadBranches and loadCommitData and wait for both to complete
+            const contributors = await load_commit_data(
+                repository_information.source,
+                repository_information.owner,
+                repository_information.repo,
+                source_type
+            );
+
+            const branches = await load_branches(
+                `${source_type}-${repository_information.owner}-${repository_information.repo}`
+            );
+
+            // Navigate to the overview page
+            await goto("/");
+            await goto(`/overview-page`, {
+                replaceState: true,
+                state: {
+                    repo_path: `${repository_information.owner}-${repository_information.repo}`,
+                    repo_url: repo_url_input,
+                    owner: repository_information.owner,
+                    repo: repository_information.repo,
+                    repo_type: source_type,
+                    selected_branch: "",
+                    branches: branches,
+                    contributors: contributors,
+                    source_type: repository_information.source_type,
+                },
+            });
+        } catch (error: any) {
+            const error_message = error.message || "Verification failed.";
+            console.error("Verification failed:", error);
+        }
+    }
 </script>
 
 <div class={`sidebar ${$sidebar_open ? "open" : "closed"}`}>
@@ -22,26 +119,47 @@
             <Icon icon="tabler:x" class="icon-medium" style="color: white" />
         </button>
     </div>
-
-    <div class="bookmark-list">
-        <div class="bookmark-header">
+    <div class="sidebar-item-container">
+        <div class="header">
+            <Icon
+                icon="tabler:sparkles"
+                class="icon-medium"
+                style="color: white"
+            />
+            <h2 class="heading-1 sidebar-item-header white">AI integration</h2>
+        </div>
+        <div class="caption label-secondary">
+            Add your Gemini API key to enable AI-powered features.
+        </div>
+        <ApiKeyField bind:api_input {on_submit} error={api_error} />
+    </div>
+    <div class="sidebar-item-container">
+        <div class="header">
             <Icon
                 icon="tabler:star-filled"
                 class="icon-medium"
                 style="color: white"
             />
-            <h2 class="heading-1 bookmark-text white">Bookmarks</h2>
+            <h2 class="heading-1 sidebar-item-header white">Bookmarks</h2>
         </div>
 
-        {#each $bookmarks as repo (repo.repo_path)}
-            <button class="bookmark-item" type="button">
-                <h6 class="heading-2 repo-name label-secondary">
-                    {repo.repo_path}
-                </h6>
-                <h6 class="caption repo-url label-secondary">
-                    {repo.repo_url}
-                </h6>
-            </button>
+        {#each bookmarked_repos as repo (repo.repo_name)}
+            {#if repo.repo_bookmarked}
+                <button
+                    class="bookmark-item"
+                    type="button"
+                    onclick={() => {
+                        bookmark_open(repo.repo_url);
+                    }}
+                >
+                    <h6 class="heading-2 repo-name label-secondary">
+                        {repo.repo_name}
+                    </h6>
+                    <h6 class="caption repo-url label-secondary">
+                        {repo.repo_url}
+                    </h6>
+                </button>
+            {/if}
         {/each}
     </div>
 </div>
@@ -76,12 +194,10 @@
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
-        height: 1.8125rem;
         margin-bottom: 1.5rem;
     }
     .sidebar-title {
         display: flex;
-        height: 29px;
     }
     .sidebar-title-text {
         margin: auto 0 auto 0.375rem;
@@ -93,18 +209,19 @@
         border: none;
         padding: 0;
     }
-    .bookmark-list {
+    .sidebar-item-container {
         display: grid;
         grid-template-columns: 1fr;
         gap: 13px;
+        padding: 0rem 0.375rem 1rem 0.375rem;
     }
-    .bookmark-header {
+    .header {
         display: flex;
         align-items: center;
         height: 22px;
     }
-    .bookmark-text {
-        padding-left: 6px;
+    .sidebar-item-header {
+        padding: 0px 6px;
     }
     .bookmark-item {
         display: flex;
@@ -113,7 +230,7 @@
         cursor: pointer;
         background: none;
         border: none;
-        padding: 0;
+        padding: 0rem;
     }
     .repo-name,
     .repo-url {
