@@ -70,7 +70,7 @@
         }
 
         const working_dir = await invoke("get_working_directory");
-        const full_repo_path = `${working_dir}/repositories/${source_type}-${repo_path}`;
+        const full_repo_path = `${working_dir}/repositories/${repo_path}`;
 
         if (repo_path) {
             try {
