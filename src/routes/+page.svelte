@@ -4,7 +4,7 @@
         get_source_type,
         get_repo_info,
     } from "$lib/github_url_verifier.js";
-    import { load_branches, load_commit_data } from "$lib/metrics";
+    import { bare_clone, load_branches, load_commit_data } from "$lib/metrics";
     import { goto } from "$app/navigation";
     import RepoDropdown from "$lib/components/global/RepoDropdown.svelte";
     import { repo_options } from "$lib/stores/repo";
@@ -17,6 +17,7 @@
     import RepoBookmarkList from "$lib/components/global/RepoBookmarkList.svelte";
     import AccessTokenModal from "$lib/components/global/AccessTokenModal.svelte";
     import { auth_error, retry_clone_with_token } from "$lib/stores/auth";
+    import { generate_state_object, save_state } from "$lib/utils/localstorage";
 
     import { onMount } from "svelte";
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
@@ -165,17 +166,18 @@
             // Update the repo store with the new URL
             set_repo_url(repo_url_input);
 
+            
             // Call loadBranches and loadCommitData and wait for both to complete
-            const contributors = await load_commit_data(
+            let repo_path = await bare_clone(
                 repository_information.source,
                 repository_information.owner,
                 repository_information.repo,
                 source_type
             );
 
-            const branches = await load_branches(
-                `${source_type}-${repository_information.owner}-${repository_information.repo}`
-            );
+            let branches = await load_branches(repo_path);
+
+            let contributors = await load_commit_data(repo_path);
 
             const url_trimmed =
                 repository_information.source +
@@ -192,23 +194,15 @@
                await manifest.create_repository(repository_information, url_trimmed);
             }
 
-            await manifest.update_repository_timestamp(repo_url_input);
+            await manifest.update_repository_timestamp(url_trimmed);
             await invoke("save_manifest", { manifest: $manifest });
 
+            const working_dir = await invoke<string>("get_working_directory");
+            let storage_obj = await generate_state_object(working_dir, repository_information, url_trimmed, source_type, branches, contributors)
+            await save_state(storage_obj);
+
             // Navigate to the overview page
-            goto(`/overview-page`, {
-                state: {
-                    repo_path: `${repository_information.source_type}-${repository_information.owner}-${repository_information.repo}`,
-                    repo_url: repo_url_input,
-                    owner: repository_information.owner,
-                    repo: repository_information.repo,
-                    repo_type: selected.source_type,
-                    selected_branch: "",
-                    branches: branches,
-                    contributors: contributors,
-                    source_type: repository_information.source_type,
-                },
-            });
+            goto(`/overview-page`);
         } catch (error: any) {
             const error_message = error.message || "Verification failed.";
             console.error("Verification failed:", error);
