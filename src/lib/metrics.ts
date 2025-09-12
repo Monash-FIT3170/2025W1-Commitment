@@ -27,11 +27,7 @@ export type UserDisplayData = Readonly<{
 }>;
 
 // Load branches for a repository
-export async function load_branches(repo: string): Promise<string[]> {
-    const working_dir = await invoke<string>("get_working_directory");
-    const repo_path = `${working_dir}/repositories/${repo}`;
-    console.log("PATH", repo_path);
-
+export async function load_branches(repo_path: string): Promise<string[]> {
     try {
         const real_branches = await invoke<string[]>("get_branch_names", {
             path: repo_path,
@@ -49,18 +45,13 @@ type DateRange = {
     end: number;
 };
 
-export async function load_commit_data(
-    source: string,
+export async function bare_clone(
+    source: string, 
     owner: string,
     repo: string,
-    source_type: 0 | 1 | 2,
-    branch?: string,
-    start_date?: string,
-    end_date?: string
-): Promise<Contributor[]> {
-    info(`Loading contributor data for ${owner}/${repo}...`);
+    source_type: 0 | 1 | 2
+): Promise<string> {
     const repo_url = `${source}/${owner}/${repo}`;
-
     const working_dir = await invoke<string>("get_working_directory");
     const repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
     try {
@@ -68,7 +59,7 @@ export async function load_commit_data(
             url: repo_url,
             path: repo_path,
         });
-        info(`Repository is cloned or already exists at ${repo_path}`);
+        return repo_path;
     } catch (err) {
         const error_message = String(err);
         info(`Failed to clone the repository: ${error_message}`);
@@ -78,9 +69,17 @@ export async function load_commit_data(
             show_token_modal(error_message, repo_url, repo_path);
         }
 
-        return [];
+        return repo_path;
     }
+}
 
+export async function load_commit_data(
+    repo_path: string,
+    branch?: string,
+    start_date?: string,
+    end_date?: string
+): Promise<Contributor[]> {
+    info(`Loading contributor data for ${repo_path}...`);
     try {
         let date_range: DateRange | undefined = undefined;
 
