@@ -12,7 +12,7 @@
 
     let {
         repo: repo,
-        repo_type: repo_type = "github",
+        source_type: source_type = 0,
         repo_url,
         branches = [],
         branch_selection = $bindable(),
@@ -21,6 +21,7 @@
         contributors = $bindable<Contributor[]>([]),
     } = $props();
 
+    let source_name = source_type === 0 ? "github" : source_type === 1 ? "gitlab" : "folder-code";
     let show_modal = $state(false);
 
     let file_input: HTMLInputElement;
@@ -97,7 +98,7 @@
             <span class="repo-path display-title" title={repo}>{repo}</span>
             <div class="repo-icon">
                 <Icon
-                    icon={`tabler:brand-${repo_type}`}
+                    icon={`tabler:brand-${source_name}`}
                     class="icon-xlarge"
                     style="color: white"
                 />
