@@ -12,6 +12,8 @@ export interface RepoSchema {
     grading_sheet: string | null;
     last_accessed: string;
     name: string;
+    owner: string;
+    source_type: 0 | 1 | 2; // 0 = GitHub, 1 = GitLab, 2 = Local
     path: string;
     url: string;
 }
@@ -20,7 +22,7 @@ export interface ManifestSchema {
     repository: RepoSchema[];
 }
 
-interface RepositoryInformation {
+export interface RepositoryInformation {
     owner: string;
     repo: string;
     source_type: 0 | 1 | 2;
@@ -139,6 +141,8 @@ function create_manifest_store() {
 
             const new_repo: RepoSchema = {
                 name: repo_info.repo,
+                owner: repo_info.owner,
+                source_type: repo_info.source_type,
                 url: repo_url,
                 path: repo_path,
                 bookmarked: false,
