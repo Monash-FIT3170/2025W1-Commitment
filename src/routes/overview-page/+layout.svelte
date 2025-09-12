@@ -11,6 +11,7 @@
     import { page } from "$app/state";
     import Banner from "$lib/components/overview-page/Banner.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
+    import { load_state } from "$lib/utils/localstorage";
 
     let profile_image_url = "/mock_profile_img.png";
     let username = "Baaset Moslih";
@@ -18,13 +19,16 @@
     let { children } = $props();
 
     const s = page.state as any;
+    load_state(s);
+    console.log(`Repo URL: ${s.repo_url}`);
+    let owner = $derived(s.owner);
+    let repo = $derived(s.repo);
     let repo_url = $derived(s.repo_url);
-    let repo_path = $derived(s.repo_path);
 </script>
 
 <main class="page">
     <header class="header">
-        <Banner {repo_url} {repo_path} {username} {profile_image_url} />
+        <Banner {repo} {owner} {repo_url} {username} {profile_image_url} />
     </header>
     {@render children()}
 </main>

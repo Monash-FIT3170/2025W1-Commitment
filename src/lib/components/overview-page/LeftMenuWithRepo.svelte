@@ -6,10 +6,12 @@
 
     let {
         repo_url,
-        repo_path,
+        owner,
+        repo,
     }: {
         repo_url: string;
-        repo_path: string;
+        owner: string;
+        repo: string;
     } = $props();
 
     let bookmarked = $state(
@@ -48,7 +50,7 @@ toggle button.
     {#snippet content()}
         <!-- repo pathway display -->
         <div class="repo-pathway">
-            {repo_path}
+            {owner}/{repo}
         </div>
 
         <!-- bookmark toggle -->
