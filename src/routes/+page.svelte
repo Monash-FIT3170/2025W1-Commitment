@@ -65,12 +65,6 @@
     let verification_error: boolean = $state(false);
     let waiting_for_auth: boolean = $state(false);
 
-    interface BackendVerificationResult {
-        owner: string;
-        repo: string;
-        source_type: 0 | 1 | 2;
-    }
-
     async function select_bookmarked_repo(repo_url: string) {
         repo_url_input = repo_url;
         await handle_verification();
