@@ -138,7 +138,7 @@ function create_manifest_store() {
             const new_repo: RepoSchema = {
                 name: backendResult.repo,
                 url: repo_url,
-                path: `${working_dir}/gitguage/repositories/${repo_url.split("/")[3]}-${repo_url.split("/")[4]}`,
+                path: `${working_dir}/repositories/${repo_url.split("/")[3]}-${repo_url.split("/")[4]}`,
                 bookmarked: false,
                 cloned: true,
                 email_mapping: null,
