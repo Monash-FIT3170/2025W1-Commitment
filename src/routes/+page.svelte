@@ -159,8 +159,8 @@
         };
         try {
             if (source_type === 2) {
-                let remote_url = await invoke("get_local_repo_information", {path: repo_url_input});
-                repository_information = get_repo_info(remote_url);
+                let remote_url = await invoke<string>("get_local_repo_information", {path: repo_url_input});
+                repository_information = get_repo_info(remote_url.replace(".git", ""));
             } else {
                 repository_information = get_repo_info(repo_url_input);
             }
