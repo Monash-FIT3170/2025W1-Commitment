@@ -59,6 +59,31 @@ pub fn is_repo_cloned(path: &str) -> bool {
 }
 
 #[tauri::command(rename_all = "snake_case")]
+pub fn get_local_repo_information(path: &str) -> Result<String, String> {
+    if !is_repo_cloned(path) {
+        log::info!("No repository found at: {path}");
+        return Err("No repository found".into());
+    }
+
+    // Returns the name and owner of the repository if it can be opened    
+
+    match git2::Repository::open(path) {
+        Ok(repo) => {
+            if let Some(remote) = repo.find_remote("origin").ok() {
+                if let Some(url) = remote.url() {
+                    return Ok(url.to_string());
+                }
+            }
+            return Err(format!("Failed to open repository at {path}: No origin remote found"));
+        }
+        Err(e) => {
+            log::error!("Failed to open repository at {path}: {e}");
+            return Err(format!("Failed to open repository: {e}"));
+        }
+    }
+}
+
+#[tauri::command(rename_all = "snake_case")]
 pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
     // Check if path already exists
     if is_repo_cloned(path) {
