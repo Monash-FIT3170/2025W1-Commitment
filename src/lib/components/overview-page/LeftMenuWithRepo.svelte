@@ -3,6 +3,7 @@
     import LeftMenu from "./LeftMenu.svelte";
     import { manifest } from "$lib/stores/manifest";
     import { invoke } from "@tauri-apps/api/core";
+    import { onMount } from "svelte";
 
     let {
         repo_url,
@@ -26,8 +27,14 @@
             manifest.unbookmark(repo_url);
         }
         invoke("save_manifest", { manifest: $manifest });
-    }
-</script>
+        }
+        
+    // Update bookmarked state whenever manifest changes
+    $effect(() => {
+    bookmarked = $manifest.repository.some((r) => r.url === repo_url && r.bookmarked);
+    });
+        
+    </script>
 
 <!--
 @component
