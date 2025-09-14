@@ -16,9 +16,8 @@ pub struct Contributor {
     pub total_commits: u64,
     pub additions: u64,
     pub deletions: u64,
-    // pub changes: u64,
-    pub bitmap_hash: String,
-    pub bitmap: String, // tmp until using actual bitmap type
+    pub profile_bg_colour: String,
+    pub username_initials: String,
     pub ai_summary: String,
 }
 
@@ -43,8 +42,8 @@ pub async fn group_contributors_by_config(
             let mut additions = 0;
             let mut deletions = 0;
             let mut contacts = Vec::new();
-            let mut bitmap_hash = String::new();
-            let mut bitmap = String::new();
+            let mut profile_bg_colour = String::new();
+            let mut username_initials = String::new();
             let ai_summary = String::new();
 
             if let Value::Array(email_list) = emails_value {
@@ -61,12 +60,12 @@ pub async fn group_contributors_by_config(
                             deletions += contrib.deletions;
                             contacts.push(email.to_string());
 
-                            if bitmap_hash.is_empty() {
-                                bitmap_hash = contrib.bitmap_hash.clone();
+                            if profile_bg_colour.is_empty() {
+                                profile_bg_colour = contrib.profile_bg_colour.clone();
                             }
 
-                            if bitmap.is_empty() {
-                                bitmap = contrib.bitmap.clone();
+                            if username_initials.is_empty() {
+                                username_initials = contrib.username_initials.clone();
                             }
                         }
                     }
@@ -80,8 +79,8 @@ pub async fn group_contributors_by_config(
                     total_commits,
                     additions,
                     deletions,
-                    bitmap_hash,
-                    bitmap,
+                    profile_bg_colour,
+                    username_initials,
                     ai_summary,
                 });
             }
@@ -181,31 +180,42 @@ pub async fn get_contributor_info(
 
         let author_signature = commit.author();
         let email = author_signature.email().unwrap_or("").to_string();
-        let gravatar_hash = md5::compute(email.clone().trim().to_lowercase());
-        let gravatar_login = author_signature.name().unwrap_or("Unknown").to_string();
-        let gravatar_url = format!("https://www.gravatar.com/avatar/{gravatar_hash:x}?d=identicon");
+        //let email_hash = md5::compute(email.clone().trim().to_lowercase());
+        //let login_name = author_signature.name().unwrap_or("Unknown").to_string();
+        //let gravatar_url = format!("https://www.gravatar.com/avatar/{gravatar_hash:x}?d=identicon");
+
+        let username = author_signature
+            .name()
+            .unwrap_or("unknown");
+
+        let initials = username
+            .split_whitespace()
+            .map(|s| s.chars().next().unwrap().to_ascii_uppercase())
+            .collect::<String>();
+
+        let profile_bg_colour = generate_profile_bg_colour(username);
 
         // Normalize username for grouping
-        let normalized_username = if email.ends_with("@users.noreply.github.com") {
-            // Extract username from GitHub noreply email
-            if let Some(pos) = email.find('+') {
-                let rest = &email[pos + 1..];
-                if let Some(at_pos) = rest.find('@') {
-                    rest[..at_pos].to_string()
-                } else {
-                    gravatar_login.clone()
-                }
-            } else {
-                gravatar_login.clone()
-            }
-        } else {
-            // Use login name or email prefix
-            if !gravatar_login.is_empty() && gravatar_login != "Unknown" {
-                gravatar_login.clone()
-            } else {
-                email.split('@').next().unwrap_or("").to_string()
-            }
-        };
+        //let normalized_username = if email.ends_with("@users.noreply.github.com") {
+        //    // Extract username from GitHub noreply email
+        //    if let Some(pos) = email.find('+') {
+        //        let rest = &email[pos + 1..];
+        //        if let Some(at_pos) = rest.find('@') {
+        //            rest[..at_pos].to_string()
+        //        } else {
+        //            login_name.clone()
+        //        }
+        //    } else {
+        //        login_name.clone()
+        //    }
+        //} else {
+        //    // Use login name or email prefix
+        //    if !login_name.is_empty() && login_name != "Unknown" {
+        //        login_name.clone()
+        //    } else {
+        //        email.split('@').next().unwrap_or("").to_string()
+        //    }
+        //};
 
         let commit_tree = commit.tree().map_err(|e| e.to_string())?;
         let parent_tree = if commit.parent_count() > 0 {
@@ -229,15 +239,15 @@ pub async fn get_contributor_info(
         let deletions = stats.deletions() as u64;
 
         let entry = contributors
-            .entry(normalized_username.clone())
+            .entry(username.to_string())
             .or_insert_with(|| Contributor {
-                username: normalized_username.clone(),
+                username: username.to_string(),
                 contacts: Contacts::EmailList(vec![email.clone()]),
                 total_commits: 0,
                 additions: 0,
                 deletions: 0,
-                bitmap_hash: gravatar_login.clone(), // tmp use to store gravatar login
-                bitmap: gravatar_url.clone(),        // tmp use to store gravatar url
+                profile_bg_colour: profile_bg_colour,
+                username_initials: initials,
                 ai_summary: String::from(""),
             });
 
@@ -251,13 +261,13 @@ pub async fn get_contributor_info(
             Contacts::Email(existing) => {
                 if existing != &email {
                     *entry = Contributor {
-                        username: normalized_username.clone(),
+                        username: username.to_string(),
                         contacts: Contacts::EmailList(vec![existing.clone(), email.clone()]),
                         total_commits: entry.total_commits,
                         additions: entry.additions,
                         deletions: entry.deletions,
-                        bitmap_hash: entry.bitmap_hash.clone(),
-                        bitmap: entry.bitmap.clone(),
+                        profile_bg_colour: entry.profile_bg_colour.clone(),
+                        username_initials: entry.username_initials.clone(),
                         ai_summary: String::from(""),
                     };
                 }
@@ -288,4 +298,33 @@ fn find_branch_oid(repo: &Repository, branch: &str) -> Result<Oid, String> {
             .ok_or("Invalid remote branch target".to_string());
     }
     Err(format!("Branch '{branch}' not found as local or remote"))
+}
+
+//function generateBackground(name) {
+//    let hash = 0;
+//    let i;
+//
+//    for (i = 0; i < name.length; i += 1) {
+//      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+//    }
+//
+//    let color = "#";
+//
+//    for (i = 0; i < 3; i += 1) {
+//      const value = (hash >> (i * 8)) & 0xff;
+//      color += `00${value.toString(16)}`.slice(-2);
+//    }
+//
+//    return color;
+//  }
+fn generate_profile_bg_colour(username: &str) -> String {
+    let hash = username
+        .as_bytes()
+        .iter()
+        .fold(0 as usize, |hash, byte| (*byte as usize) + ((hash << 5) - hash));
+
+    (0..=3)
+        .map(|i| (hash >> (i * 8)) & 0xff)
+        .map(|x| format!("{x:x}"))
+        .collect::<String>()
 }
