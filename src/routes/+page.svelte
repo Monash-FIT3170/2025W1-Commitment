@@ -195,11 +195,10 @@
             );
 
             if (!repo_exists) {
-                manifest.create_repository(repository_information, url_trimmed);
+               await manifest.create_repository(repository_information, url_trimmed);
             }
 
-            manifest.update_repository_timestamp(repo_url_input);
-
+            await manifest.update_repository_timestamp(repo_url_input);
             await invoke("save_manifest", { manifest: $manifest });
 
             // Navigate to the overview page
