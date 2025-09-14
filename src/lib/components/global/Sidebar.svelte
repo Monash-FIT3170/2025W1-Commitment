@@ -89,7 +89,14 @@
             await invoke("save_manifest", { manifest: $manifest });
 
             const working_dir = await invoke<string>("get_working_directory");
-            let storage_obj = await generate_state_object(working_dir, repository_information, url_trimmed, source_type, branches, contributors)
+            let storage_obj = await generate_state_object(
+                working_dir,
+                repository_information,
+                url_trimmed,
+                source_type,
+                branches,
+                contributors
+            );
             await save_state(storage_obj);
             await goto("/");
             await goto(`/overview-page`);

@@ -12,16 +12,20 @@
     import { download_populated_file } from "$lib/utils/grading";
     import { load_branches, load_commit_data } from "$lib/metrics";
     import { invoke } from "@tauri-apps/api/core";
-    import { manifest, type Config, type ManifestSchema } from "$lib/stores/manifest";
+    import {
+        manifest,
+        type Config,
+        type ManifestSchema,
+    } from "$lib/stores/manifest";
     import type { Contributor } from "$lib/metrics";
     import { onMount } from "svelte";
     import { load_state } from "$lib/utils/localstorage";
-    
+
     const s = page.state as any;
     load_state(s);
     let repo = $state(s.repo || "");
     let repo_path = $state(s.repo_path || "");
-    let source_type : 0 | 1 | 2 = $state(s.source_type || 0); // 0 = GitHub, 1 = GitLab, 2 = Local
+    let source_type: 0 | 1 | 2 = $state(s.source_type || 0); // 0 = GitHub, 1 = GitLab, 2 = Local
     let repo_url = $state(s.repo_url || "");
 
     let branches = $state(s.branches || []);

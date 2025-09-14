@@ -21,7 +21,12 @@
         contributors = $bindable<Contributor[]>([]),
     } = $props();
 
-    let source_name = source_type === 0 ? "github" : source_type === 1 ? "gitlab" : "folder-code";
+    let source_name =
+        source_type === 0
+            ? "github"
+            : source_type === 1
+              ? "gitlab"
+              : "folder-code";
     let show_modal = $state(false);
 
     let file_input: HTMLInputElement;

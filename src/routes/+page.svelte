@@ -166,7 +166,6 @@
             // Update the repo store with the new URL
             set_repo_url(repo_url_input);
 
-            
             // Call loadBranches and loadCommitData and wait for both to complete
             let repo_path = await bare_clone(
                 repository_information.source,
@@ -191,14 +190,24 @@
             );
 
             if (!repo_exists) {
-               await manifest.create_repository(repository_information, url_trimmed);
+                await manifest.create_repository(
+                    repository_information,
+                    url_trimmed
+                );
             }
 
             await manifest.update_repository_timestamp(url_trimmed);
             await invoke("save_manifest", { manifest: $manifest });
 
             const working_dir = await invoke<string>("get_working_directory");
-            let storage_obj = await generate_state_object(working_dir, repository_information, url_trimmed, source_type, branches, contributors)
+            let storage_obj = await generate_state_object(
+                working_dir,
+                repository_information,
+                url_trimmed,
+                source_type,
+                branches,
+                contributors
+            );
             await save_state(storage_obj);
 
             // Navigate to the overview page

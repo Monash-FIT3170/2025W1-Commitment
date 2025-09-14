@@ -27,14 +27,15 @@
             manifest.unbookmark(repo_url);
         }
         invoke("save_manifest", { manifest: $manifest });
-        }
-        
+    }
+
     // Update bookmarked state whenever manifest changes
     $effect(() => {
-    bookmarked = $manifest.repository.some((r) => r.url === repo_url && r.bookmarked);
+        bookmarked = $manifest.repository.some(
+            (r) => r.url === repo_url && r.bookmarked
+        );
     });
-        
-    </script>
+</script>
 
 <!--
 @component

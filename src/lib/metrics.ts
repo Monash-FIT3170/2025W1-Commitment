@@ -46,7 +46,7 @@ type DateRange = {
 };
 
 export async function bare_clone(
-    source: string, 
+    source: string,
     owner: string,
     repo: string,
     source_type: 0 | 1 | 2

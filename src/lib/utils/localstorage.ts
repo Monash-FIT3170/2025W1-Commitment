@@ -1,13 +1,13 @@
 import { browser } from "$app/environment";
 import type { Contributor } from "$lib/metrics";
-let STORAGE_KEY = "page_state"
+let STORAGE_KEY = "page_state";
 export function load_state(s: any) {
     if (browser) {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 const parsed = JSON.parse(saved);
-                Object.assign(s, parsed);  // Merge into page.state
+                Object.assign(s, parsed); // Merge into page.state
             }
         } catch (error) {
             console.error("Failed to load page state from storage:", error);
