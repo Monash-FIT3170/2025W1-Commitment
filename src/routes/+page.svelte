@@ -18,19 +18,19 @@
     import AccessTokenModal from "$lib/components/global/AccessTokenModal.svelte";
     import { auth_error, retry_clone_with_token } from "$lib/stores/auth";
     import { generate_state_object, save_state } from "$lib/utils/localstorage";
-
     import { onMount } from "svelte";
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
+    import { info, error } from "@tauri-apps/plugin-log";
 
     // only run on the browser
     onMount(async () => {
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
-            console.log("page", data);
+            info("page " + data);
         } catch (e: any) {
             let err = typeof e === "string" ? e : (e?.message ?? String(e));
-            console.error("read_manifest failed", e);
+            error("read_manifest failed: " + err);
         }
     });
 
@@ -95,28 +95,26 @@
     async function handle_token_add(token: string) {
         // Validate that token is not empty
         if (!token || token.trim().length === 0) {
-            console.log("No token entered, keeping modal open");
+            info("No token entered, keeping modal open");
             verification_message = "Please enter a Personal Access Token";
             verification_error = true;
             return;
         }
 
-        console.log("Authenticating with Personal Access Token...");
+        info("Authenticating with Personal Access Token...");
 
         // Attempt to clone with the provided token
         const success = await retry_clone_with_token(token);
 
         if (success) {
-            console.log(
-                "Authentication successful, continuing repository loading..."
-            );
+            info("Authentication successful, continuing repository loading...");
             waiting_for_auth = false;
             // The modal will be hidden automatically by the auth store
             // The repository should now be accessible, so we can continue with the normal flow
             // Re-trigger the verification process to load the now-accessible repository
             await handle_verification();
         } else {
-            console.log("Authentication failed, please check your token");
+            info("Authentication failed, please check your token");
             // Show user-friendly error message above search bar and close modal
             verification_message =
                 "Access token is invalid. Please check your token and try again.";
@@ -131,19 +129,17 @@
     }
 
     function update_progress(progress: string) {
-        console.log(progress);
+        info(progress);
     }
 
     async function local_verification() {
-        console.log("Local verification called");
+        info("Local verification called");
         // Implement local verification logic here
     }
 
     async function handle_verification() {
-        console.log(
-            "handleVerification called with:",
-            repo_url_input,
-            selected
+        info(
+            "handleVerification called with: " + repo_url_input + " " + selected
         );
         reset_verification_result();
 
@@ -214,11 +210,11 @@
             goto(`/overview-page`);
         } catch (error: any) {
             const error_message = error.message || "Verification failed.";
-            console.error("Verification failed:", error);
+            error("Verification failed: " + error);
 
             // Check if this is an authentication error that requires a token
             if (error_message.includes("private and requires authentication")) {
-                console.log("Authentication required, showing modal");
+                info("Authentication required, showing modal");
                 waiting_for_auth = true;
                 // The modal will show automatically via the auth store
                 // Don't set verification_error here - we're waiting for user input

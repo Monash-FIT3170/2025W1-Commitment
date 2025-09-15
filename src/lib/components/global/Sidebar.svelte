@@ -4,6 +4,7 @@
     import ApiKeyField from "./APIKeyField.svelte";
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
     import { onMount } from "svelte";
+    import { info, error } from "@tauri-apps/plugin-log";
     import { invoke } from "@tauri-apps/api/core";
     import ButtonPrimaryMedium from "./ButtonPrimaryMedium.svelte";
     import { get_repo_info, get_source_type } from "$lib/github_url_verifier";
@@ -21,10 +22,10 @@
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
-            console.log("page", data);
+            info("page", data);
         } catch (e: any) {
             let err = typeof e === "string" ? e : (e?.message ?? String(e));
-            console.error("read_manifest failed", e);
+            info("read_manifest failed", e);
         }
     });
     let bookmarked_repos: RepoBookmark[] = $derived(
@@ -47,12 +48,12 @@
 
         // If key is valid, store securely
         if (is_valid_key) {
-            console.log("Valid API Key");
+            info("Valid API Key");
             api_error = false;
             // Store key securely
         } else {
             // Else, prompt user to re-enter
-            console.log("Invalid API Key");
+            info("Invalid API Key");
             api_error = true;
         }
         return is_valid_key;
@@ -100,8 +101,8 @@
             await save_state(storage_obj);
             await goto("/");
             await goto(`/overview-page`);
-        } catch (error: any) {
-            console.error("Verification failed:", error);
+        } catch (e: any) {
+            error("Verification failed: " + e);
         }
     }
 </script>

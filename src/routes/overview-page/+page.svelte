@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { info, warn } from "@tauri-apps/plugin-log";
+    import { info, warn, error } from "@tauri-apps/plugin-log";
     import ContributorAnalysis from "$lib/components/overview-page/ContributorAnalysis.svelte";
     import { page } from "$app/state";
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
@@ -51,7 +51,7 @@
 
     function select_view(id: string) {
         selected_view = id;
-        console.log(selected_view);
+        info(selected_view);
     }
 
     let show_modal = $state(false);
@@ -100,12 +100,15 @@
     async function load_graph() {
         const branch_arg =
             branch_selection === "" ? undefined : branch_selection;
-        console.log("Loading graph with:", {
-            repo_path,
-            branch_arg,
-            start_date,
-            end_date,
-        });
+        info(
+            "Loading graph with: " +
+                JSON.stringify({
+                    repo_path,
+                    branch_arg,
+                    start_date,
+                    end_date,
+                })
+        );
         let new_contributors = await load_commit_data(
             repo_path,
             branch_arg,
@@ -123,11 +126,8 @@
                         contributors: new_contributors,
                     }
                 );
-            } catch (error) {
-                console.error(
-                    "Error applying config after branch change:",
-                    error
-                );
+            } catch (e) {
+                error("Error applying config after branch change: " + e);
             }
         }
         contributors = [...new_contributors];
@@ -158,10 +158,10 @@
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
-            console.log("page", data);
+            info("page " + data);
         } catch (e: any) {
             let err = typeof e === "string" ? e : (e?.message ?? String(e));
-            console.error("read_manifest failed", e);
+            error("read_manifest failed: " + err);
         }
         if (email_mapping) {
             try {
@@ -172,8 +172,8 @@
                         contributors: contributors,
                     }
                 );
-            } catch (error) {
-                console.error("Error applying config:", error);
+            } catch (e) {
+                error("Error applying config: " + e);
             }
         }
         if (branches.length === 0 || contributors.length === 0) {

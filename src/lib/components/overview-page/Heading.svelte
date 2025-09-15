@@ -9,6 +9,7 @@
     import { invoke } from "@tauri-apps/api/core";
     import { manifest } from "$lib/stores/manifest";
     import type { Contributor } from "$lib/metrics";
+    import { info, error } from "@tauri-apps/plugin-log";
 
     let {
         repo: repo,
@@ -64,13 +65,13 @@
                             }
                         );
 
-                        console.log("Config applied successfully:", result);
+                        info("Config applied successfully:", result);
 
                         contributors = result;
                         manifest.update_email_mapping(json, repo_url);
                         await invoke("save_manifest", { manifest: $manifest });
-                    } catch (error) {
-                        console.error("Error applying config:", error);
+                    } catch (e) {
+                        error("Error applying config: " + e);
                     }
                 } else {
                     textarea_value =

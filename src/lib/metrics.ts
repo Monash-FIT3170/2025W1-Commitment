@@ -32,10 +32,10 @@ export async function load_branches(repo_path: string): Promise<string[]> {
         const real_branches = await invoke<string[]>("get_branch_names", {
             path: repo_path,
         });
-        console.log("REAL BRANCHES", real_branches);
+        info("REAL BRANCHES " + real_branches);
         return ["All", ...real_branches];
     } catch (err) {
-        console.error("Failed to load branches: ", err);
+        info("Failed to load branches: " + err);
         return ["All"];
     }
 }

@@ -1,10 +1,11 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { installGlobalDnDGuards } from "$lib/dnd_guards";
+    import { info } from "@tauri-apps/plugin-log";
 
     onMount(() => {
         const cleanup = installGlobalDnDGuards();
-        console.log("[DnD] global guards installed");
+        info("[DnD] global guards installed");
         return cleanup;
     });
 
@@ -20,7 +21,7 @@
 
     const s = page.state as any;
     load_state(s);
-    console.log(`Repo URL: ${s.repo_url}`);
+    info(`Repo URL: ${s.repo_url}`);
     let owner = $derived(s.owner);
     let repo = $derived(s.repo);
     let repo_url = $derived(s.repo_url);

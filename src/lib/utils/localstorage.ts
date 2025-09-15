@@ -1,5 +1,6 @@
 import { browser } from "$app/environment";
 import type { Contributor } from "$lib/metrics";
+import { error } from "@tauri-apps/plugin-log";
 let STORAGE_KEY = "page_state";
 export function load_state(s: any) {
     if (browser) {
@@ -9,8 +10,8 @@ export function load_state(s: any) {
                 const parsed = JSON.parse(saved);
                 Object.assign(s, parsed); // Merge into page.state
             }
-        } catch (error) {
-            console.error("Failed to load page state from storage:", error);
+        } catch (e) {
+            error("Failed to load page state from storage:", e);
         }
     }
 }
@@ -20,8 +21,8 @@ export async function save_state(s: any) {
     if (browser) {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
-        } catch (error) {
-            console.error("Failed to save page state to storage:", error);
+        } catch (e) {
+            error("Failed to save page state to storage:", e);
         }
     }
 }
