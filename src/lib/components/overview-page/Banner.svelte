@@ -4,13 +4,15 @@
     import UserMenu from "$lib/components/overview-page/UserMenu.svelte";
 
     let {
+        owner,
+        repo,
         repo_url,
-        repo_path,
         username = "Baaset Moslih",
         profile_image_url = "/mock_profile_img.png",
     }: {
+        owner?: string;
+        repo?: string;
         repo_url?: string;
-        repo_path?: string;
         username?: string;
         profile_image_url?: string;
     } = $props();
@@ -42,8 +44,8 @@ contains the user's name and profile image.
 
 <div class="header">
     <div class="left-menu-container">
-        {#if repo_url && repo_path}
-            <LeftMenuWithRepo {repo_url} {repo_path} />
+        {#if repo_url && owner && repo}
+            <LeftMenuWithRepo {repo_url} {owner} {repo} />
         {:else}
             <LeftMenu />
         {/if}

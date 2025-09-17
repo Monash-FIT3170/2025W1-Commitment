@@ -4,7 +4,7 @@
         get_source_type,
         get_repo_info,
     } from "$lib/github_url_verifier.js";
-    import { load_branches, load_commit_data } from "$lib/metrics";
+    import { bare_clone, load_branches, load_commit_data } from "$lib/metrics";
     import { goto } from "$app/navigation";
     import RepoDropdown from "$lib/components/global/RepoDropdown.svelte";
     import { repo_options } from "$lib/stores/repo";
@@ -17,19 +17,20 @@
     import RepoBookmarkList from "$lib/components/global/RepoBookmarkList.svelte";
     import AccessTokenModal from "$lib/components/global/AccessTokenModal.svelte";
     import { auth_error, retry_clone_with_token } from "$lib/stores/auth";
-
+    import { generate_state_object, save_state } from "$lib/utils/localstorage";
     import { onMount } from "svelte";
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
+    import { info, error } from "@tauri-apps/plugin-log";
 
     // only run on the browser
     onMount(async () => {
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
-            console.log("page", data);
+            info("page " + data);
         } catch (e: any) {
             let err = typeof e === "string" ? e : (e?.message ?? String(e));
-            console.error("read_manifest failed", e);
+            error("read_manifest failed: " + err);
         }
     });
 
@@ -65,12 +66,6 @@
     let verification_error: boolean = $state(false);
     let waiting_for_auth: boolean = $state(false);
 
-    interface BackendVerificationResult {
-        owner: string;
-        repo: string;
-        source_type: 0 | 1 | 2;
-    }
-
     async function select_bookmarked_repo(repo_url: string) {
         repo_url_input = repo_url;
         await handle_verification();
@@ -100,28 +95,26 @@
     async function handle_token_add(token: string) {
         // Validate that token is not empty
         if (!token || token.trim().length === 0) {
-            console.log("No token entered, keeping modal open");
+            info("No token entered, keeping modal open");
             verification_message = "Please enter a Personal Access Token";
             verification_error = true;
             return;
         }
 
-        console.log("Authenticating with Personal Access Token...");
+        info("Authenticating with Personal Access Token...");
 
         // Attempt to clone with the provided token
         const success = await retry_clone_with_token(token);
 
         if (success) {
-            console.log(
-                "Authentication successful, continuing repository loading..."
-            );
+            info("Authentication successful, continuing repository loading...");
             waiting_for_auth = false;
             // The modal will be hidden automatically by the auth store
             // The repository should now be accessible, so we can continue with the normal flow
             // Re-trigger the verification process to load the now-accessible repository
             await handle_verification();
         } else {
-            console.log("Authentication failed, please check your token");
+            info("Authentication failed, please check your token");
             // Show user-friendly error message above search bar and close modal
             verification_message =
                 "Access token is invalid. Please check your token and try again.";
@@ -136,19 +129,17 @@
     }
 
     function update_progress(progress: string) {
-        console.log(progress);
+        info(progress);
     }
 
     async function local_verification() {
-        console.log("Local verification called");
+        info("Local verification called");
         // Implement local verification logic here
     }
 
     async function handle_verification() {
-        console.log(
-            "handleVerification called with:",
-            repo_url_input,
-            selected
+        info(
+            "handleVerification called with: " + repo_url_input + " " + selected
         );
         reset_verification_result();
 
@@ -172,16 +163,16 @@
             set_repo_url(repo_url_input);
 
             // Call loadBranches and loadCommitData and wait for both to complete
-            const contributors = await load_commit_data(
+            let repo_path = await bare_clone(
                 repository_information.source,
                 repository_information.owner,
                 repository_information.repo,
                 source_type
             );
 
-            const branches = await load_branches(
-                `${source_type}-${repository_information.owner}-${repository_information.repo}`
-            );
+            let branches = await load_branches(repo_path);
+
+            let contributors = await load_commit_data(repo_path);
 
             const url_trimmed =
                 repository_information.source +
@@ -195,33 +186,35 @@
             );
 
             if (!repo_exists) {
-               await manifest.create_repository(repository_information, url_trimmed);
+                await manifest.create_repository(
+                    repository_information,
+                    url_trimmed
+                );
             }
 
-            await manifest.update_repository_timestamp(repo_url_input);
+            await manifest.update_repository_timestamp(url_trimmed);
             await invoke("save_manifest", { manifest: $manifest });
 
+            const working_dir = await invoke<string>("get_working_directory");
+            let storage_obj = await generate_state_object(
+                working_dir,
+                repository_information,
+                url_trimmed,
+                source_type,
+                branches,
+                contributors
+            );
+            await save_state(storage_obj);
+
             // Navigate to the overview page
-            goto(`/overview-page`, {
-                state: {
-                    repo_path: `${repository_information.source_type}-${repository_information.owner}-${repository_information.repo}`,
-                    repo_url: repo_url_input,
-                    owner: repository_information.owner,
-                    repo: repository_information.repo,
-                    repo_type: selected.source_type,
-                    selected_branch: "",
-                    branches: branches,
-                    contributors: contributors,
-                    source_type: repository_information.source_type,
-                },
-            });
+            goto(`/overview-page`);
         } catch (error: any) {
             const error_message = error.message || "Verification failed.";
-            console.error("Verification failed:", error);
+            error("Verification failed: " + error);
 
             // Check if this is an authentication error that requires a token
             if (error_message.includes("private and requires authentication")) {
-                console.log("Authentication required, showing modal");
+                info("Authentication required, showing modal");
                 waiting_for_auth = true;
                 // The modal will show automatically via the auth store
                 // Don't set verification_error here - we're waiting for user input

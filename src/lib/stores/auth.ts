@@ -1,3 +1,4 @@
+import { info, error } from "@tauri-apps/plugin-log";
 import { writable } from "svelte/store";
 
 export interface AuthError {
@@ -46,7 +47,7 @@ export async function retry_clone_with_token(token: string): Promise<boolean> {
     unsubscribe();
 
     if (!current_error || !current_error.repo_url || !current_error.repo_path) {
-        console.error("No repository information available for retry");
+        error("No repository information available for retry");
         return false;
     }
 
@@ -61,17 +62,17 @@ export async function retry_clone_with_token(token: string): Promise<boolean> {
             token: token,
         });
 
-        console.log("Repository cloned successfully with token");
+        info("Repository cloned successfully with token");
 
         // Success - hide modal
         hide_token_modal();
         return true;
-    } catch (error) {
-        console.error("Clone with token failed:", error);
+    } catch (e) {
+        error("Clone with token failed:", e);
         // Update the error message but keep modal open
         auth_error.set({
             needs_token: true,
-            message: String(error),
+            message: String(e),
             repo_url: repo_url,
             repo_path: repo_path,
         });

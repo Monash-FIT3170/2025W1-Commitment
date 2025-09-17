@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { info, warn } from "@tauri-apps/plugin-log";
+    import { info, warn, error } from "@tauri-apps/plugin-log";
     import ContributorAnalysis from "$lib/components/overview-page/ContributorAnalysis.svelte";
     import { page } from "$app/state";
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
@@ -12,24 +12,27 @@
     import { download_populated_file } from "$lib/utils/grading";
     import { load_branches, load_commit_data } from "$lib/metrics";
     import { invoke } from "@tauri-apps/api/core";
-    import { manifest, type Config } from "$lib/stores/manifest";
+    import {
+        manifest,
+        type Config,
+        type ManifestSchema,
+    } from "$lib/stores/manifest";
     import type { Contributor } from "$lib/metrics";
     import { onMount } from "svelte";
+    import { load_state } from "$lib/utils/localstorage";
 
     const s = page.state as any;
-    let owner = $state(s.owner || "");
+    load_state(s);
     let repo = $state(s.repo || "");
-    let repo_type = $state(s.repo_type);
     let repo_path = $state(s.repo_path || "");
+    let source_type: 0 | 1 | 2 = $state(s.source_type || 0); // 0 = GitHub, 1 = GitLab, 2 = Local
+    let repo_url = $state(s.repo_url || "");
+
     let branches = $state(s.branches || []);
     let contributors = $state(s.contributors || []);
-
-    let branch_selection = $state("");
-    let start_date = $state("");
-    let end_date = $state("");
-
-    let source_type = $state(s.source_type);
-    let repo_url = $state(s.repo_url || "");
+    let branch_selection = $state(s.branch_selection || "");
+    let start_date = $state(s.start_date || "");
+    let end_date = $state(s.end_date || "");
     let email_mapping: Config | null = $derived(
         $manifest.repository.filter((r) => r.url === repo_url)[0]
             ?.email_mapping || null
@@ -48,24 +51,8 @@
 
     function select_view(id: string) {
         selected_view = id;
-        console.log(selected_view);
+        info(selected_view);
     }
-
-    onMount(async () => {
-        if (email_mapping) {
-            try {
-                contributors = await invoke<Contributor[]>(
-                    "group_contributors_by_config",
-                    {
-                        config_json: email_mapping,
-                        contributors: contributors,
-                    }
-                );
-            } catch (error) {
-                console.error("Error applying config:", error);
-            }
-        }
-    });
 
     let show_modal = $state(false);
     const open_modal = () => (show_modal = true);
@@ -110,49 +97,50 @@
         void info("[download] populated file saved");
     }
 
+    async function load_graph() {
+        const branch_arg =
+            branch_selection === "" ? undefined : branch_selection;
+        info(
+            "Loading graph with: " +
+                JSON.stringify({
+                    repo_path,
+                    branch_arg,
+                    start_date,
+                    end_date,
+                })
+        );
+        let new_contributors = await load_commit_data(
+            repo_path,
+            branch_arg,
+            start_date,
+            end_date
+        );
+
+        // Apply config grouping if email_mapping is present
+        if (email_mapping) {
+            try {
+                new_contributors = await invoke<Contributor[]>(
+                    "group_contributors_by_config",
+                    {
+                        config_json: email_mapping,
+                        contributors: new_contributors,
+                    }
+                );
+            } catch (e) {
+                error("Error applying config after branch change: " + e);
+            }
+        }
+        contributors = [...new_contributors];
+    }
+
     $effect(() => {
         if (
             (branch_selection && branch_selection !== "") ||
             (start_date && end_date)
         ) {
-            // Fetch new contributors for the selected branch
             (async () => {
-                const source =
-                    source_type === 0
-                        ? "https://github.com"
-                        : source_type === 1
-                          ? "https://gitlab.com"
-                          : "";
-                const branch_arg =
-                    branch_selection === "" ? undefined : branch_selection;
-                let new_contributors = await load_commit_data(
-                    source,
-                    owner,
-                    repo,
-                    repo_type,
-                    branch_arg,
-                    start_date,
-                    end_date
-                );
-
-                // Apply config grouping if email_mapping is present
-                if (email_mapping) {
-                    try {
-                        new_contributors = await invoke<Contributor[]>(
-                            "group_contributors_by_config",
-                            {
-                                config_json: email_mapping,
-                                contributors: new_contributors,
-                            }
-                        );
-                    } catch (error) {
-                        console.error(
-                            "Error applying config after branch change:",
-                            error
-                        );
-                    }
-                }
-                contributors = [...new_contributors];
+                // Fetch new contributors for the selected branch
+                await load_graph();
             })();
         }
     });
@@ -165,12 +153,39 @@
             })();
         }
     });
+
+    onMount(async () => {
+        try {
+            let data = await invoke<ManifestSchema>("read_manifest");
+            manifest.set(data);
+            info("page " + data);
+        } catch (e: any) {
+            let err = typeof e === "string" ? e : (e?.message ?? String(e));
+            error("read_manifest failed: " + err);
+        }
+        if (email_mapping) {
+            try {
+                contributors = await invoke<Contributor[]>(
+                    "group_contributors_by_config",
+                    {
+                        config_json: email_mapping,
+                        contributors: contributors,
+                    }
+                );
+            } catch (e) {
+                error("Error applying config: " + e);
+            }
+        }
+        if (branches.length === 0 || contributors.length === 0) {
+            await load_graph();
+        }
+    });
 </script>
 
 <div class="page">
     <Heading
         {repo}
-        {repo_type}
+        {source_type}
         {repo_url}
         {branches}
         bind:branch_selection
