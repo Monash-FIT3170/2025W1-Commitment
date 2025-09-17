@@ -138,8 +138,11 @@ function create_manifest_store() {
             repo_local_path: string
         ) {
             const working_dir = await invoke<string>("get_working_directory");
-            const repo_path = (source_type === 2) ? repo_local_path : `${working_dir}/repositories/${repo_info.source_type}-${repo_info.owner}-${repo_info.repo}`;
-            repo_url = (source_type === 2) ? repo_local_path : repo_url;
+            const repo_path =
+                source_type === 2
+                    ? repo_local_path
+                    : `${working_dir}/repositories/${repo_info.source_type}-${repo_info.owner}-${repo_info.repo}`;
+            repo_url = source_type === 2 ? repo_local_path : repo_url;
 
             const new_repo: RepoSchema = {
                 name: repo_info.repo,

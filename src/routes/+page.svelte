@@ -133,8 +133,8 @@
     }
 
     async function local_verification() {
-        await invoke("get_local_repo_information", {path: repo_url_input});
-        console.log("Local repo selected, skipping verification.");
+        await invoke("get_local_repo_information", { path: repo_url_input });
+        info("Local repo selected, skipping verification.");
     }
 
     async function handle_verification() {
@@ -159,8 +159,13 @@
         };
         try {
             if (source_type === 2) {
-                let remote_url = await invoke<string>("get_local_repo_information", {path: repo_url_input});
-                repository_information = get_repo_info(remote_url.replace(".git", ""));
+                let remote_url = await invoke<string>(
+                    "get_local_repo_information",
+                    { path: repo_url_input }
+                );
+                repository_information = get_repo_info(
+                    remote_url.replace(".git", "")
+                );
                 repository_information.source_type = 2;
             } else {
                 repository_information = get_repo_info(repo_url_input);
@@ -185,20 +190,27 @@
 
             let contributors = await load_commit_data(repo_path);
 
-            const url_trimmed = (source_type === 2) ?
-                repo_url_input :
-                repository_information.source +
-                "/" +
-                repository_information.owner +
-                "/" +
-                repository_information.repo;
+            const url_trimmed =
+                source_type === 2
+                    ? repo_url_input
+                    : repository_information.source +
+                      "/" +
+                      repository_information.owner +
+                      "/" +
+                      repository_information.repo;
             // Check if the repository exists in the manifest
             const repo_exists = $manifest["repository"].some(
-                (item) => item.url === url_trimmed && item.source_type === source_type
+                (item) =>
+                    item.url === url_trimmed && item.source_type === source_type
             );
 
             if (!repo_exists) {
-               await manifest.create_repository(repository_information, url_trimmed, source_type, repo_path);
+                await manifest.create_repository(
+                    repository_information,
+                    url_trimmed,
+                    source_type,
+                    repo_path
+                );
             }
 
             await manifest.update_repository_timestamp(url_trimmed);

@@ -65,20 +65,22 @@ pub fn get_local_repo_information(path: &str) -> Result<String, String> {
         return Err("No repository found".into());
     }
 
-    // Returns the name and owner of the repository if it can be opened    
+    // Returns the name and owner of the repository if it can be opened
 
     match git2::Repository::open(path) {
         Ok(repo) => {
-            if let Some(remote) = repo.find_remote("origin").ok() {
+            if let Ok(remote) = repo.find_remote("origin") {
                 if let Some(url) = remote.url() {
                     return Ok(url.to_string());
                 }
             }
-            return Err(format!("Failed to open repository at {path}: No origin remote found"));
+            Err(format!(
+                "Failed to open repository at {path}: No origin remote found"
+            ))
         }
         Err(e) => {
             log::error!("Failed to open repository at {path}: {e}");
-            return Err(format!("Failed to open repository: {e}"));
+            Err(format!("Failed to open repository: {e}"))
         }
     }
 }
