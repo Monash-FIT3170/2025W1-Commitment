@@ -42,6 +42,7 @@
     );
     let api_input = $state("");
     let api_error = $state(false);
+    let api_err_desc = $state("");
 
     async function on_submit(): Promise<Boolean> {
         // Key validation
@@ -60,11 +61,13 @@
                 // Else, prompt user to re-enter
                 info("Invalid API Key");
                 api_error = true;
+                api_err_desc = "Invalid API Key. Please try again.";
             }
             return is_valid_key;
         } catch (err) {
             error("Failed to validate key: " + err);
             api_error = true;
+            api_err_desc = "Error validating key. Please try again.";
             return false;
         }
     }
@@ -196,6 +199,11 @@
             Add your Gemini API key to enable AI-powered features.
         </div>
         <ApiKeyField bind:api_input {on_submit} error={api_error} />
+        {#if api_error}
+            <div class="caption error" style="margin-top: 0.25rem;">
+                {api_err_desc}
+            </div>
+        {/if}
     </div>
     <div class="sidebar-item-container">
         <div class="header">
