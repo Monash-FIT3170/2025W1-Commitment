@@ -127,7 +127,7 @@ pub fn check_key_set() -> bool {
 
 #[tauri::command]
 pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
-    println!("Validating Gemini API key...");
+    log::info!("Validating Gemini API key...");
     let url: &str = "https://generativelanguage.googleapis.com/v1/models";
 
     let client = reqwest::Client::new();
@@ -139,19 +139,16 @@ pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
         .await
         .map_err(|e| e.to_string())?;
 
-    // Debugging: Check response status
-    println!("Response Status: {}", response.status());
-
     match response.status() {
         reqwest::StatusCode::OK => {
-            println!("VALID API KEY");
+            log::info!("VALID API KEY");
             env::set_var("GEMINI_API_KEY", &api_key);
             Ok(true)
         }
         reqwest::StatusCode::UNAUTHORIZED
         | reqwest::StatusCode::FORBIDDEN
         | reqwest::StatusCode::BAD_REQUEST => {
-            println!("INVALID API KEY");
+            log::info!("INVALID API KEY");
 
             if env::var("GEMINI_API_KEY").is_ok() {
                 // Removes the previously inputted valid key in case invalid key is entered.
