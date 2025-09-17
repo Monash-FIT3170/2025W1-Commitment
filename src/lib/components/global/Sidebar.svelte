@@ -45,21 +45,28 @@
 
     async function on_submit(): Promise<Boolean> {
         // Key validation
-        let is_valid_key = await invoke<Boolean>("gemini_key_validation", {
-            apiKey: api_input,
-        });
+        info("Attempting to validate key");
+        try {
+            let is_valid_key = await invoke<Boolean>("gemini_key_validation", {
+                apiKey: api_input,
+            });
 
-        // If key is valid, store securely
-        if (is_valid_key) {
-            info("Valid API Key");
-            api_error = false;
-            // Store key securely
-        } else {
-            // Else, prompt user to re-enter
-            info("Invalid API Key");
+            // If key is valid, store securely
+            if (is_valid_key) {
+                info("Valid API Key");
+                api_error = false;
+                // Store key securely
+            } else {
+                // Else, prompt user to re-enter
+                info("Invalid API Key");
+                api_error = true;
+            }
+            return is_valid_key;
+        } catch (err) {
+            error("Failed to validate key: " + err);
             api_error = true;
+            return false;
         }
-        return is_valid_key;
     }
 
     async function bookmark_open(repo_url_input: string) {
