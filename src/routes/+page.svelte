@@ -103,21 +103,36 @@
 
         info("Authenticating with Personal Access Token...");
 
-        // Attempt to clone with the provided token
-        const success = await retry_clone_with_token(token);
+        try {
+            // Attempt to clone with the provided token
+            const success = await retry_clone_with_token(token);
 
-        if (success) {
-            info("Authentication successful, continuing repository loading...");
-            waiting_for_auth = false;
-            // The modal will be hidden automatically by the auth store
-            // The repository should now be accessible, so we can continue with the normal flow
-            // Re-trigger the verification process to load the now-accessible repository
-            await handle_verification();
-        } else {
-            info("Authentication failed, please check your token");
-            // Show user-friendly error message above search bar and close modal
+            if (success) {
+                info(
+                    "Authentication successful, continuing repository loading..."
+                );
+                waiting_for_auth = false;
+                // The modal will be hidden automatically by the auth store
+                // The repository should now be accessible, so we can continue with the normal flow
+                // Re-trigger the verification process to load the now-accessible repository
+                await handle_verification();
+            } else {
+                info("Authentication failed, please check your token");
+                // Show user-friendly error message above search bar and close modal
+                verification_message =
+                    "Access token is invalid. Please check your token and try again.";
+                verification_error = true;
+                waiting_for_auth = false;
+                // Hide the modal since we're showing the error above the search bar
+                auth_error.set({
+                    needs_token: false,
+                    message: "",
+                });
+            }
+        } catch (err) {
+            error("Error during token validation: " + err);
             verification_message =
-                "Access token is invalid. Please check your token and try again.";
+                "An error occurred during authentication. Please try again.";
             verification_error = true;
             waiting_for_auth = false;
             // Hide the modal since we're showing the error above the search bar
