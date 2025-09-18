@@ -187,17 +187,26 @@
         const full_height = x_axis_y - grid_top;
         const tint_height = is_staggered_mode
             ? x_axis_y - tint_start_y
-            : full_height * 0.9;
+            : full_height;
 
-        const margin_left = 40; // px
-        const margin_right = 40; // px
+        const axis_min_val = x_min - 1 < 0 ? 0 : x_min;
+        const margin_left = chart.convertToPixel({ gridIndex: 0 }, [
+            axis_min_val,
+            0,
+        ])[0];
+        const grid_right_px = chart.convertToPixel({ gridIndex: 0 }, [x_max, 0])[0];
+        const drawable_width = grid_right_px - margin_left;
         const container_width = chart_container.clientWidth;
-        const drawable_width = container_width - margin_left - margin_right;
+        const margin_right = container_width - grid_right_px;
 
         function x_scale(value: number) {
+            if (x_max - axis_min_val === 0) {
+                return margin_left;
+            }
             return (
                 margin_left +
-                ((value - x_min) / (x_max - x_min)) * drawable_width
+                ((value - axis_min_val) / (x_max - axis_min_val)) *
+                    drawable_width
             );
         }
 
