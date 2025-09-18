@@ -16,6 +16,7 @@
     import ProgressBar from "$lib/components/global/ProgressBar.svelte";
     import { SvelteMap } from "svelte/reactivity";
     import { get_source_type } from "$lib/github_url_verifier";
+    import { goto } from "$app/navigation";
 
     let {
         contributors,
@@ -170,6 +171,22 @@
             return a.username < b.username ? -1 : 1;
         });
     }
+
+    async function delete_repository() {
+        try {
+            const working_dir = await invoke("get_working_directory");
+            const full_repo_path = `${working_dir}/repositories/${repo_path}`;
+
+            info(`Deleting repository at: ${full_repo_path}`);
+            await invoke("delete_repo", { path: full_repo_path });
+
+            info("Repository deleted successfully, navigating to home");
+            goto("/");
+        } catch (e) {
+            error("Failed to delete repository: " + e);
+            error_message = "Failed to delete repository: " + String(e);
+        }
+    }
 </script>
 
 <main class="container">
@@ -204,20 +221,30 @@
                 {/each}
             </div>
             <div class="button-container">
-                <div>
+                <div class="button-group">
                     <ButtonPrimaryMedium
                         label={"Regenerate AI Summaries"}
                         onclick={generate_summaries}
+                        disabled={loading}
+                    />
+                    <ButtonPrimaryMedium
+                        label={"Delete Repository"}
+                        onclick={delete_repository}
                         disabled={loading}
                     />
                 </div>
             </div>
         {:else}
             <div class="button-container">
-                <div>
+                <div class="button-group">
                     <ButtonPrimaryMedium
                         label={"Generate AI Summaries"}
                         onclick={generate_summaries}
+                        disabled={loading}
+                    />
+                    <ButtonPrimaryMedium
+                        label={"Delete Repository"}
+                        onclick={delete_repository}
                         disabled={loading}
                     />
                 </div>
@@ -256,6 +283,11 @@
         justify-content: center;
         height: calc(100vh - 31.1rem);
         align-items: center;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
     }
     .error-message {
         color: #e53e3e;
