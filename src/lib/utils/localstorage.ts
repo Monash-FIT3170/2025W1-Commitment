@@ -39,7 +39,10 @@ export async function generate_state_object(
     selected_branch: string = ""
 ) {
     return {
-        repo_path: `${working_dir}/repositories/${source_type}-${repository_information.owner}-${repository_information.repo}`,
+        repo_path:
+            source_type === 2
+                ? repo_url
+                : `${working_dir}/repositories/${source_type}-${repository_information.owner}-${repository_information.repo}`,
         repo_url: repo_url,
         owner: repository_information.owner,
         repo: repository_information.repo,

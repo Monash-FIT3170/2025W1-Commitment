@@ -32,6 +32,7 @@ pub fn run() {
             repositories::bare_clone,
             repositories::try_clone_with_token,
             repositories::is_repo_cloned,
+            repositories::get_local_repo_information,
             url_verifier::verify_and_extract_source_info,
             manifest::read_manifest,
             manifest::save_manifest,

@@ -134,12 +134,15 @@ function create_manifest_store() {
         async create_repository(
             repo_info: RepositoryInformation,
             repo_url: string,
-            is_local: boolean = false
+            source_type: 0 | 1 | 2,
+            repo_local_path: string
         ) {
             const working_dir = await invoke<string>("get_working_directory");
-            const repo_path = is_local
-                ? repo_url
-                : `${working_dir}/repositories/${repo_info.source_type}-${repo_info.owner}-${repo_info.repo}`;
+            const repo_path =
+                source_type === 2
+                    ? repo_local_path
+                    : `${working_dir}/repositories/${repo_info.source_type}-${repo_info.owner}-${repo_info.repo}`;
+            repo_url = source_type === 2 ? repo_local_path : repo_url;
 
             const new_repo: RepoSchema = {
                 name: repo_info.repo,
@@ -148,7 +151,7 @@ function create_manifest_store() {
                 url: repo_url,
                 path: repo_path,
                 bookmarked: false,
-                cloned: !is_local,
+                cloned: source_type !== 2,
                 email_mapping: null,
                 grading_sheet: null,
                 last_accessed: new Date().toISOString(),

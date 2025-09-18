@@ -149,7 +149,7 @@
             <h2 class="heading-1 sidebar-item-header white">Bookmarks</h2>
         </div>
 
-        {#each bookmarked_repos as repo (repo.repo_name)}
+        {#each bookmarked_repos as repo (repo.repo_url)}
             {#if repo.repo_bookmarked}
                 <button
                     class="bookmark-item"

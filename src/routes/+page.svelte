@@ -133,8 +133,8 @@
     }
 
     async function local_verification() {
-        info("Local verification called");
-        // Implement local verification logic here
+        await invoke("get_local_repo_information", { path: repo_url_input });
+        info("Local repo selected, skipping verification.");
     }
 
     async function handle_verification() {
@@ -151,44 +151,65 @@
 
         let source_type = get_source_type(repo_url_input);
 
-        if (source_type === 2) {
-            await local_verification();
-            return;
-        }
-
+        let repository_information: {
+            source_type: 0 | 1 | 2;
+            source: string;
+            owner: string;
+            repo: string;
+        };
         try {
-            const repository_information = get_repo_info(repo_url_input);
+            if (source_type === 2) {
+                let remote_url = await invoke<string>(
+                    "get_local_repo_information",
+                    { path: repo_url_input }
+                );
+                repository_information = get_repo_info(
+                    remote_url.replace(".git", "")
+                );
+                repository_information.source_type = 2;
+            } else {
+                repository_information = get_repo_info(repo_url_input);
+            }
 
             // Update the repo store with the new URL
-            set_repo_url(repo_url_input);
-
+            let repo_path: string;
+            if (source_type === 2) {
+                repo_path = repo_url_input;
+            } else {
+                set_repo_url(repo_url_input);
+                repo_path = await bare_clone(
+                    repository_information.source,
+                    repository_information.owner,
+                    repository_information.repo,
+                    source_type
+                );
+            }
             // Call loadBranches and loadCommitData and wait for both to complete
-            let repo_path = await bare_clone(
-                repository_information.source,
-                repository_information.owner,
-                repository_information.repo,
-                source_type
-            );
 
             let branches = await load_branches(repo_path);
 
             let contributors = await load_commit_data(repo_path);
 
             const url_trimmed =
-                repository_information.source +
-                "/" +
-                repository_information.owner +
-                "/" +
-                repository_information.repo;
+                source_type === 2
+                    ? repo_url_input
+                    : repository_information.source +
+                      "/" +
+                      repository_information.owner +
+                      "/" +
+                      repository_information.repo;
             // Check if the repository exists in the manifest
             const repo_exists = $manifest["repository"].some(
-                (item) => item.url === url_trimmed
+                (item) =>
+                    item.url === url_trimmed && item.source_type === source_type
             );
 
             if (!repo_exists) {
                 await manifest.create_repository(
                     repository_information,
-                    url_trimmed
+                    url_trimmed,
+                    source_type,
+                    repo_path
                 );
             }
 
