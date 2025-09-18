@@ -222,7 +222,7 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
-        min-height: auto;
+        min-height: calc(100vh - 27rem);
     }
 
     .contents {
@@ -243,7 +243,7 @@
     .button-container {
         display: flex;
         justify-content: center;
-        height: calc(100vh - 26rem);
+        height: calc(100vh - 31.1rem);
         align-items: center;
     }
     .error-message {
