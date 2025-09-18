@@ -194,7 +194,10 @@
             axis_min_val,
             0,
         ])[0];
-        const grid_right_px = chart.convertToPixel({ gridIndex: 0 }, [x_max, 0])[0];
+        const grid_right_px = chart.convertToPixel({ gridIndex: 0 }, [
+            x_max,
+            0,
+        ])[0];
         const drawable_width = grid_right_px - margin_left;
         const container_width = chart_container.clientWidth;
         const margin_right = container_width - grid_right_px;
