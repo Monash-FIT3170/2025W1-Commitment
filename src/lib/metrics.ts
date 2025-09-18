@@ -186,6 +186,80 @@ export function get_average_absolute_diff(users: Contributor[]): number {
     return abs_diff_mean;
 }
 
+// Calculate quartiles (Q1, Median, Q3) for a given set of numerical data
+function calculate_quartiles(values: number[]): {
+    q1: number;
+    median: number;
+    q3: number;
+} {
+    if (values.length === 0) return { q1: 0, median: 0, q3: 0 };
+
+    const sorted_values = [...values].sort((a, b) => a - b);
+
+    const find_median = (arr: number[]): number => {
+        if (arr.length === 0) return 0;
+        const mid_index = Math.floor(arr.length / 2);
+        if (arr.length % 2 === 0) {
+            return (arr[mid_index - 1] + arr[mid_index]) / 2;
+        } else {
+            return arr[mid_index];
+        }
+    };
+
+    const median = find_median(sorted_values);
+    const midPoint = Math.floor(sorted_values.length / 2);
+
+    let lower_half: number[];
+    let upper_half: number[];
+
+    if (sorted_values.length % 2 === 0) {
+        lower_half = sorted_values.slice(0, midPoint);
+        upper_half = sorted_values.slice(midPoint);
+    } else {
+        lower_half = sorted_values.slice(0, midPoint);
+        upper_half = sorted_values.slice(midPoint + 1);
+    }
+
+    const q1 = find_median(lower_half);
+    const q3 = find_median(upper_half);
+
+    return { q1, median, q3 };
+}
+
+export function get_commit_quartiles(users: Contributor[]): {
+    q1: number;
+    median: number;
+    q3: number;
+} {
+    if (users.length === 0) return { q1: 0, median: 0, q3: 0 };
+    const commit_values = users.map((user) => user.total_commits);
+    return calculate_quartiles(commit_values);
+}
+
+export function get_commit_size_quartiles(users: Contributor[]): {
+    q1: number;
+    median: number;
+    q3: number;
+} {
+    if (users.length === 0) return { q1: 0, median: 0, q3: 0 };
+    const commit_size_values = users.map((user) =>
+        get_user_lines_per_commit(user)
+    );
+    return calculate_quartiles(commit_size_values);
+}
+
+export function get_absolute_diff_quartiles(users: Contributor[]): {
+    q1: number;
+    median: number;
+    q3: number;
+} {
+    if (users.length === 0) return { q1: 0, median: 0, q3: 0 };
+    const absolute_diff_values = users.map((user) =>
+        get_user_absolute_diff(user)
+    );
+    return calculate_quartiles(absolute_diff_values);
+}
+
 // Calculate standard deviation
 export function get_sd(users: Contributor[], metric: string): number {
     if (users.length === 0) return 0;
@@ -233,6 +307,44 @@ export function get_sd(users: Contributor[], metric: string): number {
 export function get_ref_points(mean: number, sd: number): number[] {
     if (sd === 0) return [mean, mean, mean, mean, mean];
     return [mean - 2 * sd, mean - sd, mean, mean + sd, mean + 2 * sd];
+}
+
+export function get_quartile_ref_points(
+    users: Contributor[],
+    metric: string
+): number[] {
+    if (users.length === 0) return [0, 0, 0, 0, 0];
+
+    let quartiles: { q1: number; median: number; q3: number };
+    let values: number[];
+
+    switch (metric) {
+        case "commit_size": {
+            quartiles = get_commit_size_quartiles(users);
+            values = users.map((user) => get_user_lines_per_commit(user));
+            break;
+        }
+        case "commits": {
+            quartiles = get_commit_quartiles(users);
+            values = users.map((user) => user.total_commits);
+            break;
+        }
+        case "absolute_diff": {
+            quartiles = get_absolute_diff_quartiles(users);
+            values = users.map((user) => get_user_absolute_diff(user));
+            break;
+        }
+        default: {
+            quartiles = get_commit_quartiles(users);
+            values = users.map((user) => user.total_commits);
+            break;
+        }
+    }
+
+    const min = values.length > 0 ? Math.min(...values) : 0;
+    const max = values.length > 0 ? Math.max(...values) : 0;
+
+    return [min, quartiles.q1, quartiles.median, quartiles.q3, max];
 }
 
 // Calculate scaling factor

@@ -7,6 +7,7 @@
         get_metric_min_max,
         get_sd,
         get_ref_points,
+        get_quartile_ref_points,
         get_users_total_commits,
         get_users_avg_commit_size,
         get_users_absolute_diff,
@@ -18,7 +19,12 @@
     let {
         contributors,
         metric,
-    }: { contributors: Contributor[]; metric: string } = $props();
+        aggregation = "mean",
+    }: {
+        contributors: Contributor[];
+        metric: string;
+        aggregation?: string;
+    } = $props();
 
     let chart_container: HTMLElement;
     let chart: echarts.ECharts;
@@ -158,19 +164,33 @@
         sd = get_sd(contributors, metric);
     });
     $effect(() => {
-        ref_point_values = get_ref_points(metric_mean, sd);
+        if (aggregation === "mean") {
+            ref_point_values = get_ref_points(metric_mean, sd);
+        } else {
+            ref_point_values = get_quartile_ref_points(contributors, metric);
+        }
     });
     $effect(() => {
-        ref_points =
-            sd === 0
-                ? [{ label: "mean", value: ref_point_values[2] }]
-                : [
-                      { label: "-2σ", value: ref_point_values[0] },
-                      { label: "-σ", value: ref_point_values[1] },
-                      { label: "mean", value: ref_point_values[2] },
-                      { label: "+σ", value: ref_point_values[3] },
-                      { label: "+2σ", value: ref_point_values[4] },
-                  ];
+        if (aggregation === "mean") {
+            ref_points =
+                sd === 0
+                    ? [{ label: "mean", value: ref_point_values[2] }]
+                    : [
+                          { label: "-2σ", value: ref_point_values[0] },
+                          { label: "-σ", value: ref_point_values[1] },
+                          { label: "mean", value: ref_point_values[2] },
+                          { label: "+σ", value: ref_point_values[3] },
+                          { label: "+2σ", value: ref_point_values[4] },
+                      ];
+        } else {
+            ref_points = [
+                { label: "Min", value: ref_point_values[0] },
+                { label: "Q1", value: ref_point_values[1] },
+                { label: "Median", value: ref_point_values[2] },
+                { label: "Q3", value: ref_point_values[3] },
+                { label: "Max", value: ref_point_values[4] },
+            ];
+        }
     });
 
     function update_graphics() {
@@ -224,24 +244,15 @@
         }
 
         // Calculate pixel positions of ref points (commit counts)
-        const x_minus2sigma = x_scale(ref_point_values[0]);
-        const x_minus_sigma = x_scale(ref_point_values[1]);
-        const x_plus_sigma = x_scale(ref_point_values[3]);
-        const x_plus2sigma = x_scale(ref_point_values[4]);
+        const x_p0 = x_scale(ref_point_values[0]);
+        const x_p1 = x_scale(ref_point_values[1]);
+        const x_p3 = x_scale(ref_point_values[3]);
+        const x_p4 = x_scale(ref_point_values[4]);
 
         // Clamp tints within bounds
-        const left_tint = clamp_tint(
-            x_minus2sigma,
-            x_minus_sigma - x_minus2sigma
-        );
-        const middle_tint = clamp_tint(
-            x_minus_sigma,
-            x_plus_sigma - x_minus_sigma
-        );
-        const right_tint = clamp_tint(
-            x_plus_sigma,
-            x_plus2sigma - x_plus_sigma
-        );
+        const left_tint = clamp_tint(x_p0, x_p1 - x_p0);
+        const middle_tint = clamp_tint(x_p1, x_p3 - x_p1);
+        const right_tint = clamp_tint(x_p3, x_p4 - x_p3);
 
         // White tint between -σ and +σ
         const tint_between1sigma = {
@@ -338,7 +349,7 @@
             const scaling_factor = calculate_scaling_factor(
                 person.data_to_display,
                 metric_mean,
-                sd
+                aggregation === "mean" ? sd : 0
             );
             const is_rightmost = person.data_to_display === x_max;
             return {

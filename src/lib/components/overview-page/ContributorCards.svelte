@@ -10,6 +10,9 @@
         get_average_commits,
         get_average_commit_size,
         get_average_absolute_diff,
+        get_commit_quartiles,
+        get_commit_size_quartiles,
+        get_absolute_diff_quartiles,
         get_sd,
         type Contributor,
     } from "$lib/metrics";
@@ -22,25 +25,41 @@
         start_date: start_date,
         end_date: end_date,
         metric,
+        aggregation = "mean",
     }: {
         users: Contributor[];
         selected_branch: string;
         start_date: string;
         end_date: string;
         metric: string;
+        aggregation?: string;
     } = $props();
 
     // Calculate metrics based on selected metric - WITH EXPLICIT TYPES
-    let metric_mean = $derived(() => {
-        switch (metric) {
-            case "commits":
-                return get_average_commits(users);
-            case "commit_size":
-                return get_average_commit_size(users);
-            case "absolute_diff":
-                return get_average_absolute_diff(users);
-            default:
-                return get_average_commits(users);
+    let metric_centrality = $derived(() => {
+        if (aggregation === "median") {
+            switch (metric) {
+                case "commits":
+                    return get_commit_quartiles(users).median;
+                case "commit_size":
+                    return get_commit_size_quartiles(users).median;
+                case "absolute_diff":
+                    return get_absolute_diff_quartiles(users).median;
+                default:
+                    return get_commit_quartiles(users).median;
+            }
+        } else {
+            // 'mean'
+            switch (metric) {
+                case "commits":
+                    return get_average_commits(users);
+                case "commit_size":
+                    return get_average_commit_size(users);
+                case "absolute_diff":
+                    return get_average_absolute_diff(users);
+                default:
+                    return get_average_commits(users);
+            }
         }
     });
 
@@ -70,8 +89,8 @@
 
             const scaling_factor = calculate_scaling_factor(
                 data_value,
-                metric_mean(),
-                sd_value
+                metric_centrality(),
+                aggregation === "mean" ? sd_value : 0
             );
 
             return {

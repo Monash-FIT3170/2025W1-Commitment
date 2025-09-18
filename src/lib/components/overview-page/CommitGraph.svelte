@@ -52,6 +52,7 @@
         {start_date}
         {end_date}
         metric={selected_criteria}
+        aggregation={selected_aggregation}
     />
 
     <ContributorCards
@@ -60,6 +61,7 @@
         start_date={start_date ?? ""}
         end_date={end_date ?? ""}
         metric={selected_criteria}
+        aggregation={selected_aggregation}
     />
 </main>
 
