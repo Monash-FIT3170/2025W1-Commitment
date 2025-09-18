@@ -3,7 +3,9 @@
     import type { Contributor } from "$lib/metrics";
     import {
         calculate_scaling_factor,
+        calculate_quartile_scaling_factor,
         get_average_commits,
+        get_commit_quartiles,
         get_sd,
         get_user_total_commits,
     } from "$lib/metrics";
@@ -21,16 +23,19 @@
         email_mapping,
         selected_criteria,
         source_type,
+        aggregation = "mean",
     }: {
         contributors: Contributor[];
         repo_path: string;
         email_mapping?: any;
         selected_criteria: string;
         source_type: number;
+        aggregation?: string;
     } = $props();
 
-    let commit_mean = get_average_commits(contributors);
-    let sd = get_sd(contributors, selected_criteria);
+    let commit_mean = $derived(get_average_commits(contributors));
+    let sd = $derived(get_sd(contributors, selected_criteria));
+    let quartiles = $derived(get_commit_quartiles(contributors));
     let loading = $state(false);
     let total_summaries = $state(0);
     let generated_summaries = $state(0);
@@ -124,11 +129,21 @@
     let people_with_analysis = $derived(
         contributors.map((user: Contributor) => {
             const num_commits = get_user_total_commits(user);
-            const scaling_factor = calculate_scaling_factor(
-                num_commits,
-                commit_mean,
-                sd
-            );
+            let scaling_factor: number;
+
+            if (aggregation === "mean") {
+                scaling_factor = calculate_scaling_factor(
+                    num_commits,
+                    commit_mean(),
+                    sd()
+                );
+            } else {
+                scaling_factor = calculate_quartile_scaling_factor(
+                    num_commits,
+                    quartiles().q1,
+                    quartiles().q3
+                );
+            }
 
             const email = get_email(user);
 

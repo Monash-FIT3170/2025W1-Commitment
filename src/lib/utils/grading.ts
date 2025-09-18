@@ -5,6 +5,7 @@ import {
     get_average_commits,
     get_sd,
     calculate_scaling_factor,
+    calculate_quartile_scaling_factor,
 } from "$lib/metrics";
 
 import { parse_rows, stringify_rows, parse_number_cell } from "$lib/utils/csv";

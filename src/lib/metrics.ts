@@ -369,6 +369,20 @@ export function calculate_scaling_factor(
     }
 }
 
+export function calculate_quartile_scaling_factor(
+    value: number,
+    q1: number,
+    q3: number
+): number {
+    if (value < q1) {
+        return 0.9;
+    } else if (value > q3) {
+        return 1.1;
+    } else {
+        return 1.0;
+    }
+}
+
 export function get_metric_min_max(
     users: Contributor[],
     metric: string

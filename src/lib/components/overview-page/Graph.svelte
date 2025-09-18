@@ -8,10 +8,14 @@
         get_sd,
         get_ref_points,
         get_quartile_ref_points,
+        get_commit_quartiles,
+        get_commit_size_quartiles,
+        get_absolute_diff_quartiles,
         get_users_total_commits,
         get_users_avg_commit_size,
         get_users_absolute_diff,
         calculate_scaling_factor,
+        calculate_quartile_scaling_factor,
         type Contributor,
         type UserDisplayData,
     } from "$lib/metrics";
@@ -39,6 +43,11 @@
     let x_max: number = $state(1);
     let metric_mean: number = $state(0);
     let sd: number = $state(0);
+    let quartiles: { q1: number; median: number; q3: number } = $state({
+        q1: 0,
+        median: 0,
+        q3: 0,
+    });
     let ref_point_values: number[] = $state([]);
     let ref_points: { label: string; value: number }[] = $state([]);
     let resize_handler: () => void;
@@ -164,6 +173,26 @@
     });
     $effect(() => {
         sd = get_sd(contributors, metric);
+        if (aggregation === "median") {
+            switch (metric) {
+                case "commits": {
+                    quartiles = get_commit_quartiles(contributors);
+                    break;
+                }
+                case "commit_size": {
+                    quartiles = get_commit_size_quartiles(contributors);
+                    break;
+                }
+                case "absolute_diff": {
+                    quartiles = get_absolute_diff_quartiles(contributors);
+                    break;
+                }
+                default: {
+                    quartiles = get_commit_quartiles(contributors);
+                    break;
+                }
+            }
+        }
     });
     $effect(() => {
         if (aggregation === "mean") {
@@ -348,11 +377,23 @@
             const x = is_staggered_mode
                 ? baseX
                 : baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
-            const scaling_factor = calculate_scaling_factor(
-                person.data_to_display,
-                metric_mean,
-                aggregation === "mean" ? sd : 0
-            );
+            
+            let scaling_factor: number;
+
+            if (aggregation === 'mean') {
+                scaling_factor = calculate_scaling_factor(
+                    person.data_to_display,
+                    metric_mean,
+                    sd
+                );
+            } else {
+                scaling_factor = calculate_quartile_scaling_factor(
+                    person.data_to_display,
+                    quartiles.q1,
+                    quartiles.q3
+                );
+            }
+
             const is_rightmost = person.data_to_display === x_max;
             return {
                 type: "group",

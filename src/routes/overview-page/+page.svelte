@@ -41,6 +41,8 @@
     //let criteria = ["total commits", "lines of code", "lines/commit"];
     let criteria: string[] = ["commits", "commit_size", "absolute_diff"];
     let selected_criteria = $state(criteria[0]);
+    let aggregation_options = ["mean", "median"];
+    let selected_aggregation = $state("mean");
 
     let selected_view: string = $state("overview");
 
@@ -218,6 +220,8 @@
                 {end_date}
                 {criteria}
                 bind:selected_criteria
+                {aggregation_options}
+                bind:selected_aggregation
             />
         {/key}
     {:else if selected_view === "analysis"}
@@ -227,6 +231,7 @@
             {email_mapping}
             {source_type}
             {selected_criteria}
+            aggregation={selected_aggregation}
         />
     {/if}
 

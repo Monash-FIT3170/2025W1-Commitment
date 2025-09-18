@@ -12,6 +12,8 @@
         end_date,
         criteria,
         selected_criteria = $bindable(),
+        aggregation_options,
+        selected_aggregation = $bindable(),
     }: {
         contributors: Contributor[];
         branches: String[];
@@ -20,12 +22,12 @@
         end_date?: string;
         criteria: string[];
         selected_criteria: string;
+        aggregation_options: string[];
+        selected_aggregation: string;
     } = $props();
 
     let sidebar_open = $state(false);
     let bookmarked_repo: { repo_name: string; repo_url: string }[] = [];
-    let aggregation_options = ["mean", "median"];
-    let selected_aggregation = $state("mean");
 
     function toggle_sidebar() {
         sidebar_open = !sidebar_open;
