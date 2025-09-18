@@ -23,7 +23,9 @@
     let chart_container: HTMLElement;
     let chart: echarts.ECharts;
     let filtered_people: UserDisplayData[] = $state([]);
-    let processed_people: (UserDisplayData & { y_value?: number })[] = $state([]);
+    let processed_people: (UserDisplayData & { y_value?: number })[] = $state(
+        []
+    );
     let is_staggered_mode = $state(false);
     let chart_height = $state(380);
     let is_transitioning = $state(false);
@@ -94,7 +96,10 @@
                 y_value: 30 + index * 40,
             }));
         } else {
-            processed_people = filtered_people.map((p) => ({ ...p, y_value: 1.25 }));
+            processed_people = filtered_people.map((p) => ({
+                ...p,
+                y_value: 1.25,
+            }));
         }
     });
     $effect(() => {
@@ -357,7 +362,9 @@
                                       fontWeight: "900",
                                       fill: "#fff",
                                       font: 'bold 16px "DM Sans ExtraBold", sans-serif',
-                                      textAlign: is_rightmost ? "right" : "left",
+                                      textAlign: is_rightmost
+                                          ? "right"
+                                          : "left",
                                       textVerticalAlign: "top",
                                   },
                                   x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
@@ -372,7 +379,9 @@
                                       fontSize: 14,
                                       fill: "#fff",
                                       font: 'bold 16px "DM Sans", sans-serif',
-                                      textAlign: is_rightmost ? "right" : "left",
+                                      textAlign: is_rightmost
+                                          ? "right"
+                                          : "left",
                                       textVerticalAlign: "top",
                                   },
                                   x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
@@ -446,7 +455,10 @@
                 show: false,
                 min: 0,
                 max: is_staggered_mode
-                    ? Math.max(30 + (processed_people.length - 1) * 40 + 100, 2.5)
+                    ? Math.max(
+                          30 + (processed_people.length - 1) * 40 + 100,
+                          2.5
+                      )
                     : 2.5,
             },
             series: [
@@ -561,6 +573,5 @@
     .chart-container {
         width: 100%;
         font-family: "DM Sans", sans-serif;
-        padding-bottom: 2rem;
     }
 </style>
