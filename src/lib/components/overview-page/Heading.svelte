@@ -85,16 +85,16 @@
         }
     }
 
-    function open_calendar() {
-        //calendar logic
-        //task for future sprint
-    }
-
     function handle_date_change(
         event: CustomEvent<{ start: string; end: string }>
     ) {
         start_date = event.detail.start;
         end_date = event.detail.end;
+    }
+
+    function reset_dates() {
+        start_date = "";
+        end_date = "";
     }
 </script>
 
@@ -171,17 +171,29 @@
         <div class="calendar-btn heading-btn">
             <!-- calendar btn -->
             <Calendar
-                initial_start={start_date}
-                initial_end={end_date}
+                start={start_date}
+                end={end_date}
                 date_format="d-m-Y"
                 icon="calendar"
                 icon_first={true}
                 label_class="body-accent"
                 label="Select Date Range"
                 disabled={false}
-                width="7rem"
+                width={(start_date && end_date) ? "14rem" : "7rem"}
                 on:change={handle_date_change}
             />
+            {#if start_date && end_date}
+            <button
+            type="button"
+            class="bookmark-btn"
+            onclick={reset_dates}
+        >
+            <Icon
+                icon={"tabler:filter-off"}
+                class="icon-medium"
+            />
+            </button>
+            {/if}
         </div>
     </div>
 
@@ -227,6 +239,14 @@
         padding-right: 4rem;
     }
 
+    .bookmark-btn {
+        background: none;
+        border: none;
+        padding: 0.25rem;
+        cursor: pointer;
+        color: var(--label-primary);
+    }
+
     .display-subtitle {
         color: var(--label-secondary);
         padding: 0.6rem 0;
@@ -253,7 +273,7 @@
         display: flex;
     }
 
-    @media (max-width: 75rem) {
+    @media (max-width: 85rem) {
         .top-container {
             grid-template-columns: auto auto auto 1fr;
             grid-template-areas:

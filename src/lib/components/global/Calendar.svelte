@@ -5,8 +5,8 @@
     import Icon from "@iconify/svelte";
 
     let {
-        initial_start = "",
-        initial_end = "",
+        start = $bindable(),
+        end = $bindable(),
         date_format = "d-m-Y",
         icon = "calendar-month",
         icon_first = false,
@@ -15,8 +15,8 @@
         width = "auto",
         label = "Select Date Range",
     }: {
-        initial_start: string;
-        initial_end: string;
+        start: string;
+        end: string;
         date_format: string;
         icon: string;
         icon_first: boolean;
@@ -26,14 +26,14 @@
         label: string;
     } = $props();
 
-    let start = initial_start;
-    let end = initial_end;
+    // let start = $state(initial_start);
+    // let end = $state(initial_end);
 
     const dispatch = createEventDispatcher();
     let input_elem: HTMLInputElement;
     let picker: flatpickr.Instance;
 
-    let displayLabel = $state(
+    let displayLabel = $derived(
         start && end ? `${start} → ${end}` : "Select dates"
     );
 
@@ -99,30 +99,30 @@
         all: unset;
         display: inline-flex;
         align-items: center;
-        background-color: var(--tint-00); /* Base button background color */
+        background-color: var(--tint-00);
         cursor: pointer;
         transition: background-color 0.2s ease;
         justify-content: space-between;
         gap: 4px;
         padding: 0.5rem 1.2rem;
-        border-radius: 8px; /* Button corner rounding */
+        border-radius: 8px;
     }
 
     /* Hover background for button */
     .calendar-button:hover {
-        background-color: var(--tint-01); /* Slightly darker tint on hover */
+        background-color: var(--tint-01);
     }
 
     /* Active (pressed) background for button */
     .calendar-button:active {
-        background-color: var(--tint-02); /* Even darker tint on active */
+        background-color: var(--tint-02);
     }
 
     /* Disabled button styles */
     .calendar-button:disabled {
         background-color: var(--tint-00);
         cursor: not-allowed;
-        color: var(--label-secondary); /* Greyed out text color */
+        color: var(--label-secondary);
     }
 
     /* Label container inside button */
@@ -136,42 +136,40 @@
     .icon-medium {
         width: 1.1rem;
         height: 1.1rem;
-        color: currentColor; /* inherits the button text color */
+        color: currentColor;
     }
 
     /* Flatpickr popup container */
     :global(.custom-flatpickr) {
-        background: var(--tint-00); /* Popup background */
-        border-radius: 12px; /* Rounded corners */
-        border: 0.25px solid white; /* White border as requested */
-        padding: 1rem; /* Padding inside popup */
-        color: var(--label-primary); /* Text color inside popup */
-        font-family: "DM Sans", sans-serif; /* Font family */
-        z-index: 9999; /* Make sure popup is on top */
+        background: var(--tint-00);
+         backdrop-filter: blur(32px); 
+        -webkit-backdrop-filter: blur(32px);
+        border-radius: 12px; 
+        border: 0.25px solid white; 
+        padding: 1rem; 
+        color: var(--label-primary); 
+        font-family: "DM Sans", sans-serif;
+        z-index: 9999; 
     }
 
     /* Month header text in popup */
     :global(.custom-flatpickr .flatpickr-month) {
         font-weight: 600;
-        font-size: 1rem;
-        /* padding: 0.5rem 0; */
+        font-size: 0.8rem;
         padding-top: 1rem;
         padding-bottom: 0.5rem;
-        color: white; /* White month text */
-        font-family: var(
-            --body-label-font-family,
-            "DM Sans",
-            sans-serif
-        ); /* Use body label font if defined */
+        color: white;
         text-align: center;
     }
 
     /* Month navigation arrows */
     :global(.custom-flatpickr .flatpickr-prev-month),
     :global(.custom-flatpickr .flatpickr-next-month) {
-        color: white; /* White arrows */
         cursor: pointer;
-        padding-top: 2.9rem;
+        margin-top: 2rem;
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+        fill: var(--label-primary);
     }
 
     /* Weekday headers */
@@ -188,10 +186,11 @@
         border: none; /* No default border on days */
     }
 
-    /* Day cells on hover: background change only, no border */
-    :global(.custom-flatpickr .flatpickr-day:hover) {
-        background: var(--tint-01);
-        border: none !important; /* Remove any border on hover */
+    /* Today's date styling */
+    :global(.custom-flatpickr .flatpickr-day.today) {
+        border: 1px solid var(--tint-03); /* Border to highlight today */
+        font-weight: 500;
+        border-radius: 100%;
     }
 
     /* Selected days and range days styling */
@@ -199,14 +198,26 @@
     :global(.custom-flatpickr .flatpickr-day.startRange),
     :global(.custom-flatpickr .flatpickr-day.endRange),
     :global(.custom-flatpickr .flatpickr-day.inRange) {
-        background: var(--tint-02); /* Selected background color */
-        color: white; /* White text */
+        background: var(--tint-02);
+        outline-color: var(--tint-02) !important;
+        color: white;
     }
 
-    /* Today's date styling */
-    :global(.custom-flatpickr .flatpickr-day.today) {
-        border: 1px solid var(--tint-03); /* Border to highlight today */
-        font-weight: 500;
+    :global(.custom-flatpickr .flatpickr-day.inRange) {
+        border-radius: 0 !important;
+        box-shadow: var(--tint-02) -5px 0px 0px 0px
+    }
+
+    :global(.custom-flatpickr .flatpickr-day.endRange) {
+        box-shadow: var(--tint-02) -5px 0px 0px 0px !important;
+    }
+
+    /* Day cells on hover: background change only, no border */
+    :global(.custom-flatpickr .flatpickr-day:hover) {
+        background: var(--tint-01);
+        border: none !important; /* Remove any border on hover */
+        border-radius: 100%;
+        box-shadow: none !important;
     }
 
     /* Disabled day cells styling */
