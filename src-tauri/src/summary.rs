@@ -160,7 +160,7 @@ pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
         status => {
             let body = response.text().await.unwrap_or_default();
             log::error!("Unexpected validation status {body}: {status}");
-            Ok(false)
+            Err(format!("Unexpected status: {status}"))
         }
     }
 }
