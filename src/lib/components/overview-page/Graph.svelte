@@ -110,6 +110,8 @@
     });
     $effect(() => {
         metric;
+        aggregation;
+        contributors;
         if (chart) {
             set_chart_options();
         }
