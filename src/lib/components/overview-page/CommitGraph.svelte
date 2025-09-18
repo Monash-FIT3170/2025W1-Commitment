@@ -2,7 +2,6 @@
     import Graph from "$lib/components/overview-page/Graph.svelte";
     import ContributorCards from "$lib/components/overview-page/ContributorCards.svelte";
     import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
-    import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import type { Contributor } from "$lib/metrics";
 
     let {
@@ -25,6 +24,8 @@
 
     let sidebar_open = $state(false);
     let bookmarked_repo: { repo_name: string; repo_url: string }[] = [];
+    let aggregation_options = ["mean", "median"];
+    let selected_aggregation = $state("mean");
 
     function toggle_sidebar() {
         sidebar_open = !sidebar_open;
@@ -39,12 +40,10 @@
             disabled={false}
         />
 
-        <ButtonTintedMedium
-            label="mean"
-            label_class="body"
-            icon_first={false}
-            icon="chevron-down"
-            width="12rem"
+        <DropdownTintedMedium
+            options={aggregation_options}
+            bind:selected={selected_aggregation}
+            disabled={false}
         />
     </div>
     <Graph
