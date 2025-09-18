@@ -23,9 +23,7 @@
     let chart_container: HTMLElement;
     let chart: echarts.ECharts;
     let filtered_people: UserDisplayData[] = $state([]);
-    let processed_people: (UserDisplayData & { y_value?: number })[] = $state(
-        []
-    );
+    let processed_people: (UserDisplayData & { y_value?: number })[] = $state([]);
     let is_staggered_mode = $state(false);
     let chart_height = $state(380);
     let is_transitioning = $state(false);
@@ -96,10 +94,7 @@
                 y_value: 30 + index * 40,
             }));
         } else {
-            processed_people = filtered_people.map((p) => ({
-                ...p,
-                y_value: 1,
-            }));
+            processed_people = filtered_people.map((p) => ({ ...p, y_value: 1.25 }));
         }
     });
     $effect(() => {
@@ -113,7 +108,7 @@
         const old_height = chart_height;
         const new_height = is_staggered_mode
             ? 100 + filtered_people.length * 80
-            : 400;
+            : 380;
         chart_height = new_height;
 
         // Trigger chart resize when height changes
@@ -336,19 +331,19 @@
                         type: "image",
                         style: {
                             image: person.image,
-                            width: is_staggered_mode ? 50 : 40,
-                            height: is_staggered_mode ? 50 : 40,
+                            width: is_staggered_mode ? 50 : 50,
+                            height: is_staggered_mode ? 50 : 50,
                         },
-                        x: x - (is_staggered_mode ? 25 : 20),
-                        y: y - (is_staggered_mode ? 25 : 20),
+                        x: x - (is_staggered_mode ? 25 : 25),
+                        y: y - (is_staggered_mode ? 25 : 25),
                         z: 3,
                         silent: false,
                         clipPath: {
                             type: "circle",
                             shape: {
-                                cx: is_staggered_mode ? 25 : 20,
-                                cy: is_staggered_mode ? 25 : 20,
-                                r: is_staggered_mode ? 25 : 20,
+                                cx: is_staggered_mode ? 25 : 25,
+                                cy: is_staggered_mode ? 25 : 25,
+                                r: is_staggered_mode ? 25 : 25,
                             },
                         },
                     },
@@ -362,9 +357,7 @@
                                       fontWeight: "900",
                                       fill: "#fff",
                                       font: 'bold 16px "DM Sans ExtraBold", sans-serif',
-                                      textAlign: is_rightmost
-                                          ? "right"
-                                          : "left",
+                                      textAlign: is_rightmost ? "right" : "left",
                                       textVerticalAlign: "top",
                                   },
                                   x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
@@ -379,9 +372,7 @@
                                       fontSize: 14,
                                       fill: "#fff",
                                       font: 'bold 16px "DM Sans", sans-serif',
-                                      textAlign: is_rightmost
-                                          ? "right"
-                                          : "left",
+                                      textAlign: is_rightmost ? "right" : "left",
                                       textVerticalAlign: "top",
                                   },
                                   x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
@@ -455,10 +446,7 @@
                 show: false,
                 min: 0,
                 max: is_staggered_mode
-                    ? Math.max(
-                          30 + (processed_people.length - 1) * 40 + 100,
-                          2.5
-                      )
+                    ? Math.max(30 + (processed_people.length - 1) * 40 + 100, 2.5)
                     : 2.5,
             },
             series: [
@@ -482,7 +470,7 @@
                         p.y_value,
                         p.username,
                     ]),
-                    symbolSize: 32,
+                    symbolSize: 40,
                     z: 10,
                     animation: true,
                     animationDuration: 800,
