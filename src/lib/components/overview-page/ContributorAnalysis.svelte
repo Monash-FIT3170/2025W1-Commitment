@@ -75,18 +75,15 @@
             return;
         }
 
-        const working_dir = await invoke("get_working_directory");
-        const full_repo_path = `${working_dir}/repositories/${repo_path}`;
-
         if (repo_path) {
             try {
                 if (email_mapping) {
                     await invoke("get_ai_summary_with_config", {
-                        path: full_repo_path,
+                        path: repo_path,
                         configJson: email_mapping,
                     });
                 } else {
-                    await invoke("get_ai_summary", { path: full_repo_path });
+                    await invoke("get_ai_summary", { path: repo_path });
                 }
             } catch (e) {
                 error("Error occurred: " + e);
@@ -134,14 +131,14 @@
             if (aggregation === "mean") {
                 scaling_factor = calculate_scaling_factor(
                     num_commits,
-                    commit_mean(),
-                    sd()
+                    commit_mean,
+                    sd
                 );
             } else {
                 scaling_factor = calculate_quartile_scaling_factor(
                     num_commits,
-                    quartiles().q1,
-                    quartiles().q3
+                    quartiles.q1,
+                    quartiles.q3
                 );
             }
 

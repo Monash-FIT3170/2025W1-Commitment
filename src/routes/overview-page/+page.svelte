@@ -95,7 +95,11 @@
             return;
         }
 
-        await download_populated_file(contributors, current_upload);
+        await download_populated_file(
+            contributors,
+            current_upload,
+            selected_aggregation
+        );
         void info("[download] populated file saved");
     }
 

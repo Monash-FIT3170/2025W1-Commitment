@@ -377,10 +377,10 @@
             const x = is_staggered_mode
                 ? baseX
                 : baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
-            
+
             let scaling_factor: number;
 
-            if (aggregation === 'mean') {
+            if (aggregation === "mean") {
                 scaling_factor = calculate_scaling_factor(
                     person.data_to_display,
                     metric_mean,
