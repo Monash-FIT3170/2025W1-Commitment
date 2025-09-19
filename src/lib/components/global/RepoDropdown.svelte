@@ -63,6 +63,7 @@ This is a dropdown component that allows users to select a repository type.
         align-items: center;
         justify-content: space-between;
         color: unset;
+        border-radius: 12px;
     }
 
     .dropdown-btn.hide {
@@ -114,6 +115,7 @@ This is a dropdown component that allows users to select a repository type.
         align-items: center;
         justify-content: start;
         color: unset;
+        border-radius: 12px;
     }
 
     .dropdown-text {

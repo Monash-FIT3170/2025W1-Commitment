@@ -85,11 +85,6 @@
         }
     }
 
-    function open_calendar() {
-        //calendar logic
-        //task for future sprint
-    }
-
     function handle_date_change(
         event: CustomEvent<{ start: string; end: string }>
     ) {
@@ -171,15 +166,15 @@
         <div class="calendar-btn heading-btn">
             <!-- calendar btn -->
             <Calendar
-                initial_start={start_date}
-                initial_end={end_date}
+                bind:start={start_date}
+                bind:end={end_date}
                 date_format="d-m-Y"
                 icon="calendar"
                 icon_first={true}
                 label_class="body-accent"
                 label="Select Date Range"
                 disabled={false}
-                width="7rem"
+                width={start_date && end_date ? "14rem" : "7rem"}
                 on:change={handle_date_change}
             />
         </div>
@@ -253,7 +248,7 @@
         display: flex;
     }
 
-    @media (max-width: 75rem) {
+    @media (max-width: 85rem) {
         .top-container {
             grid-template-columns: auto auto auto 1fr;
             grid-template-areas:
