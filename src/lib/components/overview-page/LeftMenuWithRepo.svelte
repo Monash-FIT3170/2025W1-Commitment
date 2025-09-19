@@ -3,13 +3,16 @@
     import LeftMenu from "./LeftMenu.svelte";
     import { manifest } from "$lib/stores/manifest";
     import { invoke } from "@tauri-apps/api/core";
+    import { onMount } from "svelte";
 
     let {
         repo_url,
-        repo_path,
+        owner,
+        repo,
     }: {
         repo_url: string;
-        repo_path: string;
+        owner: string;
+        repo: string;
     } = $props();
 
     let bookmarked = $state(
@@ -25,6 +28,13 @@
         }
         invoke("save_manifest", { manifest: $manifest });
     }
+
+    // Update bookmarked state whenever manifest changes
+    $effect(() => {
+        bookmarked = $manifest.repository.some(
+            (r) => r.url === repo_url && r.bookmarked
+        );
+    });
 </script>
 
 <!--
@@ -48,7 +58,7 @@ toggle button.
     {#snippet content()}
         <!-- repo pathway display -->
         <div class="repo-pathway">
-            {repo_path}
+            {owner}/{repo}
         </div>
 
         <!-- bookmark toggle -->

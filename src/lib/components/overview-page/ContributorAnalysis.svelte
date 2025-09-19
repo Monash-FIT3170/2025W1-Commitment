@@ -7,6 +7,7 @@
         get_sd,
         get_user_total_commits,
     } from "$lib/metrics";
+    import { info, error } from "@tauri-apps/plugin-log";
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import { invoke } from "@tauri-apps/api/core";
     import { listen } from "@tauri-apps/api/event";
@@ -59,7 +60,7 @@
         });
 
         const key_set = await invoke("check_key_set");
-        console.log("key_set:", key_set);
+        info("key_set:", key_set);
         if (!key_set) {
             error_message =
                 "Please set a valid Gemini API key in Settings to generate summaries.";
@@ -83,7 +84,7 @@
                     await invoke("get_ai_summary", { path: full_repo_path });
                 }
             } catch (e) {
-                console.error(e);
+                error("Error occurred: " + e);
             } finally {
                 loading = false;
                 unlisten_total();
@@ -221,7 +222,7 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
-        min-height: auto;
+        min-height: calc(100vh - 27rem);
     }
 
     .contents {
@@ -242,7 +243,7 @@
     .button-container {
         display: flex;
         justify-content: center;
-        height: calc(100vh - 26rem);
+        height: calc(100vh - 31.1rem);
         align-items: center;
     }
     .error-message {

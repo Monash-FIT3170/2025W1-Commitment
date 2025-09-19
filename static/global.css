@@ -1,4 +1,22 @@
 /* global.css */
+html {
+    overscroll-behavior-x: none;
+    scroll-behavior: smooth;
+}
+
+body {
+    height: 100vh;
+}
+
+html, body, #app {
+    height: 100%;
+    margin: 0;
+    color: var(--label-primary);
+    background-color: var(--background-primary);
+    display: flex;
+    flex-direction: column;
+}
+
 .page {
     margin: 0;
     background: 
@@ -165,15 +183,6 @@
 
 .error {
     color: var(--wonderland--ff748b) !important;
-}
-
-html, body, #app {
-    height: 100%;
-    margin: 0;
-    color: var(--label-primary);
-    background-color: var(--background-primary);
-    display: flex;
-    flex-direction: column;
 }
 
 .icon-small {

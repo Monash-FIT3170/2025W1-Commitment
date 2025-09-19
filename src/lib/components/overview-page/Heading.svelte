@@ -9,10 +9,11 @@
     import { invoke } from "@tauri-apps/api/core";
     import { manifest } from "$lib/stores/manifest";
     import type { Contributor } from "$lib/metrics";
+    import { info, error } from "@tauri-apps/plugin-log";
 
     let {
         repo: repo,
-        repo_type: repo_type = "github",
+        source_type: source_type = 0,
         repo_url,
         branches = [],
         branch_selection = $bindable(),
@@ -21,6 +22,12 @@
         contributors = $bindable<Contributor[]>([]),
     } = $props();
 
+    let source_name =
+        source_type === 0
+            ? "github"
+            : source_type === 1
+              ? "gitlab"
+              : "folder-code";
     let show_modal = $state(false);
 
     let file_input: HTMLInputElement;
@@ -58,13 +65,13 @@
                             }
                         );
 
-                        console.log("Config applied successfully:", result);
+                        info("Config applied successfully:", result);
 
                         contributors = result;
                         manifest.update_email_mapping(json, repo_url);
                         await invoke("save_manifest", { manifest: $manifest });
-                    } catch (error) {
-                        console.error("Error applying config:", error);
+                    } catch (e) {
+                        error("Error applying config: " + e);
                     }
                 } else {
                     textarea_value =
@@ -76,11 +83,6 @@
 
             show_modal = false;
         }
-    }
-
-    function open_calendar() {
-        //calendar logic
-        //task for future sprint
     }
 
     function handle_date_change(
@@ -97,7 +99,7 @@
             <span class="repo-path display-title" title={repo}>{repo}</span>
             <div class="repo-icon">
                 <Icon
-                    icon={`tabler:brand-${repo_type}`}
+                    icon={`tabler:brand-${source_name}`}
                     class="icon-xlarge"
                     style="color: white"
                 />
@@ -164,15 +166,15 @@
         <div class="calendar-btn heading-btn">
             <!-- calendar btn -->
             <Calendar
-                initial_start={start_date}
-                initial_end={end_date}
+                bind:start={start_date}
+                bind:end={end_date}
                 date_format="d-m-Y"
                 icon="calendar"
                 icon_first={true}
                 label_class="body-accent"
                 label="Select Date Range"
                 disabled={false}
-                width="7rem"
+                width={start_date && end_date ? "14rem" : "7rem"}
                 on:change={handle_date_change}
             />
         </div>
@@ -246,7 +248,7 @@
         display: flex;
     }
 
-    @media (max-width: 75rem) {
+    @media (max-width: 85rem) {
         .top-container {
             grid-template-columns: auto auto auto 1fr;
             grid-template-areas:

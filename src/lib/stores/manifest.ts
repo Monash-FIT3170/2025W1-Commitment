@@ -12,6 +12,8 @@ export interface RepoSchema {
     grading_sheet: string | null;
     last_accessed: string;
     name: string;
+    owner: string;
+    source_type: 0 | 1 | 2; // 0 = GitHub, 1 = GitLab, 2 = Local
     path: string;
     url: string;
 }
@@ -20,7 +22,7 @@ export interface ManifestSchema {
     repository: RepoSchema[];
 }
 
-interface BackendVerificationResult {
+export interface RepositoryInformation {
     owner: string;
     repo: string;
     source_type: 0 | 1 | 2;
@@ -130,17 +132,26 @@ function create_manifest_store() {
 
         /** Create a new repository inside of the manifest file */
         async create_repository(
-            backendResult: BackendVerificationResult,
-            repo_url: string
+            repo_info: RepositoryInformation,
+            repo_url: string,
+            source_type: 0 | 1 | 2,
+            repo_local_path: string
         ) {
             const working_dir = await invoke<string>("get_working_directory");
+            const repo_path =
+                source_type === 2
+                    ? repo_local_path
+                    : `${working_dir}/repositories/${repo_info.source_type}-${repo_info.owner}-${repo_info.repo}`;
+            repo_url = source_type === 2 ? repo_local_path : repo_url;
 
             const new_repo: RepoSchema = {
-                name: backendResult.repo,
+                name: repo_info.repo,
+                owner: repo_info.owner,
+                source_type: repo_info.source_type,
                 url: repo_url,
-                path: `${working_dir}/gitguage/repositories/${repo_url.split("/")[3]}-${repo_url.split("/")[4]}`,
+                path: repo_path,
                 bookmarked: false,
-                cloned: true,
+                cloned: source_type !== 2,
                 email_mapping: null,
                 grading_sheet: null,
                 last_accessed: new Date().toISOString(),

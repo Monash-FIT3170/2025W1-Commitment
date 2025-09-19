@@ -78,18 +78,29 @@ pub async fn check_manifest() -> Result<(), String> {
 
     if let Some(repos) = manifest.get("repository").and_then(|r| r.as_array()) {
         for repo in repos {
-            if check_repository(repo).await.is_err() {
-                manifest_changed = true;
-                if let Some(path_str) = repo.get("path").and_then(|p| p.as_str()) {
-                    let repo_path = PathBuf::from(path_str);
-                    if repo_path.is_dir() {
-                        if let Err(e) = std::fs::remove_dir_all(&repo_path) {
-                            eprintln!("Failed to delete repository directory {path_str}: {e}");
+            match check_repository(repo).await {
+                Ok(()) => {
+                    // Repository should stay in manifest
+                    updated_repos.push(repo.clone());
+                }
+                Err(should_delete_directory) => {
+                    // Repository should be removed from manifest
+                    manifest_changed = true;
+
+                    // Delete directory only if cloned=true and >30 days
+                    if should_delete_directory {
+                        if let Some(path_str) = repo.get("path").and_then(|p| p.as_str()) {
+                            let repo_path = PathBuf::from(path_str);
+                            if repo_path.is_dir() {
+                                if let Err(e) = std::fs::remove_dir_all(&repo_path) {
+                                    eprintln!(
+                                        "Failed to delete repository directory {path_str}: {e}"
+                                    );
+                                }
+                            }
                         }
                     }
                 }
-            } else {
-                updated_repos.push(repo.clone());
             }
         }
     }
@@ -108,22 +119,53 @@ pub async fn check_manifest() -> Result<(), String> {
 }
 
 async fn check_repository(repo: &serde_json::Value) -> Result<(), bool> {
-    // Repositories which are not Bookmarked stay cloned for 30 days
+    // If repository is bookmarked, it always stays in the manifest
+    if let Some(bookmarked) = repo.get("bookmarked").and_then(|b| b.as_bool()) {
+        if bookmarked {
+            return Ok(());
+        }
+    }
+
+    // Check if the repository has been accessed within 30 days
     if let Some(last_accessed) = repo.get("last_accessed").and_then(|l| l.as_str()) {
-        if let Ok(last_accessed_time) = chrono::DateTime::parse_from_rfc3339(last_accessed) {
-            let now = chrono::Utc::now();
-            if now.signed_duration_since(last_accessed_time).num_days() < 30
-                && repo
+        match chrono::DateTime::parse_from_rfc3339(last_accessed) {
+            Ok(last_accessed_time) => {
+                let now = chrono::Utc::now();
+                log::info!("Last accessed: {last_accessed_time}, Now: {now}");
+
+                // If accessed within 30 days, keep the repository
+                if now.signed_duration_since(last_accessed_time).num_days() < 30 {
+                    return Ok(());
+                }
+
+                // If older than 30 days and not bookmarked, determine cleanup action
+                let cloned = repo
                     .get("cloned")
                     .and_then(|c| c.as_bool())
-                    .unwrap_or(false)
-            {
-                return Ok(());
+                    .unwrap_or(false);
+
+                // Return Err(true) if directory should be deleted (cloned=true)
+                // Return Err(false) if only manifest entry should be removed (cloned=false)
+                return Err(cloned);
+            }
+            Err(e) => {
+                log::warn!("Failed to parse datetime '{last_accessed}': {e}");
+                // For invalid datetime, assume it's old and handle based on cloned status
+                let cloned = repo
+                    .get("cloned")
+                    .and_then(|c| c.as_bool())
+                    .unwrap_or(false);
+                return Err(cloned);
             }
         }
     }
 
-    Err(false)
+    // If no last_accessed field, assume it's old and handle based on cloned status
+    let cloned = repo
+        .get("cloned")
+        .and_then(|c| c.as_bool())
+        .unwrap_or(false);
+    Err(cloned)
 }
 
 async fn save_manifest_file(manifest: &serde_json::Value) -> Result<(), String> {

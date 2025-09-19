@@ -1,13 +1,14 @@
 <script lang="ts">
     import ButtonPrimaryMedium from "./ButtonPrimaryMedium.svelte";
     import Modal from "$lib/components/overview-page/Modal.svelte";
+    import { info } from "@tauri-apps/plugin-log";
 
     let { show_modal = $bindable(), on_token_add } = $props();
 
     let personal_access_token = $state("");
 
     function handle_add_token() {
-        console.log("Processing Personal Access Token...");
+        info("Processing Personal Access Token...");
 
         // Call the parent's callback function if provided
         if (on_token_add) {
