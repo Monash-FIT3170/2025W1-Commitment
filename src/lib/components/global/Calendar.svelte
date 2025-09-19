@@ -3,6 +3,8 @@
     import flatpickr from "flatpickr";
     import "flatpickr/dist/flatpickr.css";
     import Icon from "@iconify/svelte";
+    import { TauriEvent } from "@tauri-apps/api/event";
+    import { info } from "@tauri-apps/plugin-log";
 
     let {
         start = $bindable(),
@@ -61,6 +63,13 @@
     function open() {
         if (!disabled) picker.open();
     }
+
+    function reset_dates() {
+        start = "";
+        end = "";
+        dispatch("change", { start, end });
+        picker.clear();
+    }
 </script>
 
 <input type="text" bind:this={input_elem} class="hidden-input" />
@@ -83,6 +92,11 @@
         {/if}
     {/if}
 </button>
+{#if start && end}
+    <button type="button" class="bookmark-btn" onclick={reset_dates}>
+        <Icon icon={"tabler:filter-off"} class="icon-medium" />
+    </button>
+{/if}
 
 <style>
     /* Hidden input used by Flatpickr, not visible or interactive */
@@ -142,14 +156,14 @@
     /* Flatpickr popup container */
     :global(.custom-flatpickr) {
         background: var(--tint-00);
-         backdrop-filter: blur(32px); 
+        backdrop-filter: blur(32px);
         -webkit-backdrop-filter: blur(32px);
-        border-radius: 12px; 
-        border: 0.25px solid white; 
-        padding: 1rem; 
-        color: var(--label-primary); 
+        border-radius: 12px;
+        border: 0.25px solid white;
+        padding: 1rem;
+        color: var(--label-primary);
         font-family: "DM Sans", sans-serif;
-        z-index: 9999; 
+        z-index: 9999;
     }
 
     /* Month header text in popup */
@@ -205,7 +219,7 @@
 
     :global(.custom-flatpickr .flatpickr-day.inRange) {
         border-radius: 0 !important;
-        box-shadow: var(--tint-02) -5px 0px 0px 0px
+        box-shadow: var(--tint-02) -5px 0px 0px 0px;
     }
 
     :global(.custom-flatpickr .flatpickr-day.endRange) {
@@ -226,5 +240,13 @@
         color: var(--label-disabled);
         opacity: 0.4;
         cursor: not-allowed;
+    }
+
+    .bookmark-btn {
+        background: none;
+        border: none;
+        padding: 0.25rem;
+        cursor: pointer;
+        color: var(--label-primary);
     }
 </style>

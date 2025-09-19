@@ -91,11 +91,6 @@
         start_date = event.detail.start;
         end_date = event.detail.end;
     }
-
-    function reset_dates() {
-        start_date = "";
-        end_date = "";
-    }
 </script>
 
 <div class="page-header">
@@ -171,29 +166,17 @@
         <div class="calendar-btn heading-btn">
             <!-- calendar btn -->
             <Calendar
-                start={start_date}
-                end={end_date}
+                bind:start={start_date}
+                bind:end={end_date}
                 date_format="d-m-Y"
                 icon="calendar"
                 icon_first={true}
                 label_class="body-accent"
                 label="Select Date Range"
                 disabled={false}
-                width={(start_date && end_date) ? "14rem" : "7rem"}
+                width={start_date && end_date ? "14rem" : "7rem"}
                 on:change={handle_date_change}
             />
-            {#if start_date && end_date}
-            <button
-            type="button"
-            class="bookmark-btn"
-            onclick={reset_dates}
-        >
-            <Icon
-                icon={"tabler:filter-off"}
-                class="icon-medium"
-            />
-            </button>
-            {/if}
         </div>
     </div>
 
@@ -237,14 +220,6 @@
     .repo-icon {
         flex-shrink: 0;
         padding-right: 4rem;
-    }
-
-    .bookmark-btn {
-        background: none;
-        border: none;
-        padding: 0.25rem;
-        cursor: pointer;
-        color: var(--label-primary);
     }
 
     .display-subtitle {
