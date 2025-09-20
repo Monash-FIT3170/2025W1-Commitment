@@ -121,7 +121,16 @@
         <!-- Modal -->
         <Modal bind:show_modal>
             {#snippet header()}
-                <h2 id="modal-title">Upload config file</h2>
+                <div class="modal-header" style="display: flex">
+                    <Icon
+                        icon={`tabler:settings-2`}
+                        class="icon-medium"
+                        style="color: currentColor"
+                    />
+                    <h2 class="label-primary heading-1 modal-title">
+                        Contributor Mapping
+                    </h2>
+                </div>
             {/snippet}
 
             {#snippet body()}
@@ -260,5 +269,10 @@
         .heading-btn {
             padding-top: 1rem;
         }
+    }
+
+    .modal-title {
+        margin: 0px;
+        margin-left: 0.375rem;
     }
 </style>
