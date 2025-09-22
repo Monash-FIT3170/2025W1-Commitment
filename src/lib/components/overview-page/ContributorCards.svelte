@@ -121,7 +121,6 @@
 
             return {
                 username: user.username,
-                image: user.bitmap,
                 num_commits: get_user_total_commits(user),
                 total_lines_of_code: get_user_total_lines_of_code(user),
                 lines_per_commit: get_user_lines_per_commit(user),

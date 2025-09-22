@@ -299,10 +299,9 @@ fn find_branch_oid(repo: &Repository, branch: &str) -> Result<Oid, String> {
 }
 
 fn generate_profile_bg_colour(username: &str) -> String {
-    let hash = username
-        .as_bytes()
-        .iter()
-        .fold(0usize, |hash, byte| (*byte as usize) + ((hash << 5) - hash));
+    let hash = username.as_bytes().iter().fold(0usize, |hash, byte| {
+        (*byte as usize) + (hash << 5).wrapping_sub(hash)
+    });
 
     (0..=3)
         .map(|i| (hash >> (i * 8)) & 0xff)

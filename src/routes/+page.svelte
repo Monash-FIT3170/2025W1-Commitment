@@ -27,7 +27,7 @@
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
-            info("page " + data);
+            info("page " + JSON.stringify(data));
         } catch (e: any) {
             let err = typeof e === "string" ? e : (e?.message ?? String(e));
             error("read_manifest failed: " + err);

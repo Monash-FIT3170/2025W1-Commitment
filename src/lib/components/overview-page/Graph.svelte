@@ -399,23 +399,27 @@
                 type: "group",
                 children: [
                     {
-                        type: "image",
+                        type: "circle",
                         style: {
-                            image: person.image,
-                            width: is_staggered_mode ? 50 : 50,
-                            height: is_staggered_mode ? 50 : 50,
+                            fill: person.profile_bg_colour,
                         },
-                        x: x - (is_staggered_mode ? 25 : 25),
-                        y: y - (is_staggered_mode ? 25 : 25),
+                        shape: {
+                            r: 22,
+                        },
+                        x,
+                        y,
                         z: 3,
                         silent: false,
-                        clipPath: {
-                            type: "circle",
-                            shape: {
-                                cx: is_staggered_mode ? 25 : 25,
-                                cy: is_staggered_mode ? 25 : 25,
-                                r: is_staggered_mode ? 25 : 25,
+                        textContent: {
+                            style: {
+                                text: person.initials,
+                                fill: "#0f0",
+                                font: 'bold 16px "DM Sans ExtraBold", sans-serif',
                             },
+                            z: 20,
+                        },
+                        textConfig: {
+                            position: "inside",
                         },
                     },
                     ...(is_staggered_mode
@@ -600,7 +604,7 @@
         chart.on("click", (params: any) => {
             if (
                 params.componentType === "graphic" &&
-                params.componentSubType === "image"
+                params.componentSubType === "circle"
             ) {
                 return;
             }
