@@ -184,9 +184,7 @@ pub async fn get_contributor_info(
         //let login_name = author_signature.name().unwrap_or("Unknown").to_string();
         //let gravatar_url = format!("https://www.gravatar.com/avatar/{gravatar_hash:x}?d=identicon");
 
-        let username = author_signature
-            .name()
-            .unwrap_or("unknown");
+        let username = author_signature.name().unwrap_or("unknown");
 
         let initials = username
             .split_whitespace()
@@ -246,7 +244,7 @@ pub async fn get_contributor_info(
                 total_commits: 0,
                 additions: 0,
                 deletions: 0,
-                profile_bg_colour: profile_bg_colour,
+                profile_bg_colour,
                 username_initials: initials,
                 ai_summary: String::from(""),
             });
@@ -300,28 +298,11 @@ fn find_branch_oid(repo: &Repository, branch: &str) -> Result<Oid, String> {
     Err(format!("Branch '{branch}' not found as local or remote"))
 }
 
-//function generateBackground(name) {
-//    let hash = 0;
-//    let i;
-//
-//    for (i = 0; i < name.length; i += 1) {
-//      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-//    }
-//
-//    let color = "#";
-//
-//    for (i = 0; i < 3; i += 1) {
-//      const value = (hash >> (i * 8)) & 0xff;
-//      color += `00${value.toString(16)}`.slice(-2);
-//    }
-//
-//    return color;
-//  }
 fn generate_profile_bg_colour(username: &str) -> String {
     let hash = username
         .as_bytes()
         .iter()
-        .fold(0 as usize, |hash, byte| (*byte as usize) + ((hash << 5) - hash));
+        .fold(0usize, |hash, byte| (*byte as usize) + ((hash << 5) - hash));
 
     (0..=3)
         .map(|i| (hash >> (i * 8)) & 0xff)
