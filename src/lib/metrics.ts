@@ -8,13 +8,19 @@ export type Contacts =
     | { Email: string }
     | { [key: string]: string };
 
+export type Colour = Readonly<{
+    r: number;
+    g: number;
+    b: number;
+}>;
+
 export type Contributor = Readonly<{
     username: string;
     contacts: Contacts;
     total_commits: number;
     additions: number;
     deletions: number;
-    profile_bg_colour: string;
+    profile_colour: string;
     username_initials: string;
     ai_summary: string;
 }>;
@@ -22,7 +28,7 @@ export type Contributor = Readonly<{
 export type UserDisplayData = Readonly<{
     username: string;
     initials: string;
-    profile_bg_colour: string;
+    profile_colour: string;
     data_to_display: number;
     offsetIndex?: number;
 }>;
@@ -465,7 +471,7 @@ export function get_users_total_commits(
         userTotalCommits.push({
             username: user.username,
             initials: user.username_initials,
-            profile_bg_colour: user.profile_bg_colour,
+            profile_colour: user.profile_colour,
             data_to_display: user.total_commits,
         });
     });
@@ -504,7 +510,7 @@ export function get_users_avg_commit_size(
         userAvgCommitSize.push({
             username: user.username,
             initials: user.username_initials,
-            profile_bg_colour: user.profile_bg_colour,
+            profile_colour: user.profile_colour,
             data_to_display: Number(
                 (
                     get_user_total_lines_of_code(user) / user.total_commits
@@ -550,7 +556,7 @@ export function get_users_absolute_diff(
         userAbsoluteDiff.push({
             username: user.username,
             initials: user.username_initials,
-            profile_bg_colour: user.profile_bg_colour,
+            profile_colour: user.profile_colour,
             data_to_display: get_user_absolute_diff(user),
         });
     });

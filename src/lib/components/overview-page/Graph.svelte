@@ -369,100 +369,103 @@
                 ],
             };
         });
-        const user_graphics = processed_people.map((person: any) => {
-            const [baseX, y] = chart.convertToPixel({ gridIndex: 0 }, [
-                person.data_to_display,
-                person.y_value,
-            ]);
-            const x = is_staggered_mode
-                ? baseX
-                : baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
-
-            let scaling_factor: number;
-
-            if (aggregation === "mean") {
-                scaling_factor = calculate_scaling_factor(
+        const user_graphics = processed_people.map(
+            (person: any, idx: number) => {
+                const [baseX, y] = chart.convertToPixel({ gridIndex: 0 }, [
                     person.data_to_display,
-                    metric_mean,
-                    sd
-                );
-            } else {
-                scaling_factor = calculate_quartile_scaling_factor(
-                    person.data_to_display,
-                    quartiles.q1,
-                    quartiles.q3
-                );
-            }
+                    person.y_value,
+                ]);
+                const x = is_staggered_mode
+                    ? baseX
+                    : baseX +
+                      (person.offsetIndex ? person.offsetIndex * 16 : 0);
 
-            const is_rightmost = person.data_to_display === x_max;
-            return {
-                type: "group",
-                children: [
-                    {
-                        type: "circle",
-                        style: {
-                            fill: person.profile_bg_colour,
-                        },
-                        shape: {
-                            r: 22,
-                        },
-                        x,
-                        y,
-                        z: 3,
-                        silent: false,
-                        textContent: {
+                let scaling_factor: number;
+
+                if (aggregation === "mean") {
+                    scaling_factor = calculate_scaling_factor(
+                        person.data_to_display,
+                        metric_mean,
+                        sd
+                    );
+                } else {
+                    scaling_factor = calculate_quartile_scaling_factor(
+                        person.data_to_display,
+                        quartiles.q1,
+                        quartiles.q3
+                    );
+                }
+
+                const is_rightmost = person.data_to_display === x_max;
+                return {
+                    type: "group",
+                    children: [
+                        {
+                            type: "circle",
                             style: {
-                                text: person.initials,
-                                fill: "#0f0",
-                                font: 'bold 16px "DM Sans ExtraBold", sans-serif',
+                                fill: person.profile_colour,
                             },
-                            z: 20,
+                            shape: {
+                                r: 20,
+                            },
+                            x,
+                            y,
+                            z: 3,
+                            silent: false,
+                            textContent: {
+                                style: {
+                                    text: person.initials,
+                                    fill: "#000",
+                                    font: 'bold 16px "DM Sans ExtraBold", sans-serif',
+                                },
+                                z: 4,
+                            },
+                            textConfig: {
+                                position: "inside",
+                            },
                         },
-                        textConfig: {
-                            position: "inside",
-                        },
-                    },
-                    ...(is_staggered_mode
-                        ? [
-                              {
-                                  type: "text",
-                                  style: {
-                                      text: person.username,
-                                      fontSize: 14,
-                                      fontWeight: "900",
-                                      fill: "#fff",
-                                      font: 'bold 16px "DM Sans ExtraBold", sans-serif',
-                                      textAlign: is_rightmost
-                                          ? "right"
-                                          : "left",
-                                      textVerticalAlign: "top",
+                        ...(is_staggered_mode
+                            ? [
+                                  {
+                                      type: "text",
+                                      style: {
+                                          text: person.username,
+                                          fontSize: 14,
+                                          fontWeight: "900",
+                                          fill: "#fff",
+                                          font: 'bold 16px "DM Sans ExtraBold", sans-serif',
+                                          textAlign: is_rightmost
+                                              ? "right"
+                                              : "left",
+                                          textVerticalAlign: "top",
+                                      },
+                                      x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
+                                      y: y - 15,
+                                      z: 2,
                                   },
-                                  x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
-                                  y: y - 15,
-                                  z: 2,
-                              },
 
-                              {
-                                  type: "text",
-                                  style: {
-                                      text: `Scaling Factor: ${scaling_factor.toFixed(1)}`,
-                                      fontSize: 14,
-                                      fill: "#fff",
-                                      font: 'bold 16px "DM Sans", sans-serif',
-                                      textAlign: is_rightmost
-                                          ? "right"
-                                          : "left",
-                                      textVerticalAlign: "top",
+                                  {
+                                      type: "text",
+                                      style: {
+                                          text: `Scaling Factor: ${scaling_factor.toFixed(1)}`,
+                                          fontSize: 14,
+                                          fill: "#fff",
+                                          font: 'bold 16px "DM Sans", sans-serif',
+                                          textAlign: is_rightmost
+                                              ? "right"
+                                              : "left",
+                                          textVerticalAlign: "top",
+                                      },
+                                      x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
+                                      y: y + 5,
+                                      z: 2,
                                   },
-                                  x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
-                                  y: y + 5,
-                                  z: 2,
-                              },
-                          ]
-                        : []),
-                ],
-            };
-        });
+                              ]
+                            : []),
+                    ],
+                };
+            }
+        );
         chart.setOption({
             graphic: [
                 tint_between2sigma_left,

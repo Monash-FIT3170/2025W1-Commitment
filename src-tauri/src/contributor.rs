@@ -16,7 +16,7 @@ pub struct Contributor {
     pub total_commits: u64,
     pub additions: u64,
     pub deletions: u64,
-    pub profile_bg_colour: String,
+    pub profile_colour: String,
     pub username_initials: String,
     pub ai_summary: String,
 }
@@ -61,7 +61,7 @@ pub async fn group_contributors_by_config(
                             contacts.push(email.to_string());
 
                             if profile_bg_colour.is_empty() {
-                                profile_bg_colour = contrib.profile_bg_colour.clone();
+                                profile_bg_colour = contrib.profile_colour.clone();
                             }
 
                             if username_initials.is_empty() {
@@ -79,7 +79,7 @@ pub async fn group_contributors_by_config(
                     total_commits,
                     additions,
                     deletions,
-                    profile_bg_colour,
+                    profile_colour: profile_bg_colour,
                     username_initials,
                     ai_summary,
                 });
@@ -244,7 +244,7 @@ pub async fn get_contributor_info(
                 total_commits: 0,
                 additions: 0,
                 deletions: 0,
-                profile_bg_colour,
+                profile_colour: profile_bg_colour,
                 username_initials: initials,
                 ai_summary: String::from(""),
             });
@@ -264,7 +264,7 @@ pub async fn get_contributor_info(
                         total_commits: entry.total_commits,
                         additions: entry.additions,
                         deletions: entry.deletions,
-                        profile_bg_colour: entry.profile_bg_colour.clone(),
+                        profile_colour: entry.profile_colour.clone(),
                         username_initials: entry.username_initials.clone(),
                         ai_summary: String::from(""),
                     };
@@ -303,8 +303,9 @@ fn generate_profile_bg_colour(username: &str) -> String {
         (*byte as usize) + (hash << 5).wrapping_sub(hash)
     });
 
-    (0..=3)
-        .map(|i| (hash >> (i * 8)) & 0xff)
-        .map(|x| format!("{x:x}"))
-        .collect::<String>()
+    let r: u8 = u8::try_from(hash & 0xff).unwrap_or(0);
+    let g: u8 = u8::try_from((hash >> 8) & 0xff).unwrap_or(0);
+    let b: u8 = u8::try_from((hash >> 16) & 0xff).unwrap_or(0);
+
+    format!("#{r:x}{g:x}{b:x}")
 }
