@@ -307,5 +307,5 @@ fn generate_profile_bg_colour(username: &str) -> String {
     let g: u8 = u8::try_from((hash >> 8) & 0xff).unwrap_or(0);
     let b: u8 = u8::try_from((hash >> 16) & 0xff).unwrap_or(0);
 
-    format!("#{r:x}{g:x}{b:x}")
+    format!("#{r:02x}{g:02x}{b:02x}")
 }

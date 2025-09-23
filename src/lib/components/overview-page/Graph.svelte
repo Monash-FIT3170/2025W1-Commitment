@@ -19,6 +19,7 @@
         type Contributor,
         type UserDisplayData,
     } from "$lib/metrics";
+    import { info } from "@tauri-apps/plugin-log";
 
     let {
         contributors,
@@ -51,6 +52,25 @@
     let ref_point_values: number[] = $state([]);
     let ref_points: { label: string; value: number }[] = $state([]);
     let resize_handler: () => void;
+
+    function profile_txt_colour(colour_str: string): string {
+        const r = parseInt(colour_str.substring(1, 3), 16);
+        const g = parseInt(colour_str.substring(3, 5), 16);
+        const b = parseInt(colour_str.substring(5, 7), 16);
+
+        const srgb: number[] = [r / 255, g / 255, b / 255];
+
+        const x: number[] = srgb.map((c) => {
+            if (c <= 0.04045) {
+                return c / 12.92;
+            } else {
+                return Math.pow((c + 0.055) / 1.055, 2.4);
+            }
+        });
+
+        const L: number = 0.2126 * x[0] + 0.7152 * x[1] + 0.0722 * x[2];
+        return L > 0.179 ? "#000" : "#fff";
+    }
 
     $effect(() => {
         switch (metric) {
@@ -397,6 +417,8 @@
                     );
                 }
 
+                info(`${person.username}: ${person.profile_colour}`);
+
                 const is_rightmost = person.data_to_display === x_max;
                 return {
                     type: "group",
@@ -416,7 +438,9 @@
                             textContent: {
                                 style: {
                                     text: person.initials,
-                                    fill: "#000",
+                                    fill: profile_txt_colour(
+                                        person.profile_colour
+                                    ),
                                     font: 'bold 16px "DM Sans ExtraBold", sans-serif',
                                 },
                                 z: idx + 4,
