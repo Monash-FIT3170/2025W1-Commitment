@@ -369,6 +369,7 @@
                 ],
             };
         });
+
         const user_graphics = processed_people.map(
             (person: any, idx: number) => {
                 const [baseX, y] = chart.convertToPixel({ gridIndex: 0 }, [
@@ -410,7 +411,7 @@
                             },
                             x,
                             y,
-                            z: 3,
+                            z: idx + 3,
                             silent: false,
                             textContent: {
                                 style: {
@@ -418,7 +419,7 @@
                                     fill: "#000",
                                     font: 'bold 16px "DM Sans ExtraBold", sans-serif',
                                 },
-                                z: 4,
+                                z: idx + 4,
                             },
                             textConfig: {
                                 position: "inside",
@@ -441,7 +442,7 @@
                                       },
                                       x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
                                       y: y - 15,
-                                      z: 2,
+                                      z: idx + 2,
                                   },
 
                                   {
@@ -458,7 +459,7 @@
                                       },
                                       x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
                                       y: y + 5,
-                                      z: 2,
+                                      z: idx + 2,
                                   },
                               ]
                             : []),
