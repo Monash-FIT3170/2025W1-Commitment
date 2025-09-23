@@ -418,6 +418,10 @@
                 }
 
                 info(`${person.username}: ${person.profile_colour}`);
+                const z: number = idx * 4;
+                info(
+                    `idx: ${idx}, z: ${z}, +1: ${z + 1}, +2: ${z + 2}, +3: ${z + 3}`
+                );
 
                 const is_rightmost = person.data_to_display === x_max;
                 return {
@@ -433,7 +437,7 @@
                             },
                             x,
                             y,
-                            z: idx + 3,
+                            z: z + 2,
                             silent: false,
                             textContent: {
                                 style: {
@@ -443,7 +447,7 @@
                                     ),
                                     font: 'bold 16px "DM Sans ExtraBold", sans-serif',
                                 },
-                                z: idx + 4,
+                                z: z + 3,
                             },
                             textConfig: {
                                 position: "inside",
@@ -466,7 +470,7 @@
                                       },
                                       x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
                                       y: y - 15,
-                                      z: idx + 2,
+                                      z: z + 1,
                                   },
 
                                   {
@@ -483,7 +487,7 @@
                                       },
                                       x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
                                       y: y + 5,
-                                      z: idx + 2,
+                                      z: z + 1,
                                   },
                               ]
                             : []),
@@ -567,7 +571,8 @@
                         p.y_value,
                     ]),
                     symbolSize: 0,
-                    z: 3,
+                    // displays data points above stacked custom graphics
+                    z: processed_people.length * 4,
                     animation: true,
                     animationDuration: 800,
                     animationEasing: "cubicInOut" as const,
@@ -581,7 +586,8 @@
                         p.username,
                     ]),
                     symbolSize: 40,
-                    z: 10,
+                    // displays data points above stacked custom graphics
+                    z: (processed_people.length + 1) * 4,
                     animation: true,
                     animationDuration: 800,
                     animationEasing: "cubicInOut" as const,
