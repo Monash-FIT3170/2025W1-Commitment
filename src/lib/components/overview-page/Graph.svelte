@@ -19,6 +19,7 @@
         type Contributor,
         type UserDisplayData,
     } from "$lib/metrics";
+    import { info } from "@tauri-apps/plugin-log";
 
     let {
         contributors,
@@ -51,6 +52,25 @@
     let ref_point_values: number[] = $state([]);
     let ref_points: { label: string; value: number }[] = $state([]);
     let resize_handler: () => void;
+
+    function profile_txt_colour(colour_str: string): string {
+        const r = parseInt(colour_str.substring(1, 3), 16);
+        const g = parseInt(colour_str.substring(3, 5), 16);
+        const b = parseInt(colour_str.substring(5, 7), 16);
+
+        const srgb: number[] = [r / 255, g / 255, b / 255];
+
+        const x: number[] = srgb.map((c) => {
+            if (c <= 0.04045) {
+                return c / 12.92;
+            } else {
+                return Math.pow((c + 0.055) / 1.055, 2.4);
+            }
+        });
+
+        const L: number = 0.2126 * x[0] + 0.7152 * x[1] + 0.0722 * x[2];
+        return L > 0.179 ? "#000" : "#fff";
+    }
 
     $effect(() => {
         switch (metric) {
@@ -369,96 +389,112 @@
                 ],
             };
         });
-        const user_graphics = processed_people.map((person: any) => {
-            const [baseX, y] = chart.convertToPixel({ gridIndex: 0 }, [
-                person.data_to_display,
-                person.y_value,
-            ]);
-            const x = is_staggered_mode
-                ? baseX
-                : baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
 
-            let scaling_factor: number;
-
-            if (aggregation === "mean") {
-                scaling_factor = calculate_scaling_factor(
+        const user_graphics = processed_people.map(
+            (person: any, idx: number) => {
+                const [baseX, y] = chart.convertToPixel({ gridIndex: 0 }, [
                     person.data_to_display,
-                    metric_mean,
-                    sd
-                );
-            } else {
-                scaling_factor = calculate_quartile_scaling_factor(
-                    person.data_to_display,
-                    quartiles.q1,
-                    quartiles.q3
-                );
-            }
+                    person.y_value,
+                ]);
+                const x = is_staggered_mode
+                    ? baseX
+                    : baseX +
+                      (person.offsetIndex ? person.offsetIndex * 16 : 0);
 
-            const is_rightmost = person.data_to_display === x_max;
-            return {
-                type: "group",
-                children: [
-                    {
-                        type: "image",
-                        style: {
-                            image: person.image,
-                            width: is_staggered_mode ? 50 : 50,
-                            height: is_staggered_mode ? 50 : 50,
-                        },
-                        x: x - (is_staggered_mode ? 25 : 25),
-                        y: y - (is_staggered_mode ? 25 : 25),
-                        z: 3,
-                        silent: false,
-                        clipPath: {
+                let scaling_factor: number;
+
+                if (aggregation === "mean") {
+                    scaling_factor = calculate_scaling_factor(
+                        person.data_to_display,
+                        metric_mean,
+                        sd
+                    );
+                } else {
+                    scaling_factor = calculate_quartile_scaling_factor(
+                        person.data_to_display,
+                        quartiles.q1,
+                        quartiles.q3
+                    );
+                }
+
+                info(`${person.username}: ${person.profile_colour}`);
+                const z: number = idx * 4;
+                info(
+                    `idx: ${idx}, z: ${z}, +1: ${z + 1}, +2: ${z + 2}, +3: ${z + 3}`
+                );
+
+                const is_rightmost = person.data_to_display === x_max;
+                return {
+                    type: "group",
+                    children: [
+                        {
                             type: "circle",
+                            style: {
+                                fill: person.profile_colour,
+                            },
                             shape: {
-                                cx: is_staggered_mode ? 25 : 25,
-                                cy: is_staggered_mode ? 25 : 25,
-                                r: is_staggered_mode ? 25 : 25,
+                                r: 20,
+                            },
+                            x,
+                            y,
+                            z: z + 2,
+                            silent: false,
+                            textContent: {
+                                style: {
+                                    text: person.initials,
+                                    fill: profile_txt_colour(
+                                        person.profile_colour
+                                    ),
+                                    font: 'bold 16px "DM Sans ExtraBold", sans-serif',
+                                },
+                                z: z + 3,
+                            },
+                            textConfig: {
+                                position: "inside",
                             },
                         },
-                    },
-                    ...(is_staggered_mode
-                        ? [
-                              {
-                                  type: "text",
-                                  style: {
-                                      text: person.username,
-                                      fontSize: 14,
-                                      fontWeight: "900",
-                                      fill: "#fff",
-                                      font: 'bold 16px "DM Sans ExtraBold", sans-serif',
-                                      textAlign: is_rightmost
-                                          ? "right"
-                                          : "left",
-                                      textVerticalAlign: "top",
+                        ...(is_staggered_mode
+                            ? [
+                                  {
+                                      type: "text",
+                                      style: {
+                                          text: person.username,
+                                          fontSize: 14,
+                                          fontWeight: "900",
+                                          fill: "#fff",
+                                          font: 'bold 16px "DM Sans ExtraBold", sans-serif',
+                                          textAlign: is_rightmost
+                                              ? "right"
+                                              : "left",
+                                          textVerticalAlign: "top",
+                                      },
+                                      x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
+                                      y: y - 15,
+                                      z: z + 1,
                                   },
-                                  x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
-                                  y: y - 15,
-                                  z: 2,
-                              },
 
-                              {
-                                  type: "text",
-                                  style: {
-                                      text: `Scaling Factor: ${scaling_factor.toFixed(1)}`,
-                                      fontSize: 14,
-                                      fill: "#fff",
-                                      font: 'bold 16px "DM Sans", sans-serif',
-                                      textAlign: is_rightmost
-                                          ? "right"
-                                          : "left",
-                                      textVerticalAlign: "top",
+                                  {
+                                      type: "text",
+                                      style: {
+                                          text: `Scaling Factor: ${scaling_factor.toFixed(1)}`,
+                                          fontSize: 14,
+                                          fill: "#fff",
+                                          font: 'bold 16px "DM Sans", sans-serif',
+                                          textAlign: is_rightmost
+                                              ? "right"
+                                              : "left",
+                                          textVerticalAlign: "top",
+                                      },
+                                      x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
+                                      y: y + 5,
+                                      z: z + 1,
                                   },
-                                  x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
-                                  y: y + 5,
-                                  z: 2,
-                              },
-                          ]
-                        : []),
-                ],
-            };
-        });
+                              ]
+                            : []),
+                    ],
+                };
+            }
+        );
         chart.setOption({
             graphic: [
                 tint_between2sigma_left,
@@ -535,7 +571,8 @@
                         p.y_value,
                     ]),
                     symbolSize: 0,
-                    z: 3,
+                    // displays data points above stacked custom graphics
+                    z: processed_people.length * 4,
                     animation: true,
                     animationDuration: 800,
                     animationEasing: "cubicInOut" as const,
@@ -549,7 +586,8 @@
                         p.username,
                     ]),
                     symbolSize: 40,
-                    z: 10,
+                    // displays data points above stacked custom graphics
+                    z: (processed_people.length + 1) * 4,
                     animation: true,
                     animationDuration: 800,
                     animationEasing: "cubicInOut" as const,
@@ -600,7 +638,7 @@
         chart.on("click", (params: any) => {
             if (
                 params.componentType === "graphic" &&
-                params.componentSubType === "image"
+                params.componentSubType === "circle"
             ) {
                 return;
             }

@@ -8,20 +8,27 @@ export type Contacts =
     | { Email: string }
     | { [key: string]: string };
 
+export type Colour = Readonly<{
+    r: number;
+    g: number;
+    b: number;
+}>;
+
 export type Contributor = Readonly<{
     username: string;
     contacts: Contacts;
     total_commits: number;
     additions: number;
     deletions: number;
-    bitmap_hash: string; // tmp use to store gravatar login
-    bitmap: string; // tmp use to store gravatar url
+    profile_colour: string;
+    username_initials: string;
     ai_summary: string;
 }>;
 
 export type UserDisplayData = Readonly<{
     username: string;
-    image: string;
+    initials: string;
+    profile_colour: string;
     data_to_display: number;
     offsetIndex?: number;
 }>;
@@ -462,8 +469,9 @@ export function get_users_total_commits(
     let userTotalCommits: UserDisplayData[] = [];
     users.forEach((user) => {
         userTotalCommits.push({
-            username: user.bitmap_hash,
-            image: user.bitmap,
+            username: user.username,
+            initials: user.username_initials,
+            profile_colour: user.profile_colour,
             data_to_display: user.total_commits,
         });
     });
@@ -500,8 +508,9 @@ export function get_users_avg_commit_size(
     let userAvgCommitSize: UserDisplayData[] = [];
     users.forEach((user) => {
         userAvgCommitSize.push({
-            username: user.bitmap_hash,
-            image: user.bitmap,
+            username: user.username,
+            initials: user.username_initials,
+            profile_colour: user.profile_colour,
             data_to_display: Number(
                 (
                     get_user_total_lines_of_code(user) / user.total_commits
@@ -545,8 +554,9 @@ export function get_users_absolute_diff(
     let userAbsoluteDiff: UserDisplayData[] = [];
     users.forEach((user) => {
         userAbsoluteDiff.push({
-            username: user.bitmap_hash,
-            image: user.bitmap,
+            username: user.username,
+            initials: user.username_initials,
+            profile_colour: user.profile_colour,
             data_to_display: get_user_absolute_diff(user),
         });
     });

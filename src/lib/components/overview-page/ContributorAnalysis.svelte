@@ -157,8 +157,7 @@
             }
 
             return {
-                username: user.bitmap_hash,
-                image: user.bitmap,
+                username: user.username,
                 analysis: analysis,
                 scaling_factor: scaling_factor.toFixed(1),
             };

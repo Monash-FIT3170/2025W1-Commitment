@@ -3,7 +3,8 @@
 
     let {
         username,
-        image,
+        profile_colour,
+        initials,
         num_commits,
         total_lines_of_code,
         lines_per_commit,
@@ -24,7 +25,7 @@ contributor statistics.
   ```
 -->
 
-<ContributorCard {username} {image} {scaling_factor}>
+<ContributorCard {username} {profile_colour} {initials} {scaling_factor}>
     {#snippet content()}
         <div class="contents body">
             <div>{num_commits} commits</div>
