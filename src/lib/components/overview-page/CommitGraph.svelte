@@ -2,7 +2,6 @@
     import Graph from "$lib/components/overview-page/Graph.svelte";
     import ContributorCards from "$lib/components/overview-page/ContributorCards.svelte";
     import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
-    import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import type { Contributor } from "$lib/metrics";
 
     let {
@@ -13,6 +12,8 @@
         end_date,
         criteria,
         selected_criteria = $bindable(),
+        aggregation_options,
+        selected_aggregation = $bindable(),
     }: {
         contributors: Contributor[];
         branches: String[];
@@ -21,6 +22,8 @@
         end_date?: string;
         criteria: string[];
         selected_criteria: string;
+        aggregation_options: string[];
+        selected_aggregation: string;
     } = $props();
 
     let sidebar_open = $state(false);
@@ -39,12 +42,10 @@
             disabled={false}
         />
 
-        <ButtonTintedMedium
-            label="mean"
-            label_class="body"
-            icon_first={false}
-            icon="chevron-down"
-            width="12rem"
+        <DropdownTintedMedium
+            options={aggregation_options}
+            bind:selected={selected_aggregation}
+            disabled={false}
         />
     </div>
     <Graph
@@ -53,6 +54,7 @@
         {start_date}
         {end_date}
         metric={selected_criteria}
+        aggregation={selected_aggregation}
     />
 
     <ContributorCards
@@ -61,6 +63,7 @@
         start_date={start_date ?? ""}
         end_date={end_date ?? ""}
         metric={selected_criteria}
+        aggregation={selected_aggregation}
     />
 </main>
 

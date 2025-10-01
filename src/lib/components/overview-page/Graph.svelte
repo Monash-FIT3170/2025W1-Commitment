@@ -7,28 +7,70 @@
         get_metric_min_max,
         get_sd,
         get_ref_points,
+        get_quartile_ref_points,
+        get_commit_quartiles,
+        get_commit_size_quartiles,
+        get_absolute_diff_quartiles,
         get_users_total_commits,
         get_users_avg_commit_size,
         get_users_absolute_diff,
+        calculate_scaling_factor,
+        calculate_quartile_scaling_factor,
         type Contributor,
         type UserDisplayData,
     } from "$lib/metrics";
+    import { info } from "@tauri-apps/plugin-log";
 
     let {
         contributors,
         metric,
-    }: { contributors: Contributor[]; metric: string } = $props();
+        aggregation = "mean",
+    }: {
+        contributors: Contributor[];
+        metric: string;
+        aggregation?: string;
+    } = $props();
 
     let chart_container: HTMLElement;
     let chart: echarts.ECharts;
     let filtered_people: UserDisplayData[] = $state([]);
+    let processed_people: (UserDisplayData & { y_value?: number })[] = $state(
+        []
+    );
+    let is_staggered_mode = $state(false);
+    let chart_height = $state(380);
+    let is_transitioning = $state(false);
     let x_min: number = $state(0);
     let x_max: number = $state(1);
     let metric_mean: number = $state(0);
     let sd: number = $state(0);
+    let quartiles: { q1: number; median: number; q3: number } = $state({
+        q1: 0,
+        median: 0,
+        q3: 0,
+    });
     let ref_point_values: number[] = $state([]);
     let ref_points: { label: string; value: number }[] = $state([]);
     let resize_handler: () => void;
+
+    function profile_txt_colour(colour_str: string): string {
+        const r = parseInt(colour_str.substring(1, 3), 16);
+        const g = parseInt(colour_str.substring(3, 5), 16);
+        const b = parseInt(colour_str.substring(5, 7), 16);
+
+        const srgb: number[] = [r / 255, g / 255, b / 255];
+
+        const x: number[] = srgb.map((c) => {
+            if (c <= 0.04045) {
+                return c / 12.92;
+            } else {
+                return Math.pow((c + 0.055) / 1.055, 2.4);
+            }
+        });
+
+        const L: number = 0.2126 * x[0] + 0.7152 * x[1] + 0.0722 * x[2];
+        return L > 0.179 ? "#000" : "#fff";
+    }
 
     $effect(() => {
         switch (metric) {
@@ -80,47 +122,165 @@
         }
     });
     $effect(() => {
-        sd = get_sd(contributors, metric);
-    });
-    $effect(() => {
-        ref_point_values = get_ref_points(metric_mean, sd);
-    });
-    $effect(() => {
-        ref_points =
-            sd === 0
-                ? [{ label: "mean", value: ref_point_values[2] }]
-                : [
-                      { label: "-2σ", value: ref_point_values[0] },
-                      { label: "-σ", value: ref_point_values[1] },
-                      { label: "mean", value: ref_point_values[2] },
-                      { label: "+σ", value: ref_point_values[3] },
-                      { label: "+2σ", value: ref_point_values[4] },
-                  ];
+        if (is_staggered_mode) {
+            const sorted_people = [...filtered_people].sort(
+                (a, b) => a.data_to_display - b.data_to_display
+            );
+            processed_people = sorted_people.map((person, index) => ({
+                ...person,
+                y_value: 30 + index * 40,
+            }));
+        } else {
+            processed_people = filtered_people.map((p) => ({
+                ...p,
+                y_value: 1.25,
+            }));
+        }
     });
     $effect(() => {
         metric;
+        aggregation;
+        contributors;
         if (chart) {
             set_chart_options();
         }
     });
+    $effect(() => {
+        // Update chart height based on mode and number of contributors
+        const old_height = chart_height;
+        const new_height = is_staggered_mode
+            ? 100 + filtered_people.length * 80
+            : 380;
+        chart_height = new_height;
+
+        // Trigger chart resize when height changes
+        if (chart && old_height !== new_height) {
+            // Use requestAnimationFrame to wait for DOM update
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    // First resize immediately
+                    chart.resize();
+
+                    // Multiple gradual updates during the transition (every 25ms)
+                    const updateIntervals = [];
+                    for (let i = 25; i <= 750; i += 25) {
+                        updateIntervals.push(i);
+                    }
+
+                    updateIntervals.forEach((delay, index) => {
+                        setTimeout(() => {
+                            chart.resize();
+
+                            // Update graphics only when not transitioning
+                            if (!is_transitioning) {
+                                update_graphics();
+                            }
+
+                            // Only clear and reset options on the final update
+                            if (index === updateIntervals.length - 1) {
+                                chart.clear();
+                                set_chart_options();
+                                // Re-enable contributor icons after transition completes
+                                is_transitioning = false;
+                                // Call updateGraphics to render icons now that transition is complete
+                                update_graphics();
+                            }
+                        }, delay);
+                    });
+                });
+            });
+        }
+    });
+    $effect(() => {
+        sd = get_sd(contributors, metric);
+        if (aggregation === "median") {
+            switch (metric) {
+                case "commits": {
+                    quartiles = get_commit_quartiles(contributors);
+                    break;
+                }
+                case "commit_size": {
+                    quartiles = get_commit_size_quartiles(contributors);
+                    break;
+                }
+                case "absolute_diff": {
+                    quartiles = get_absolute_diff_quartiles(contributors);
+                    break;
+                }
+                default: {
+                    quartiles = get_commit_quartiles(contributors);
+                    break;
+                }
+            }
+        }
+    });
+    $effect(() => {
+        if (aggregation === "mean") {
+            ref_point_values = get_ref_points(metric_mean, sd);
+        } else {
+            ref_point_values = get_quartile_ref_points(contributors, metric);
+        }
+    });
+    $effect(() => {
+        if (aggregation === "mean") {
+            ref_points =
+                sd === 0
+                    ? [{ label: "mean", value: ref_point_values[2] }]
+                    : [
+                          { label: "-2σ", value: ref_point_values[0] },
+                          { label: "-σ", value: ref_point_values[1] },
+                          { label: "mean", value: ref_point_values[2] },
+                          { label: "+σ", value: ref_point_values[3] },
+                          { label: "+2σ", value: ref_point_values[4] },
+                      ];
+        } else {
+            ref_points = [
+                { label: "Min", value: ref_point_values[0] },
+                { label: "Q1", value: ref_point_values[1] },
+                { label: "Median", value: ref_point_values[2] },
+                { label: "Q3", value: ref_point_values[3] },
+                { label: "Max", value: ref_point_values[4] },
+            ];
+        }
+    });
 
     function update_graphics() {
-        if (!chart) return;
-        const grid_top = chart.convertToPixel({ gridIndex: 0 }, [0, 6])[1];
+        if (!chart || is_transitioning) return;
+        const grid_top = chart.convertToPixel({ gridIndex: 0 }, [
+            0,
+            is_staggered_mode
+                ? Math.max(30 + (processed_people.length - 1) * 40 + 100, 2.5)
+                : 2.5,
+        ])[1];
         const x_axis_y = chart.convertToPixel({ gridIndex: 0 }, [0, 0])[1];
 
+        const tint_start_y = is_staggered_mode ? 40 : grid_top;
         const full_height = x_axis_y - grid_top;
-        const tint_height = full_height * 0.9;
+        const tint_height = is_staggered_mode
+            ? x_axis_y - tint_start_y
+            : full_height;
 
-        const margin_left = 40; // px
-        const margin_right = 40; // px
+        const axis_min_val = x_min - 1 < 0 ? 0 : x_min;
+        const margin_left = chart.convertToPixel({ gridIndex: 0 }, [
+            axis_min_val,
+            0,
+        ])[0];
+        const grid_right_px = chart.convertToPixel({ gridIndex: 0 }, [
+            x_max,
+            0,
+        ])[0];
+        const drawable_width = grid_right_px - margin_left;
         const container_width = chart_container.clientWidth;
-        const drawable_width = container_width - margin_left - margin_right;
+        const margin_right = container_width - grid_right_px;
 
         function x_scale(value: number) {
+            if (x_max - axis_min_val === 0) {
+                return margin_left;
+            }
             return (
                 margin_left +
-                ((value - x_min) / (x_max - x_min)) * drawable_width
+                ((value - axis_min_val) / (x_max - axis_min_val)) *
+                    drawable_width
             );
         }
 
@@ -135,31 +295,22 @@
         }
 
         // Calculate pixel positions of ref points (commit counts)
-        const x_minus2sigma = x_scale(ref_point_values[0]);
-        const x_minus_sigma = x_scale(ref_point_values[1]);
-        const x_plus_sigma = x_scale(ref_point_values[3]);
-        const x_plus2sigma = x_scale(ref_point_values[4]);
+        const x_p0 = x_scale(ref_point_values[0]);
+        const x_p1 = x_scale(ref_point_values[1]);
+        const x_p3 = x_scale(ref_point_values[3]);
+        const x_p4 = x_scale(ref_point_values[4]);
 
         // Clamp tints within bounds
-        const left_tint = clamp_tint(
-            x_minus2sigma,
-            x_minus_sigma - x_minus2sigma
-        );
-        const middle_tint = clamp_tint(
-            x_minus_sigma,
-            x_plus_sigma - x_minus_sigma
-        );
-        const right_tint = clamp_tint(
-            x_plus_sigma,
-            x_plus2sigma - x_plus_sigma
-        );
+        const left_tint = clamp_tint(x_p0, x_p1 - x_p0);
+        const middle_tint = clamp_tint(x_p1, x_p3 - x_p1);
+        const right_tint = clamp_tint(x_p3, x_p4 - x_p3);
 
         // White tint between -σ and +σ
         const tint_between1sigma = {
             type: "rect",
             shape: {
                 x: middle_tint.x,
-                y: x_axis_y - tint_height,
+                y: tint_start_y,
                 width: middle_tint.width,
                 height: tint_height,
             },
@@ -174,7 +325,7 @@
             type: "rect",
             shape: {
                 x: left_tint.x,
-                y: x_axis_y - tint_height,
+                y: tint_start_y,
                 width: left_tint.width,
                 height: tint_height,
             },
@@ -189,7 +340,7 @@
             type: "rect",
             shape: {
                 x: right_tint.x,
-                y: x_axis_y - tint_height,
+                y: tint_start_y,
                 width: right_tint.width,
                 height: tint_height,
             },
@@ -209,7 +360,7 @@
                         type: "line",
                         shape: {
                             x1: x,
-                            y1: grid_top,
+                            y1: is_staggered_mode ? 40 : grid_top,
                             x2: x,
                             y2: x_axis_y,
                         },
@@ -232,45 +383,118 @@
                             textVerticalAlign: "bottom",
                         },
                         x: x,
-                        y: grid_top - 8,
+                        y: is_staggered_mode ? 20 : grid_top - 8,
                         z: 2,
                     },
                 ],
             };
         });
-        const user_graphics = filtered_people.map((person: UserDisplayData) => {
-            const [baseX, y] = chart.convertToPixel({ gridIndex: 0 }, [
-                person.data_to_display,
-                1,
-            ]);
-            const x =
-                baseX + (person.offsetIndex ? person.offsetIndex * 16 : 0);
-            return {
-                type: "group",
-                children: [
-                    {
-                        type: "image",
-                        style: {
-                            image: person.image,
-                            width: 40,
-                            height: 40,
-                        },
-                        x: x - 20,
-                        y: y - 20,
-                        z: 3,
-                        silent: false,
-                        clipPath: {
+
+        const user_graphics = processed_people.map(
+            (person: any, idx: number) => {
+                const [baseX, y] = chart.convertToPixel({ gridIndex: 0 }, [
+                    person.data_to_display,
+                    person.y_value,
+                ]);
+                const x = is_staggered_mode
+                    ? baseX
+                    : baseX +
+                      (person.offsetIndex ? person.offsetIndex * 16 : 0);
+
+                let scaling_factor: number;
+
+                if (aggregation === "mean") {
+                    scaling_factor = calculate_scaling_factor(
+                        person.data_to_display,
+                        metric_mean,
+                        sd
+                    );
+                } else {
+                    scaling_factor = calculate_quartile_scaling_factor(
+                        person.data_to_display,
+                        quartiles.q1,
+                        quartiles.q3
+                    );
+                }
+
+                info(`${person.username}: ${person.profile_colour}`);
+                const z: number = idx * 4;
+                info(
+                    `idx: ${idx}, z: ${z}, +1: ${z + 1}, +2: ${z + 2}, +3: ${z + 3}`
+                );
+
+                const is_rightmost = person.data_to_display === x_max;
+                return {
+                    type: "group",
+                    children: [
+                        {
                             type: "circle",
+                            style: {
+                                fill: person.profile_colour,
+                            },
                             shape: {
-                                cx: 20,
-                                cy: 20,
                                 r: 20,
                             },
+                            x,
+                            y,
+                            z: z + 2,
+                            silent: false,
+                            textContent: {
+                                style: {
+                                    text: person.initials,
+                                    fill: profile_txt_colour(
+                                        person.profile_colour
+                                    ),
+                                    font: 'bold 16px "DM Sans ExtraBold", sans-serif',
+                                },
+                                z: z + 3,
+                            },
+                            textConfig: {
+                                position: "inside",
+                            },
                         },
-                    },
-                ],
-            };
-        });
+                        ...(is_staggered_mode
+                            ? [
+                                  {
+                                      type: "text",
+                                      style: {
+                                          text: person.username,
+                                          fontSize: 14,
+                                          fontWeight: "900",
+                                          fill: "#fff",
+                                          font: 'bold 16px "DM Sans ExtraBold", sans-serif',
+                                          textAlign: is_rightmost
+                                              ? "right"
+                                              : "left",
+                                          textVerticalAlign: "top",
+                                      },
+                                      x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
+                                      y: y - 15,
+                                      z: z + 1,
+                                  },
+
+                                  {
+                                      type: "text",
+                                      style: {
+                                          text: `Scaling Factor: ${scaling_factor.toFixed(1)}`,
+                                          fontSize: 14,
+                                          fill: "#fff",
+                                          font: 'bold 16px "DM Sans", sans-serif',
+                                          textAlign: is_rightmost
+                                              ? "right"
+                                              : "left",
+                                          textVerticalAlign: "top",
+                                      },
+                                      x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
+                                      y: y + 5,
+                                      z: z + 1,
+                                  },
+                              ]
+                            : []),
+                    ],
+                };
+            }
+        );
         chart.setOption({
             graphic: [
                 tint_between2sigma_left,
@@ -285,12 +509,16 @@
     function set_chart_options() {
         const option = {
             backgroundColor: "transparent", //#222',
+            animation: true,
+            animationDuration: 800,
+            animationEasing: "cubicInOut" as const,
+            animationDelay: 0,
             grid: {
-                top: "50%",
-                bottom: 100,
-                left: 40,
-                right: 40,
-                containLabel: false,
+                top: 30,
+                bottom: is_staggered_mode ? 80 : 80,
+                left: "5%",
+                right: "5%",
+                containLabel: true,
             },
             xAxis: {
                 type: "value",
@@ -328,28 +556,41 @@
             yAxis: {
                 show: false,
                 min: 0,
-                max: 2.5,
+                max: is_staggered_mode
+                    ? Math.max(
+                          30 + (processed_people.length - 1) * 40 + 100,
+                          2.5
+                      )
+                    : 2.5,
             },
             series: [
                 {
                     type: "scatter",
-                    data: filtered_people.map((p: UserDisplayData) => [
+                    data: processed_people.map((p: any) => [
                         p.data_to_display,
-                        1,
+                        p.y_value,
                     ]),
                     symbolSize: 0,
-                    z: 3,
+                    // displays data points above stacked custom graphics
+                    z: processed_people.length * 4,
+                    animation: true,
+                    animationDuration: 800,
+                    animationEasing: "cubicInOut" as const,
                 },
                 {
                     name: "hoverPoints",
                     type: "scatter",
-                    data: filtered_people.map((p: UserDisplayData) => [
+                    data: processed_people.map((p: any) => [
                         p.data_to_display,
-                        1,
+                        p.y_value,
                         p.username,
                     ]),
-                    symbolSize: 32,
-                    z: 10,
+                    symbolSize: 40,
+                    // displays data points above stacked custom graphics
+                    z: (processed_people.length + 1) * 4,
+                    animation: true,
+                    animationDuration: 800,
+                    animationEasing: "cubicInOut" as const,
                     itemStyle: {
                         color: "transparent",
                     },
@@ -370,7 +611,7 @@
                 formatter: function (params: any) {
                     if (params.seriesName === "hoverPoints") {
                         const username = params.data[2];
-                        const person = filtered_people.find(
+                        const person = processed_people.find(
                             (p: any) => p.username === username
                         );
                         if (!person) return username;
@@ -393,6 +634,27 @@
     onMount(() => {
         chart = echarts.init(chart_container);
         set_chart_options();
+
+        chart.on("click", (params: any) => {
+            if (
+                params.componentType === "graphic" &&
+                params.componentSubType === "circle"
+            ) {
+                return;
+            }
+
+            chart.dispatchAction({ type: "hideTip" });
+
+            is_transitioning = true;
+            chart.clear();
+
+            set_chart_options();
+
+            requestAnimationFrame(() => {
+                is_staggered_mode = !is_staggered_mode;
+            });
+        });
+
         resize_handler = () => {
             chart.resize();
             update_graphics();
@@ -405,13 +667,15 @@
     });
 </script>
 
-<div bind:this={chart_container} class="chart-container"></div>
+<div
+    bind:this={chart_container}
+    class="chart-container"
+    style="height: {chart_height}px; transition: height 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);"
+></div>
 
 <style>
     .chart-container {
         width: 100%;
-        height: 500px;
         font-family: "DM Sans", sans-serif;
-        padding-bottom: 2rem;
     }
 </style>

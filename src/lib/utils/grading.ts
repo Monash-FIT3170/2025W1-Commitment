@@ -5,6 +5,8 @@ import {
     get_average_commits,
     get_sd,
     calculate_scaling_factor,
+    calculate_quartile_scaling_factor,
+    get_commit_quartiles,
 } from "$lib/metrics";
 
 import { parse_rows, stringify_rows, parse_number_cell } from "$lib/utils/csv";
@@ -99,7 +101,8 @@ function find_contributor_by_email(
  */
 export function populate_using_metrics(
     contributors: Contributor[],
-    uploaded: UploadedGradingFile
+    uploaded: UploadedGradingFile,
+    aggregation: string
 ): string {
     const { headers, delimiter, rows } = parse_rows(uploaded.bytes);
 
@@ -110,21 +113,33 @@ export function populate_using_metrics(
     if (!out_headers.includes(FACTOR_COL)) out_headers.push(FACTOR_COL);
     if (!out_headers.includes(SCALED_COL)) out_headers.push(SCALED_COL);
 
-    const mean = get_average_commits(contributors);
-    const sd = get_sd(contributors);
-
     const email_key = headers.find(
         (h) => h.trim().toLowerCase() === "email address"
     );
     const grade_key = headers.find((h) => h.trim().toLowerCase() === "grade");
 
+    let factor_calculator: (c: Contributor) => number;
+
+    if (aggregation === "mean") {
+        const mean = get_average_commits(contributors);
+        const sd = get_sd(contributors, "commits");
+        factor_calculator = (c: Contributor) =>
+            calculate_scaling_factor(c.total_commits, mean, sd);
+    } else {
+        const quartiles = get_commit_quartiles(contributors);
+        factor_calculator = (c: Contributor) =>
+            calculate_quartile_scaling_factor(
+                c.total_commits,
+                quartiles.q1,
+                quartiles.q3
+            );
+    }
+
     const out_rows = rows.map((row) => {
         const email = email_key ? row[email_key] : "";
         const c = find_contributor_by_email(contributors, email);
 
-        const factor_str = c
-            ? calculate_scaling_factor(c.total_commits, mean, sd).toFixed(2)
-            : "NA";
+        const factor_str = c ? factor_calculator(c).toFixed(2) : "NA";
 
         const raw = parse_number_cell(grade_key ? row[grade_key] : undefined);
         const scaled =
@@ -141,11 +156,13 @@ export function populate_using_metrics(
 
 export async function download_populated_file(
     contributors: Contributor[],
-    uploaded: UploadedGradingFile
+    uploaded: UploadedGradingFile,
+    aggregation: string
 ): Promise<void> {
     const { text, matched, total } = populate_with_stats(
         contributors,
-        uploaded
+        uploaded,
+        aggregation
     );
     await save_text_file_native("populated-grading-sheet.csv", text);
     await info(`[grading] matched ${matched}/${total} rows`);
@@ -153,7 +170,8 @@ export async function download_populated_file(
 
 export function populate_with_stats(
     contributors: Contributor[],
-    uploaded: UploadedGradingFile
+    uploaded: UploadedGradingFile,
+    aggregation: string
 ): { text: string; matched: number; total: number } {
     const { headers, rows } = parse_rows(uploaded.bytes);
 
@@ -168,7 +186,7 @@ export function populate_with_stats(
         if (find_contributor_by_email(contributors, email)) matched++;
     }
 
-    const text = populate_using_metrics(contributors, uploaded);
+    const text = populate_using_metrics(contributors, uploaded, aggregation);
     return { text, matched, total: rows.length };
 }
 
