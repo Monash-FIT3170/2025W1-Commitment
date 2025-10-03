@@ -103,7 +103,6 @@
         });
 
         const key_set = await invoke("check_key_set");
-        info(String(key_set));
         if (!key_set) {
             error_message =
                 "Please set a valid Gemini API key in Settings to generate summaries.";
@@ -125,6 +124,8 @@
                 }
             } catch (e) {
                 error("Error occurred: " + e);
+                error_message =
+                    "An error occurred while generating summaries.\n Please check your API key and try again.";
             } finally {
                 loading = false;
                 unlisten_total();
@@ -220,6 +221,8 @@
 
             return {
                 username: user.username,
+                profile_colour: user.profile_colour,
+                initials: user.username_initials,
                 analysis: analysis,
                 scaling_factor: scaling_factor.toFixed(1),
                 profile_colour: user.profile_colour,
