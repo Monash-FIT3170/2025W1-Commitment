@@ -65,7 +65,6 @@
         });
 
         const key_set = await invoke("check_key_set");
-        info("key_set:", key_set);
         if (!key_set) {
             error_message =
                 "Please set a valid Gemini API key in Settings to generate summaries.";
@@ -87,6 +86,8 @@
                 }
             } catch (e) {
                 error("Error occurred: " + e);
+                error_message =
+                    "An error occurred while generating summaries.\n Please check your API key and try again.";
             } finally {
                 loading = false;
                 unlisten_total();
@@ -158,6 +159,8 @@
 
             return {
                 username: user.username,
+                profile_colour: user.profile_colour,
+                initials: user.username_initials,
                 analysis: analysis,
                 scaling_factor: scaling_factor.toFixed(1),
             };
@@ -192,8 +195,9 @@
                 {#each contributors_sorted() as person}
                     <ContributorCard
                         username={person.username}
-                        image={person.image}
-                        scaling_factor={person.scaling_factor}
+                        profile_colour={person.profile_colour}
+                        initials={person.initials}
+                        scaling_factor={+person.scaling_factor}
                     >
                         {#snippet content()}
                             <div class="contents body">
