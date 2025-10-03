@@ -59,9 +59,10 @@ export async function bare_clone(
     source_type: 0 | 1 | 2
 ): Promise<string> {
     const repo_url = `${source}/${owner}/${repo}`;
-    const working_dir = await invoke<string>("get_working_directory");
-    const repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
+
     try {
+        const working_dir = await invoke<string>("get_working_directory");
+        const repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
         await invoke("bare_clone", {
             url: repo_url,
             path: repo_path,
@@ -70,6 +71,13 @@ export async function bare_clone(
     } catch (err) {
         const error_message = String(err);
         info(`Failed to clone the repository: ${error_message}`);
+        let repo_path: string;
+        try {
+            const working_dir = await invoke<string>("get_working_directory");
+            repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
+        } catch (e) {
+            repo_path = "";
+        }
 
         // Check if this is an authentication error that requires a token
         if (error_message.includes("private and requires authentication")) {
