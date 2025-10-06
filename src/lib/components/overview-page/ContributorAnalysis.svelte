@@ -90,6 +90,8 @@
         loading = true;
         generated_summaries = 0;
         total_summaries = 0;
+        error_flag = false;
+        error_message = "";
 
         const unlisten_total = await listen("summary-total", (event) => {
             total_summaries = event.payload as number;
