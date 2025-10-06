@@ -9,10 +9,14 @@
         repo_url,
         owner,
         repo,
+        on_refresh,
+        refreshing = false,
     }: {
         repo_url: string;
         owner: string;
         repo: string;
+        on_refresh?: () => void;
+        refreshing?: boolean;
     } = $props();
 
     let bookmarked = $state(
@@ -61,6 +65,23 @@ toggle button.
             {owner}/{repo}
         </div>
 
+        <!-- refresh button -->
+        {#if on_refresh}
+            <button
+                type="button"
+                class="refresh-btn"
+                onclick={on_refresh}
+                disabled={refreshing}
+                aria-label="Refresh repository"
+            >
+                <Icon
+                    icon="tabler:refresh"
+                    class="icon-medium"
+                    style={refreshing ? "opacity: 0.5;" : ""}
+                />
+            </button>
+        {/if}
+
         <!-- bookmark toggle -->
         <button
             type="button"
@@ -87,6 +108,25 @@ toggle button.
         overflow: hidden;
         text-overflow: ellipsis;
         min-width: 0;
+    }
+
+    .refresh-btn {
+        background: none;
+        border: none;
+        padding: 0px;
+        margin-right: 0.5rem;
+        cursor: pointer;
+        display: flex;
+        color: var(--label-primary);
+        transition: opacity 0.2s ease;
+    }
+
+    .refresh-btn:hover:not(:disabled) {
+        opacity: 0.7;
+    }
+
+    .refresh-btn:disabled {
+        cursor: not-allowed;
     }
 
     .bookmark-btn {

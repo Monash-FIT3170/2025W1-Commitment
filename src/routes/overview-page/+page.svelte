@@ -19,7 +19,15 @@
     } from "$lib/stores/manifest";
     import type { Contributor } from "$lib/metrics";
     import { onMount } from "svelte";
-    import { load_state } from "$lib/utils/localstorage";
+    import {
+        load_state,
+        save_state,
+        generate_state_object,
+    } from "$lib/utils/localstorage";
+    import { auth_error, retry_clone_with_token } from "$lib/stores/auth";
+    import AccessTokenModal from "$lib/components/global/AccessTokenModal.svelte";
+    import { get_repo_info } from "$lib/github_url_verifier";
+    import { set_refresh_function, set_refreshing } from "$lib/stores/refresh";
 
     const s = page.state as any;
     load_state(s);
@@ -161,7 +169,109 @@
         }
     });
 
+    let refreshing = $state(false);
+    let show_auth_modal = $derived($auth_error.needs_token);
+
+    async function reload_repository_data() {
+        try {
+            info("Reloading branches and contributors data...");
+
+            const new_branches = await load_branches(repo_path);
+            branches = new_branches;
+
+            const new_contributors = await load_commit_data(repo_path);
+
+            if (email_mapping) {
+                try {
+                    const grouped = await invoke<Contributor[]>(
+                        "group_contributors_by_config",
+                        {
+                            config_json: email_mapping,
+                            contributors: new_contributors,
+                        }
+                    );
+                    contributors = grouped;
+                } catch (e) {
+                    error("Error applying config after refresh: " + e);
+                    contributors = new_contributors;
+                }
+            } else {
+                contributors = new_contributors;
+            }
+
+            const working_dir = await invoke<string>("get_working_directory");
+            const repository_information = get_repo_info(repo_url);
+            const storage_obj = await generate_state_object(
+                working_dir,
+                repository_information,
+                repo_url,
+                source_type,
+                branches,
+                contributors
+            );
+            await save_state(storage_obj);
+
+            info("Repository data reloaded successfully");
+        } catch (e) {
+            error("Failed to reload repository data: " + e);
+        }
+    }
+
+    async function refresh_repository() {
+        refreshing = true;
+        set_refreshing(true);
+        try {
+            info(`Refreshing repository: ${repo_url} at ${repo_path}`);
+
+            await invoke("refresh_repo", {
+                url: repo_url,
+                path: repo_path,
+            });
+
+            info("Repository refreshed successfully");
+            await reload_repository_data();
+        } catch (e: any) {
+            const error_message = e.message || String(e);
+            error("Failed to refresh repository: " + error_message);
+
+            if (error_message.includes("private and requires authentication")) {
+                info("Authentication required for refresh");
+                auth_error.set({
+                    needs_token: true,
+                    message:
+                        "This repository is private. Please provide a Personal Access Token to refresh.",
+                    repo_url: repo_url,
+                    repo_path: repo_path,
+                });
+            }
+        } finally {
+            refreshing = false;
+            set_refreshing(false);
+        }
+    }
+
+    async function handle_token_add(token: string) {
+        if (!token || token.trim().length === 0) {
+            info("No token entered");
+            return;
+        }
+
+        info("Authenticating with Personal Access Token for refresh...");
+
+        const success = await retry_clone_with_token(token);
+
+        if (success) {
+            info("Authentication successful, repository refreshed");
+            await reload_repository_data();
+        } else {
+            error("Authentication failed, please check your token");
+        }
+    }
+
     onMount(async () => {
+        // Set refresh function in store so layout can access it
+        set_refresh_function(refresh_repository);
+
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
@@ -188,6 +298,12 @@
         }
     });
 </script>
+
+<!-- Access Token Modal for private repository refresh -->
+<AccessTokenModal
+    bind:show_modal={show_auth_modal}
+    on_token_add={handle_token_add}
+/>
 
 <div class="page">
     <Heading
