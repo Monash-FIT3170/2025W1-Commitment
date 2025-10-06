@@ -42,6 +42,8 @@
     let progress = $derived(
         total_summaries > 0 ? (generated_summaries / total_summaries) * 100 : 0
     );
+
+    let error_flag = $state(false);
     let error_message = $state("");
 
     let summaries = new SvelteMap<string, string>();
@@ -104,6 +106,7 @@
 
         const key_set = await invoke("check_key_set");
         if (!key_set) {
+            error_flag = true;
             error_message =
                 "Please set a valid Gemini API key in Settings to generate summaries.";
             loading = false;
@@ -124,8 +127,10 @@
                 }
             } catch (e) {
                 error("Error occurred: " + e);
+                error_flag = true;
                 error_message =
-                    "An error occurred while generating summaries.\n Please check your API key and try again.";
+                    "An error occurred while generating summaries.\n Error: " +
+                    e;
             } finally {
                 loading = false;
                 unlisten_total();
@@ -240,7 +245,7 @@
 </script>
 
 <main class="container">
-    {#if error_message}
+    {#if error_flag}
         <div class="error-message">
             {error_message}
         </div>

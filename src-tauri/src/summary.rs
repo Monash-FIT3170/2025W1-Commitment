@@ -4,6 +4,7 @@ use serde_json::{json, Value};
 use std::collections::{HashMap, HashSet};
 use std::env;
 use tauri::Emitter;
+use std::time::Duration;
 
 #[derive(Clone, serde::Serialize)]
 struct SummaryProgress {
@@ -130,7 +131,11 @@ pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
     log::info!("Validating Gemini API key...");
     let url: &str = "https://generativelanguage.googleapis.com/v1/models";
 
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(30)) //Set a timeout of 30 seconds
+        .connect_timeout(Duration::from_secs(10))// Set a connection timeout of 10 seconds
+        .build()
+        .map_err(|e| e.to_string())?;
 
     let response = client
         .get(url)
@@ -198,7 +203,12 @@ pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> 
     ];
 
     let prompt = COMMIT_SUMMARY_PROMPT.replace("{commits}", commits);
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(30)) //Set a timeout of 30 seconds
+        .connect_timeout(Duration::from_secs(10))// Set a connection timeout of 10 seconds
+        .build()?;
+
+    // let mut error_msg: Option<String> = None;
 
     for model in &models {
         let url = format!(
@@ -215,19 +225,41 @@ pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> 
             .send()
             .await;
 
-        if let Ok(res) = res {
-            if let Ok(response_json) = res.json::<GeminiResponse>().await {
-                if let Some(candidate) = response_json.candidates.first() {
-                    if let Some(part) = candidate.content.parts.first() {
-                        return Ok(part.text.clone());
+        match res {
+            Ok(response) => {
+                match response.json::<GeminiResponse>().await {
+                    Ok(response_json) => {
+                        if let Some(candidate) = response_json.candidates.first() {
+                            if let Some(part) = candidate.content.parts.first() {
+                                return Ok(part.text.clone());
+                            }
+                        }
+                        let error_msg = Some(format!("Empty response from model {model}"));
+                        log::error!("{error_msg:?}");
+                    }
+                    Err(e) => {
+                        let error_msg = Some(format!("Failed to parse response from model {model}: {e}"));
+                        log::error!("{error_msg:?}");
                     }
                 }
+            }
+            Err(e) => {
+                let error_msg = if e.is_timeout() {
+                    format!("Request to model {model} timed out")
+                } else if e.is_connect() {
+                    format!("Network connection error: {e}")
+                } else if e.is_request() {
+                    format!("Request error to model {model}: {e}")
+                } else {
+                    format!("Request to model {model} failed: {e}")
+                };
+                log::error!("{}", error_msg);
             }
         }
     }
 
     Ok(String::from(
-        "Could not generate a summary after trying all models.",
+        "Failed to generate summary. Check internet connection or API key validity.",
     ))
 }
 
