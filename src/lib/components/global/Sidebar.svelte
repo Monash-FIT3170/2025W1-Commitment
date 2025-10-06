@@ -105,6 +105,45 @@
             error("Verification failed: " + e);
         }
     }
+
+    async function delete_repository(
+        repo_url_input: string,
+        event: MouseEvent
+    ) {
+        event.stopPropagation(); // Prevent bookmark_open from being called
+
+        try {
+            let source_type = get_source_type(repo_url_input);
+            const repository_information = get_repo_info(repo_url_input);
+
+            const working_dir = await invoke<string>("get_working_directory");
+            const repo_path = `${working_dir}/repositories/${source_type}-${repository_information.owner}-${repository_information.repo}`;
+
+            info(`Deleting repository at: ${repo_path}`);
+            await invoke("delete_repo", { path: repo_path });
+
+            // Remove from manifest
+            const url_trimmed =
+                repository_information.source +
+                "/" +
+                repository_information.owner +
+                "/" +
+                repository_information.repo;
+
+            const updated_manifest = {
+                ...$manifest,
+                repository: $manifest.repository.filter(
+                    (item) => item.url !== url_trimmed
+                ),
+            };
+            manifest.set(updated_manifest);
+            await invoke("save_manifest", { manifest: updated_manifest });
+
+            info("Repository deleted successfully");
+        } catch (e: any) {
+            error("Failed to delete repository: " + e);
+        }
+    }
 </script>
 
 <div class={`sidebar ${$sidebar_open ? "open" : "closed"}`}>
@@ -151,20 +190,34 @@
 
         {#each bookmarked_repos as repo (repo.repo_url)}
             {#if repo.repo_bookmarked}
-                <button
-                    class="bookmark-item"
-                    type="button"
-                    onclick={() => {
-                        bookmark_open(repo.repo_url);
-                    }}
-                >
-                    <h6 class="heading-2 repo-name label-secondary">
-                        {repo.repo_name}
-                    </h6>
-                    <h6 class="caption repo-url label-secondary">
-                        {repo.repo_url}
-                    </h6>
-                </button>
+                <div class="bookmark-wrapper">
+                    <button
+                        class="bookmark-item"
+                        type="button"
+                        onclick={() => {
+                            bookmark_open(repo.repo_url);
+                        }}
+                    >
+                        <h6 class="heading-2 repo-name label-secondary">
+                            {repo.repo_name}
+                        </h6>
+                        <h6 class="caption repo-url label-secondary">
+                            {repo.repo_url}
+                        </h6>
+                    </button>
+                    <button
+                        class="delete-button"
+                        type="button"
+                        onclick={(e) => delete_repository(repo.repo_url, e)}
+                        aria-label="Delete repository"
+                    >
+                        <Icon
+                            icon="tabler:trash"
+                            class="icon-medium"
+                            style="color: var(--label-secondary)"
+                        />
+                    </button>
+                </div>
             {/if}
         {/each}
     </div>
@@ -229,6 +282,12 @@
     .sidebar-item-header {
         padding: 0px 6px;
     }
+    .bookmark-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
     .bookmark-item {
         display: flex;
         flex-direction: column;
@@ -237,6 +296,21 @@
         background: none;
         border: none;
         padding: 0rem;
+        flex: 1;
+    }
+    .delete-button {
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.2s ease;
+        opacity: 0.7;
+    }
+    .delete-button:hover {
+        opacity: 1;
     }
     .repo-name,
     .repo-url {

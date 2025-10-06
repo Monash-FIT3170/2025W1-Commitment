@@ -15,8 +15,6 @@
     import { listen } from "@tauri-apps/api/event";
     import ProgressBar from "$lib/components/global/ProgressBar.svelte";
     import { SvelteMap } from "svelte/reactivity";
-    import { get_source_type } from "$lib/github_url_verifier";
-    import { goto } from "$app/navigation";
 
     let {
         contributors,
@@ -171,19 +169,6 @@
             return a.username < b.username ? -1 : 1;
         });
     }
-
-    async function delete_repository() {
-        try {
-            info(`Deleting repository at: ${repo_path}`);
-            await invoke("delete_repo", { path: repo_path });
-
-            info("Repository deleted successfully, navigating to home");
-            goto("/");
-        } catch (e) {
-            error("Failed to delete repository: " + e);
-            error_message = "Failed to delete repository: " + String(e);
-        }
-    }
 </script>
 
 <main class="container">
@@ -218,33 +203,19 @@
                 {/each}
             </div>
             <div class="button-container">
-                <div class="button-group">
-                    <ButtonPrimaryMedium
-                        label={"Regenerate AI Summaries"}
-                        onclick={generate_summaries}
-                        disabled={loading}
-                    />
-                    <ButtonPrimaryMedium
-                        label={"Delete Repository"}
-                        onclick={delete_repository}
-                        disabled={loading}
-                    />
-                </div>
+                <ButtonPrimaryMedium
+                    label={"Regenerate AI Summaries"}
+                    onclick={generate_summaries}
+                    disabled={loading}
+                />
             </div>
         {:else}
             <div class="button-container">
-                <div class="button-group">
-                    <ButtonPrimaryMedium
-                        label={"Generate AI Summaries"}
-                        onclick={generate_summaries}
-                        disabled={loading}
-                    />
-                    <ButtonPrimaryMedium
-                        label={"Delete Repository"}
-                        onclick={delete_repository}
-                        disabled={loading}
-                    />
-                </div>
+                <ButtonPrimaryMedium
+                    label={"Generate AI Summaries"}
+                    onclick={generate_summaries}
+                    disabled={loading}
+                />
             </div>
         {/if}
     {/if}
@@ -282,10 +253,6 @@
         align-items: center;
     }
 
-    .button-group {
-        display: flex;
-        gap: 1rem;
-    }
     .error-message {
         color: #e53e3e;
         margin-bottom: 1rem;
