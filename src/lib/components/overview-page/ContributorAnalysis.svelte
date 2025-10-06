@@ -174,11 +174,8 @@
 
     async function delete_repository() {
         try {
-            const working_dir = await invoke("get_working_directory");
-            const full_repo_path = `${working_dir}/repositories/${repo_path}`;
-
-            info(`Deleting repository at: ${full_repo_path}`);
-            await invoke("delete_repo", { path: full_repo_path });
+            info(`Deleting repository at: ${repo_path}`);
+            await invoke("delete_repo", { path: repo_path });
 
             info("Repository deleted successfully, navigating to home");
             goto("/");

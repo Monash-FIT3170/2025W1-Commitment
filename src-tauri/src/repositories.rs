@@ -78,8 +78,6 @@ pub fn delete_repo(path: &str) -> Result<(), String> {
             log::error!("Failed to delete repository at {}: {}", path, e);
             Err(format!("Failed to delete repository: {}", e))
         }
-
-        // Test
     }
 }
 
