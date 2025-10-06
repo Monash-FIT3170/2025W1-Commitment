@@ -194,6 +194,7 @@
         {repo}
         {source_type}
         {repo_url}
+        {repo_path}
         {branches}
         bind:branch_selection
         bind:start_date

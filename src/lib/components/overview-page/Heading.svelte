@@ -10,12 +10,18 @@
     import { manifest } from "$lib/stores/manifest";
     import type { Contributor } from "$lib/metrics";
     import { info, error } from "@tauri-apps/plugin-log";
+    import AccessTokenModal from "$lib/components/global/AccessTokenModal.svelte";
+    import { auth_error, retry_clone_with_token } from "$lib/stores/auth";
+    import { load_branches, load_commit_data } from "$lib/metrics";
+    import { save_state, generate_state_object } from "$lib/utils/localstorage";
+    import { get_repo_info } from "$lib/github_url_verifier";
 
     let {
         repo: repo,
         source_type: source_type = 0,
         repo_url,
-        branches = [],
+        repo_path,
+        branches = $bindable<string[]>([]),
         branch_selection = $bindable(),
         start_date = $bindable(),
         end_date = $bindable(),
@@ -91,6 +97,117 @@
         start_date = event.detail.start;
         end_date = event.detail.end;
     }
+
+    let refreshing = $state(false);
+    let show_auth_modal = $derived($auth_error.needs_token);
+
+    async function reload_repository_data() {
+        try {
+            info("Reloading branches and contributors data...");
+
+            // Reload branches
+            const new_branches = await load_branches(repo_path);
+            branches = new_branches;
+
+            // Reload contributors
+            const new_contributors = await load_commit_data(repo_path);
+
+            // Apply email mapping if present
+            const email_mapping = $manifest.repository.find(
+                (r) => r.url === repo_url
+            )?.email_mapping;
+
+            if (email_mapping) {
+                try {
+                    const grouped = await invoke<Contributor[]>(
+                        "group_contributors_by_config",
+                        {
+                            config_json: email_mapping,
+                            contributors: new_contributors,
+                        }
+                    );
+                    contributors = grouped;
+                } catch (e) {
+                    error("Error applying config after refresh: " + e);
+                    contributors = new_contributors;
+                }
+            } else {
+                contributors = new_contributors;
+            }
+
+            // Update localStorage
+            const working_dir = await invoke<string>("get_working_directory");
+            const repository_information = get_repo_info(repo_url);
+            const storage_obj = await generate_state_object(
+                working_dir,
+                repository_information,
+                repo_url,
+                source_type,
+                branches,
+                contributors
+            );
+            await save_state(storage_obj);
+
+            info("Repository data reloaded successfully");
+        } catch (e) {
+            error("Failed to reload repository data: " + e);
+        }
+    }
+
+    async function refresh_repository() {
+        refreshing = true;
+        try {
+            info(`Refreshing repository: ${repo_url} at ${repo_path}`);
+
+            // Call refresh_repo command
+            await invoke("refresh_repo", {
+                url: repo_url,
+                path: repo_path,
+            });
+
+            info("Repository refreshed successfully");
+
+            // Reload branches and contributors data
+            await reload_repository_data();
+        } catch (e: any) {
+            const error_message = e.message || String(e);
+            error("Failed to refresh repository: " + error_message);
+
+            // Check if this is an authentication error
+            if (error_message.includes("private and requires authentication")) {
+                info("Authentication required for refresh");
+                // Set auth error to trigger modal
+                auth_error.set({
+                    needs_token: true,
+                    message:
+                        "This repository is private. Please provide a Personal Access Token to refresh.",
+                    repo_url: repo_url,
+                    repo_path: repo_path,
+                });
+            }
+        } finally {
+            refreshing = false;
+        }
+    }
+
+    async function handle_token_add(token: string) {
+        if (!token || token.trim().length === 0) {
+            info("No token entered");
+            return;
+        }
+
+        info("Authenticating with Personal Access Token for refresh...");
+
+        const success = await retry_clone_with_token(token);
+
+        if (success) {
+            info("Authentication successful, repository refreshed");
+            // Reload branches and contributors data
+            await reload_repository_data();
+        } else {
+            error("Authentication failed, please check your token");
+        }
+    }
 </script>
 
 <div class="page-header">
@@ -104,6 +221,19 @@
                     style="color: white"
                 />
             </div>
+        </div>
+
+        <!-- refresh btn -->
+        <div class="refresh-btn heading-btn">
+            <ButtonTintedMedium
+                label={refreshing ? "Refreshing..." : "Refresh"}
+                icon="refresh"
+                label_class="body-accent"
+                icon_first={true}
+                width="5.5rem"
+                onclick={refresh_repository}
+                disabled={refreshing}
+            />
         </div>
 
         <!-- config btn -->
@@ -185,6 +315,12 @@
     <span class="subtitle display-subtitle">Contribution Statistics</span>
 </div>
 
+<!-- Access Token Modal for private repository refresh -->
+<AccessTokenModal
+    bind:show_modal={show_auth_modal}
+    on_token_add={handle_token_add}
+/>
+
 <style>
     .page-header {
         display: flex;
@@ -194,10 +330,10 @@
 
     .top-container {
         display: grid;
-        grid-template-columns: 1fr auto auto auto;
+        grid-template-columns: 1fr auto auto auto auto;
         grid-template-areas:
-            "repo-path config branch calendar"
-            "subtitle subtitle subtitle heading-btn-spacer";
+            "repo-path refresh config branch calendar"
+            "subtitle subtitle subtitle subtitle heading-btn-spacer";
         align-items: center;
         column-gap: 1rem;
     }
@@ -227,6 +363,10 @@
         padding: 0.6rem 0;
     }
 
+    .refresh-btn {
+        grid-area: refresh;
+    }
+
     .config-btn {
         grid-area: config;
     }
@@ -250,11 +390,11 @@
 
     @media (max-width: 85rem) {
         .top-container {
-            grid-template-columns: auto auto auto 1fr;
+            grid-template-columns: auto auto auto auto 1fr;
             grid-template-areas:
-                "repo-path repo-path repo-path repo-path"
-                "subtitle subtitle subtitle subtitle"
-                "config branch calendar heading-btn-spacer";
+                "repo-path repo-path repo-path repo-path repo-path"
+                "subtitle subtitle subtitle subtitle subtitle"
+                "refresh config branch calendar heading-btn-spacer";
         }
 
         .heading-btn {

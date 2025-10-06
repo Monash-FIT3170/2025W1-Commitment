@@ -133,3 +133,18 @@ pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
     // Step 4: Repository is private and requires authentication
     Err("Repository appears to be private and requires authentication. Please use try_clone_with_token with a valid access token.".to_string())
 }
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn refresh_repo(url: &str, path: &str) -> Result<(), String> {
+    log::info!("Refreshing repository at: {path}");
+
+    // Step 1: Delete the existing repository
+    if is_repo_cloned(path) {
+        log::info!("Deleting existing repository at: {path}");
+        delete_repo(path)?;
+    }
+
+    // Step 2: Re-clone the repository using bare_clone
+    log::info!("Re-cloning repository from {url} to {path}");
+    bare_clone(url, path).await
+}

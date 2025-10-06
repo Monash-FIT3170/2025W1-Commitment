@@ -34,6 +34,7 @@ pub fn run() {
             repositories::is_repo_cloned,
             repositories::delete_repo,
             repositories::get_local_repo_information,
+            repositories::refresh_repo,
             url_verifier::verify_and_extract_source_info,
             manifest::read_manifest,
             manifest::save_manifest,
