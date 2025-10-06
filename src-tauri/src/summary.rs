@@ -39,9 +39,8 @@ pub async fn get_ai_summary(window: tauri::Window, path: &str) -> Result<(), Str
                                 window.emit("summary-progress", progress).unwrap();
                             }
                             Err(e) => {
-                                eprintln!(
-                                    "Failed to summarize commits for {contributor_name}: {e}"
-                                );
+                                let err_msg = e.to_string();
+                                Err(err_msg)?
                             }
                         }
                     }
@@ -105,8 +104,9 @@ pub async fn get_ai_summary_with_config(
                             }
                         }
                         Err(e) => {
-                            eprintln!("Failed to summarize commits for {user_name}: {e}");
-                        }
+                                let err_msg = e.to_string();
+                                Err(err_msg)?
+                            }
                     }
                 }
             }
@@ -192,7 +192,7 @@ struct Part {
 
 const COMMIT_SUMMARY_PROMPT: &str = include_str!("AI-summary-prompt.md");
 
-pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> {
+pub async fn summarize_commits(commits: &str) -> Result<String, String> {
     dotenvy::dotenv().ok();
     let api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY must be set");
 
@@ -206,9 +206,10 @@ pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> 
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(30)) //Set a timeout of 30 seconds
         .connect_timeout(Duration::from_secs(10))// Set a connection timeout of 10 seconds
-        .build()?;
+        .build()
+        .map_err(|e| format!("Failed to build client: {}", e))?;
 
-    // let mut error_msg: Option<String> = None;
+    let mut last_error: Option<String> = None;
 
     for model in &models {
         let url = format!(
@@ -234,12 +235,12 @@ pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> 
                                 return Ok(part.text.clone());
                             }
                         }
-                        let error_msg = Some(format!("Empty response from model {model}"));
-                        log::error!("{error_msg:?}");
+                        last_error = Some(format!("Empty response from model {model}"));
+                        log::error!("{last_error:?}");
                     }
                     Err(e) => {
-                        let error_msg = Some(format!("Failed to parse response from model {model}: {e}"));
-                        log::error!("{error_msg:?}");
+                        last_error = Some(format!("Failed to parse response from model {model}: {e}"));
+                        log::error!("{last_error:?}");
                     }
                 }
             }
@@ -247,20 +248,23 @@ pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> 
                 let error_msg = if e.is_timeout() {
                     format!("Request to model {model} timed out")
                 } else if e.is_connect() {
-                    format!("Network connection error: {e}")
+                    "Network connection error. Please check internet connection.".to_string()
                 } else if e.is_request() {
-                    format!("Request error to model {model}: {e}")
+                    format!("Request error to model {model}. Please try again.")
                 } else {
-                    format!("Request to model {model} failed: {e}")
+                    format!("Request to model {model} failed. Unknown Error: {e}")
                 };
                 log::error!("{}", error_msg);
+                last_error = Some(error_msg);
             }
         }
     }
 
-    Ok(String::from(
-        "Failed to generate summary. Check internet connection or API key validity.",
-    ))
+    // Err(String::from(
+    //     "Failed to generate summary. Check internet connection or API key validity.",
+    // ))
+
+    Err(last_error.unwrap_or_else(|| String::from("Failed to generate summary. Check internet connection or API key validity.")))
 }
 
 pub fn get_contributor_commits(

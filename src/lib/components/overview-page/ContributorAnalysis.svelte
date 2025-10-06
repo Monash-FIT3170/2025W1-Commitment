@@ -249,6 +249,15 @@
         <div class="error-message">
             {error_message}
         </div>
+        <div class="button-container">
+            <div>
+                <ButtonPrimaryMedium
+                    label={"Generate AI Summaries"}
+                    onclick={generate_summaries}
+                    disabled={loading}
+                />
+            </div>
+        </div>
     {/if}
     {#if loading}
         <div class="w-full max-w-2xl mx-auto">
@@ -258,7 +267,7 @@
             />
         </div>
     {/if}
-    {#if !loading}
+    {#if !loading && !error_flag}
         {#if summaries && summaries.size > 0}
             <div class="cards-container">
                 {#each contributors_sorted as person}
