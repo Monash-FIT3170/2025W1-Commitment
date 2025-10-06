@@ -187,6 +187,22 @@ function create_manifest_store() {
                 return { repository: next };
             });
         },
+
+        /** Remove email_mapping for a repository. */
+        remove_email_mapping(repo_url: string) {
+            update((m) => {
+                const next = m.repository.map((repo) => {
+                    if (repo.url === repo_url) {
+                        return {
+                            ...repo,
+                            email_mapping: null,
+                        };
+                    }
+                    return repo;
+                });
+                return { repository: next };
+            });
+        },
     };
 }
 
