@@ -8,8 +8,13 @@
     import { validate_config_file } from "$lib/file_validation";
     import { invoke } from "@tauri-apps/api/core";
     import { manifest } from "$lib/stores/manifest";
+    import { load_commit_data } from "$lib/metrics";
     import type { Contributor } from "$lib/metrics";
     import { info, error } from "@tauri-apps/plugin-log";
+    import ButtonPrimaryMedium from "../global/ButtonPrimaryMedium.svelte";
+    import MappingDisplay from "./MappingDisplay.svelte";
+    import { page } from "$app/state";
+    import { get } from "svelte/store";
 
     let {
         repo: repo,
@@ -91,6 +96,37 @@
         start_date = event.detail.start;
         end_date = event.detail.end;
     }
+
+    async function handle_remove_mapping() {
+        try {
+            manifest.remove_email_mapping(repo_url);
+
+            // Get the current state of the manifest after the update
+            const currentManifest = get(manifest);
+
+            // Save the updated manifest to file
+            await invoke("save_manifest", { manifest: currentManifest });
+            info("Email mapping removed successfully");
+
+            // Refresh contributors to show ungrouped data
+            const branch_arg =
+                branch_selection === "" ? undefined : branch_selection;
+            const repo_path = page.state.repo_path;
+            const new_contributors = await load_commit_data(
+                repo_path,
+                branch_arg,
+                start_date,
+                end_date
+            );
+
+            // Update contributors without email mapping
+            contributors = [...new_contributors];
+
+            show_modal = false;
+        } catch (e) {
+            error("Error removing email mapping: " + e);
+        }
+    }
 </script>
 
 <div class="page-header">
@@ -121,12 +157,14 @@
         <!-- Modal -->
         <Modal bind:show_modal>
             {#snippet header()}
-                <div class="modal-header" style="display: flex">
-                    <Icon
-                        icon={`tabler:settings-2`}
-                        class="icon-medium"
-                        style="color: currentColor"
-                    />
+                <div class="modal-header">
+                    <div class="icon-wrapper">
+                        <Icon
+                            icon={`tabler:settings-2`}
+                            class="icon-medium"
+                            style="color: currentColor"
+                        />
+                    </div>
                     <h2 class="label-primary heading-1 modal-title">
                         Contributor Mapping
                     </h2>
@@ -134,9 +172,9 @@
             {/snippet}
 
             {#snippet body()}
-                <p>
-                    Upload a config file to group email addresses to
-                    contributors
+                <p class="label-primary body">
+                    This is the current contributor mapping used. Upload a new
+                    config file to group more email addresses to contributors.
                 </p>
                 <input
                     type="file"
@@ -144,20 +182,26 @@
                     style="display: none;"
                     onchange={handle_file_change}
                 />
-                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                    <ButtonTintedMedium
+
+                <MappingDisplay {repo_url} />
+
+                <div class="modal-button">
+                    <ButtonPrimaryMedium
                         label="Cancel"
-                        label_class="body"
-                        icon_first={true}
-                        width="4rem"
+                        variant="secondary"
                         onclick={() => (show_modal = false)}
                     />
-                    <ButtonTintedMedium
+                    {#if $manifest.repository.find((r) => r.url === repo_url)?.email_mapping}
+                        <ButtonPrimaryMedium
+                            label="Remove Mapping"
+                            variant="secondary"
+                            icon="trash"
+                            onclick={handle_remove_mapping}
+                        />
+                    {/if}
+                    <ButtonPrimaryMedium
                         label="Upload"
                         icon="upload"
-                        label_class="body-accent"
-                        icon_first={true}
-                        width="4rem"
                         onclick={trigger_file_input}
                     />
                 </div>
@@ -270,9 +314,24 @@
             padding-top: 1rem;
         }
     }
-
+    /* MODAL */
     .modal-title {
         margin: 0px;
         margin-left: 0.375rem;
+    }
+
+    .modal-header {
+        display: flex;
+    }
+
+    .icon-wrapper {
+        margin-top: 0.1rem;
+    }
+
+    .modal-button {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
     }
 </style>
