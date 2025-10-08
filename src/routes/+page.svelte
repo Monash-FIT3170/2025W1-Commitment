@@ -192,12 +192,30 @@
                 repo_path = repo_url_input;
             } else {
                 set_repo_url(repo_url_input);
-                repo_path = await bare_clone(
-                    repository_information.source,
-                    repository_information.owner,
-                    repository_information.repo,
-                    source_type
-                );
+                try {
+                    repo_path = await bare_clone(
+                        repository_information.source,
+                        repository_information.owner,
+                        repository_information.repo,
+                        source_type
+                    );
+                } catch (err: any) {
+                    error(err);
+                    const err_check = String(err);
+                    if (err_check.includes("remote authentication required")) {
+                        verification_message =
+                            "Repository is private and requires authentication (PAT).";
+                    } else if (
+                        err_check.includes("failed to resolve address")
+                    ) {
+                        verification_message =
+                            "Unable to reach Git repository. Please check Internet connection.";
+                    } else {
+                        verification_message = "Unknown Error: " + err_check;
+                    }
+                    verification_error = true;
+                    return;
+                }
             }
             // Call loadBranches and loadCommitData and wait for both to complete
 

@@ -123,15 +123,15 @@ pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
     match try_clone_with_token(url, path, None) {
         Ok(()) => {
             log::info!("Successfully cloned public repository at: {path}");
-            return Ok(());
+            Ok(())
         }
         Err(e) => {
-            log::info!("Public clone failed: {e}. Trying with access tokens");
+            let err_msg = format!("Clone failed: {e}. Checking if private.");
+            log::error!("{}", err_msg);
+            Err(err_msg)
         }
     }
 
-    // Step 4: Repository is private and requires authentication
-    Err("Repository appears to be private and requires authentication. Please use try_clone_with_token with a valid access token.".to_string())
 }
 
 #[tauri::command(rename_all = "snake_case")]
