@@ -11,12 +11,14 @@
         repo,
         on_refresh,
         refreshing = false,
+        on_delete,
     }: {
         repo_url: string;
         owner: string;
         repo: string;
         on_refresh?: () => void;
         refreshing?: boolean;
+        on_delete?: () => void;
     } = $props();
 
     let bookmarked = $state(
@@ -94,6 +96,18 @@ toggle button.
                 class="icon-medium"
             />
         </button>
+
+        <!-- delete button -->
+        {#if on_delete}
+            <button
+                type="button"
+                class="delete-btn"
+                onclick={on_delete}
+                aria-label="Delete repository"
+            >
+                <Icon icon="tabler:trash" class="icon-medium" />
+            </button>
+        {/if}
     {/snippet}
 </LeftMenu>
 
@@ -136,5 +150,20 @@ toggle button.
         cursor: pointer;
         display: flex;
         color: var(--label-primary);
+    }
+
+    .delete-btn {
+        background: none;
+        border: none;
+        padding: 0px;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        display: flex;
+        color: var(--label-primary);
+        transition: opacity 0.2s ease;
+    }
+
+    .delete-btn:hover {
+        opacity: 0.7;
     }
 </style>

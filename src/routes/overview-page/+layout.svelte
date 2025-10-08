@@ -27,9 +27,10 @@
     let repo = $derived(s.repo);
     let repo_url = $derived(s.repo_url);
 
-    // Get refresh function and state from store
-    let on_refresh = $derived($refresh_store.refresh_function);
+    // Get refresh and delete functions from store
+    let on_refresh = $derived($refresh_store.refresh_function ?? undefined);
     let refreshing = $derived($refresh_store.refreshing);
+    let on_delete = $derived($refresh_store.delete_function ?? undefined);
 </script>
 
 <main class="page">
@@ -42,6 +43,7 @@
             {profile_image_url}
             {on_refresh}
             {refreshing}
+            {on_delete}
         />
     </header>
     {@render children()}

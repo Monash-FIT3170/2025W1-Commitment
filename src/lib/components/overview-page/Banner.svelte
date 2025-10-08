@@ -11,6 +11,7 @@
         profile_image_url = "/mock_profile_img.png",
         on_refresh,
         refreshing = false,
+        on_delete,
     }: {
         owner?: string;
         repo?: string;
@@ -19,6 +20,7 @@
         profile_image_url?: string;
         on_refresh?: () => void;
         refreshing?: boolean;
+        on_delete?: () => void;
     } = $props();
 </script>
 
@@ -55,6 +57,7 @@ contains the user's name and profile image.
                 {repo}
                 {on_refresh}
                 {refreshing}
+                {on_delete}
             />
         {:else}
             <LeftMenu />

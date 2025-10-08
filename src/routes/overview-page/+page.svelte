@@ -27,7 +27,12 @@
     import { auth_error, retry_clone_with_token } from "$lib/stores/auth";
     import AccessTokenModal from "$lib/components/global/AccessTokenModal.svelte";
     import { get_repo_info } from "$lib/github_url_verifier";
-    import { set_refresh_function, set_refreshing } from "$lib/stores/refresh";
+    import {
+        set_refresh_function,
+        set_refreshing,
+        set_delete_function,
+    } from "$lib/stores/refresh";
+    import { goto } from "$app/navigation";
 
     const s = page.state as any;
     load_state(s);
@@ -268,9 +273,32 @@
         }
     }
 
+    async function delete_repository() {
+        try {
+            info(`Deleting repository at: ${repo_path}`);
+            await invoke("delete_repo", { path: repo_path });
+
+            // Remove from manifest
+            const updated_manifest = {
+                ...$manifest,
+                repository: $manifest.repository.filter(
+                    (item) => item.url !== repo_url
+                ),
+            };
+            manifest.set(updated_manifest);
+            await invoke("save_manifest", { manifest: updated_manifest });
+
+            info("Repository deleted successfully, navigating to home");
+            goto("/");
+        } catch (e) {
+            error("Failed to delete repository: " + e);
+        }
+    }
+
     onMount(async () => {
-        // Set refresh function in store so layout can access it
+        // Set refresh and delete functions in store so layout can access them
         set_refresh_function(refresh_repository);
+        set_delete_function(delete_repository);
 
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
