@@ -425,7 +425,7 @@
 
                 const between_mid_max =
                     person.data_to_display >= ref_point_values[2];
-                const is_rightmost = person.data_to_display === x_max;
+
                 return {
                     type: "group",
                     children: [
