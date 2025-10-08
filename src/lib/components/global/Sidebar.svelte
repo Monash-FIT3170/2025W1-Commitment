@@ -12,6 +12,7 @@
     import { bare_clone, load_branches, load_commit_data } from "$lib/metrics";
     import { goto } from "$app/navigation";
     import { generate_state_object, save_state } from "$lib/utils/localstorage";
+    import { page } from "$app/state";
 
     interface RepoBookmark {
         repo_name: string;
@@ -140,6 +141,15 @@
             await invoke("save_manifest", { manifest: updated_manifest });
 
             info("Repository deleted successfully");
+
+            // Check if user is currently viewing this repository
+            const current_state = page.state as any;
+            if (current_state && current_state.repo_url === url_trimmed) {
+                info(
+                    "Currently viewing deleted repository, navigating to home"
+                );
+                goto("/");
+            }
         } catch (e: any) {
             error("Failed to delete repository: " + e);
         }
