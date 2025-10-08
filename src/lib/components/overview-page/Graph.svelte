@@ -423,6 +423,8 @@
                     `idx: ${idx}, z: ${z}, +1: ${z + 1}, +2: ${z + 2}, +3: ${z + 3}`
                 );
 
+                const between_mid_max =
+                    person.data_to_display >= ref_point_values[2];
                 const is_rightmost = person.data_to_display === x_max;
                 return {
                     type: "group",
@@ -463,12 +465,12 @@
                                           fontWeight: "900",
                                           fill: "#fff",
                                           font: 'bold 16px "DM Sans ExtraBold", sans-serif',
-                                          textAlign: is_rightmost
+                                          textAlign: between_mid_max
                                               ? "right"
                                               : "left",
                                           textVerticalAlign: "top",
                                       },
-                                      x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
+                                      x: between_mid_max ? x - 40 : x + 40, // Left for rightmost, right otherwise
                                       y: y - 15,
                                       z: z + 1,
                                   },
@@ -480,12 +482,12 @@
                                           fontSize: 14,
                                           fill: "#fff",
                                           font: 'bold 16px "DM Sans", sans-serif',
-                                          textAlign: is_rightmost
+                                          textAlign: between_mid_max
                                               ? "right"
                                               : "left",
                                           textVerticalAlign: "top",
                                       },
-                                      x: is_rightmost ? x - 40 : x + 40, // Left for rightmost, right otherwise
+                                      x: between_mid_max ? x - 40 : x + 40, // Left for rightmost, right otherwise
                                       y: y + 5,
                                       z: z + 1,
                                   },
