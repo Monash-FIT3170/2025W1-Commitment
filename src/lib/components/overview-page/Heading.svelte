@@ -35,6 +35,20 @@
               : "folder-code";
     let show_modal = $state(false);
 
+    // Add effect to manage body class when modal state changes
+    $effect(() => {
+        if (show_modal) {
+            document.body.classList.add("modal-open");
+        } else {
+            document.body.classList.remove("modal-open");
+        }
+
+        // Cleanup function to remove class when component unmounts
+        return () => {
+            document.body.classList.remove("modal-open");
+        };
+    });
+
     let file_input: HTMLInputElement;
 
     function trigger_file_input() {
@@ -333,5 +347,10 @@
         justify-content: center;
         gap: 1rem;
         margin-top: 1rem;
+    }
+
+    /* Fix: Prevent background scrolling when modal is open */
+    :global(body.modal-open) {
+        overflow: hidden;
     }
 </style>
