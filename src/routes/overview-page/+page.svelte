@@ -31,7 +31,7 @@
         set_refresh_function,
         set_refreshing,
         set_delete_function,
-    } from "$lib/stores/refresh";
+    } from "$lib/stores/refresh.svelte";
     import { goto } from "$app/navigation";
 
     const s = page.state as any;
@@ -46,8 +46,19 @@
     let branch_selection = $state(s.branch_selection || "");
     let start_date = $state(s.start_date || "");
     let end_date = $state(s.end_date || "");
+
+    let manifest_state = $state<ManifestSchema>({ repository: [] });
+
+    // Subscribe to manifest store
+    $effect(() => {
+        const unsubscribe = manifest.subscribe((value) => {
+            manifest_state = value;
+        });
+        return unsubscribe;
+    });
+
     let email_mapping: Config | null = $derived(
-        $manifest.repository.filter((r) => r.url === repo_url)[0]
+        manifest_state.repository.filter((r) => r.url === repo_url)[0]
             ?.email_mapping || null
     );
 
@@ -174,8 +185,17 @@
         }
     });
 
-    let refreshing = $state(false);
-    let show_auth_modal = $derived($auth_error.needs_token);
+    let auth_error_state = $state({ needs_token: false, message: "" });
+
+    // Subscribe to auth_error store
+    $effect(() => {
+        const unsubscribe = auth_error.subscribe((value) => {
+            auth_error_state = value;
+        });
+        return unsubscribe;
+    });
+
+    let show_auth_modal = $derived(auth_error_state.needs_token);
 
     async function reload_repository_data() {
         try {
@@ -223,7 +243,6 @@
     }
 
     async function refresh_repository() {
-        refreshing = true;
         set_refreshing(true);
         try {
             info(`Refreshing repository: ${repo_url} at ${repo_path}`);
@@ -250,7 +269,6 @@
                 });
             }
         } finally {
-            refreshing = false;
             set_refreshing(false);
         }
     }
@@ -280,8 +298,8 @@
 
             // Remove from manifest
             const updated_manifest = {
-                ...$manifest,
-                repository: $manifest.repository.filter(
+                ...manifest_state,
+                repository: manifest_state.repository.filter(
                     (item) => item.url !== repo_url
                 ),
             };

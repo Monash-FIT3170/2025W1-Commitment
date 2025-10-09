@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
     import { installGlobalDnDGuards } from "$lib/dnd_guards";
     import { info } from "@tauri-apps/plugin-log";
-    import { refresh_state } from "$lib/stores/refresh";
+    import { refresh_state } from "$lib/stores/refresh.svelte";
 
     onMount(() => {
         const cleanup = installGlobalDnDGuards();

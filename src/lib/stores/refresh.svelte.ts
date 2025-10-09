@@ -1,4 +1,6 @@
 // Refresh state using Svelte 5 runes pattern
+// NOTE: This file uses .svelte.ts extension to enable runes
+
 class RefreshState {
     refresh_function = $state<(() => void) | null>(null);
     refreshing = $state(false);
