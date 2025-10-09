@@ -1,5 +1,5 @@
 // src/lib/utils/grading.ts
-import { info } from "@tauri-apps/plugin-log";
+import { info, error } from "@tauri-apps/plugin-log";
 import type { Contributor } from "$lib/metrics";
 import {
     get_average_commits,
@@ -199,7 +199,11 @@ export function count_matches(
     const email_key =
         headers.find((h) => h.trim().toLowerCase() === "email address") ?? null;
 
-    if (!email_key) return { matched: 0, total: rows.length };
+    if (!email_key) {
+        let err_msg: string = "Incorrect file format.";
+        error(err_msg);
+        throw new Error(err_msg);
+    }
 
     let matched = 0;
     for (const row of rows) {
