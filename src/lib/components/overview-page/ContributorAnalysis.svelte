@@ -159,6 +159,8 @@
                 username: user.username,
                 analysis: analysis,
                 scaling_factor: scaling_factor.toFixed(1),
+                profile_colour: user.profile_colour,
+                initials: user.username_initials,
             };
         })
     );
@@ -191,8 +193,9 @@
                 {#each contributors_sorted() as person}
                     <ContributorCard
                         username={person.username}
-                        image={person.image}
-                        scaling_factor={person.scaling_factor}
+                        profile_colour={person.profile_colour}
+                        initials={person.initials}
+                        scaling_factor={Number(person.scaling_factor)}
                     >
                         {#snippet content()}
                             <div class="contents body">
@@ -249,7 +252,7 @@
     .button-container {
         display: flex;
         justify-content: center;
-        height: calc(100vh - 31.1rem);
+        height: calc(100vh - 45rem);
         align-items: center;
     }
 
