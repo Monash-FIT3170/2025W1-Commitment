@@ -15,7 +15,6 @@
     import { listen } from "@tauri-apps/api/event";
     import ProgressBar from "$lib/components/global/ProgressBar.svelte";
     import { SvelteMap } from "svelte/reactivity";
-    import { get_source_type } from "$lib/github_url_verifier";
 
     let {
         contributors,
@@ -204,23 +203,19 @@
                 {/each}
             </div>
             <div class="button-container">
-                <div>
-                    <ButtonPrimaryMedium
-                        label={"Regenerate AI Summaries"}
-                        onclick={generate_summaries}
-                        disabled={loading}
-                    />
-                </div>
+                <ButtonPrimaryMedium
+                    label={"Regenerate AI Summaries"}
+                    onclick={generate_summaries}
+                    disabled={loading}
+                />
             </div>
         {:else}
             <div class="button-container">
-                <div>
-                    <ButtonPrimaryMedium
-                        label={"Generate AI Summaries"}
-                        onclick={generate_summaries}
-                        disabled={loading}
-                    />
-                </div>
+                <ButtonPrimaryMedium
+                    label={"Generate AI Summaries"}
+                    onclick={generate_summaries}
+                    disabled={loading}
+                />
             </div>
         {/if}
     {/if}
@@ -257,6 +252,7 @@
         height: calc(100vh - 31.1rem);
         align-items: center;
     }
+
     .error-message {
         color: #e53e3e;
         margin-bottom: 1rem;

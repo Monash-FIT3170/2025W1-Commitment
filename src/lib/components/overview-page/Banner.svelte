@@ -9,12 +9,18 @@
         repo_url,
         username = "Baaset Moslih",
         profile_image_url = "/mock_profile_img.png",
+        on_refresh,
+        refreshing = false,
+        on_delete,
     }: {
         owner?: string;
         repo?: string;
         repo_url?: string;
         username?: string;
         profile_image_url?: string;
+        on_refresh?: () => void;
+        refreshing?: boolean;
+        on_delete?: () => void;
     } = $props();
 </script>
 
@@ -45,7 +51,14 @@ contains the user's name and profile image.
 <div class="header">
     <div class="left-menu-container">
         {#if repo_url && owner && repo}
-            <LeftMenuWithRepo {repo_url} {owner} {repo} />
+            <LeftMenuWithRepo
+                {repo_url}
+                {owner}
+                {repo}
+                {on_refresh}
+                {refreshing}
+                {on_delete}
+            />
         {:else}
             <LeftMenu />
         {/if}

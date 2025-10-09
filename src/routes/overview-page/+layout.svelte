@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import { installGlobalDnDGuards } from "$lib/dnd_guards";
     import { info } from "@tauri-apps/plugin-log";
+    import { refresh_state } from "$lib/stores/refresh.svelte";
 
     onMount(() => {
         const cleanup = installGlobalDnDGuards();
@@ -25,11 +26,25 @@
     let owner = $derived(s.owner);
     let repo = $derived(s.repo);
     let repo_url = $derived(s.repo_url);
+
+    // Get refresh and delete functions from state (using runes)
+    let on_refresh = $derived(refresh_state.refresh_function ?? undefined);
+    let refreshing = $derived(refresh_state.refreshing);
+    let on_delete = $derived(refresh_state.delete_function ?? undefined);
 </script>
 
 <main class="page">
     <header class="header">
-        <Banner {repo} {owner} {repo_url} {username} {profile_image_url} />
+        <Banner
+            {repo}
+            {owner}
+            {repo_url}
+            {username}
+            {profile_image_url}
+            {on_refresh}
+            {refreshing}
+            {on_delete}
+        />
     </header>
     {@render children()}
 </main>

@@ -9,10 +9,16 @@
         repo_url,
         owner,
         repo,
+        on_refresh,
+        refreshing = false,
+        on_delete,
     }: {
         repo_url: string;
         owner: string;
         repo: string;
+        on_refresh?: () => void;
+        refreshing?: boolean;
+        on_delete?: () => void;
     } = $props();
 
     let bookmarked = $state(
@@ -61,6 +67,23 @@ toggle button.
             {owner}/{repo}
         </div>
 
+        <!-- refresh button -->
+        {#if on_refresh}
+            <button
+                type="button"
+                class="refresh-btn"
+                onclick={on_refresh}
+                disabled={refreshing}
+                aria-label="Refresh repository"
+            >
+                <Icon
+                    icon="tabler:refresh"
+                    class="icon-medium"
+                    style={refreshing ? "opacity: 0.5;" : ""}
+                />
+            </button>
+        {/if}
+
         <!-- bookmark toggle -->
         <button
             type="button"
@@ -73,6 +96,18 @@ toggle button.
                 class="icon-medium"
             />
         </button>
+
+        <!-- delete button -->
+        {#if on_delete}
+            <button
+                type="button"
+                class="delete-btn"
+                onclick={on_delete}
+                aria-label="Delete repository"
+            >
+                <Icon icon="tabler:trash" class="icon-medium" />
+            </button>
+        {/if}
     {/snippet}
 </LeftMenu>
 
@@ -89,6 +124,25 @@ toggle button.
         min-width: 0;
     }
 
+    .refresh-btn {
+        background: none;
+        border: none;
+        padding: 0px;
+        margin-right: 0.5rem;
+        cursor: pointer;
+        display: flex;
+        color: var(--label-primary);
+        transition: opacity 0.2s ease;
+    }
+
+    .refresh-btn:hover:not(:disabled) {
+        opacity: 0.7;
+    }
+
+    .refresh-btn:disabled {
+        cursor: not-allowed;
+    }
+
     .bookmark-btn {
         background: none;
         border: none;
@@ -96,5 +150,20 @@ toggle button.
         cursor: pointer;
         display: flex;
         color: var(--label-primary);
+    }
+
+    .delete-btn {
+        background: none;
+        border: none;
+        padding: 0px;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        display: flex;
+        color: var(--label-primary);
+        transition: opacity 0.2s ease;
+    }
+
+    .delete-btn:hover {
+        opacity: 0.7;
     }
 </style>
