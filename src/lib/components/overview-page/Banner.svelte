@@ -1,7 +1,7 @@
 <script lang="ts">
     import LeftMenu from "./LeftMenu.svelte";
     import LeftMenuWithRepo from "./LeftMenuWithRepo.svelte";
-    import UserMenu from "$lib/components/overview-page/UserMenu.svelte";
+    import RightMenu from "$lib/components/overview-page/RightMenu.svelte";
     import Icon from "@iconify/svelte";
 
     let {
@@ -75,8 +75,8 @@ contains the user's name and profile image.
             <LeftMenu />
         {/if}
     </div>
-    <div class="user-menu-container">
-        <UserMenu {username} {profile_image_url} />
+    <div class="right-menu-container">
+        <RightMenu />
     </div>
 </div>
 
@@ -96,7 +96,6 @@ contains the user's name and profile image.
     .left-menu-container {
         top: 2rem;
         align-items: center;
-        display: flex;
     }
 
     .center-menu-container {
@@ -106,10 +105,8 @@ contains the user's name and profile image.
         align-items: center;
     }
 
-    .user-menu-container {
-        min-width: 5rem;
+    .right-menu-container {
         top: 2rem;
-        display: flex;
         align-items: center;
         overflow: hidden;
     }
