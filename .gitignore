@@ -61,3 +61,6 @@ TODO.md
 
 # frontend build files
 build
+
+# Python intermediates for generated docs
+__pycache__
