@@ -15,6 +15,9 @@
     import { listen } from "@tauri-apps/api/event";
     import ProgressBar from "$lib/components/global/ProgressBar.svelte";
     import { SvelteMap } from "svelte/reactivity";
+    import { get_source_type } from "$lib/github_url_verifier";
+    import { summaries_store } from "$lib/stores/summaries";
+    import { onMount } from "svelte";
 
     let {
         contributors,
@@ -44,6 +47,20 @@
     let error_message = $state("");
 
     let summaries = new SvelteMap<string, string>();
+    let store_summaries = $derived($summaries_store);
+
+    // Load existing summaries when component mounts
+    onMount(() => {
+        if (repo_path && store_summaries.has(repo_path)) {
+            const repo_summaries = store_summaries.get(repo_path);
+            if (repo_summaries) {
+                // Convert Map to SvelteMap
+                for (const [email, summary] of repo_summaries) {
+                    summaries.set(email, summary);
+                }
+            }
+        }
+    });
 
     async function generate_summaries() {
         loading = true;
@@ -64,7 +81,7 @@
         });
 
         const key_set = await invoke("check_key_set");
-        info("key_set:", key_set);
+        info(String(key_set));
         if (!key_set) {
             error_message =
                 "Please set a valid Gemini API key in Settings to generate summaries.";
@@ -90,6 +107,18 @@
                 loading = false;
                 unlisten_total();
                 unlisten_progress();
+
+                // Save summaries to store
+                if (repo_path && summaries.size > 0) {
+                    const repo_summaries = new Map<string, string>();
+                    for (const [email, summary] of summaries) {
+                        repo_summaries.set(email, summary);
+                    }
+                    summaries_store.update((store) => {
+                        store.set(repo_path, repo_summaries);
+                        return store;
+                    });
+                }
             }
         }
     }
