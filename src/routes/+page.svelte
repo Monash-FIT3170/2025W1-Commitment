@@ -34,8 +34,8 @@
         }
     });
 
-    let profile_image_url = "/mock_profile_img.png";
-    let username = "Baaset Moslih";
+    let profile_image_url = "";
+    let username = "";
 
     interface RepoBookmark {
         repo_name: string;
@@ -251,7 +251,7 @@
 
 <div class="page">
     <header class="header">
-        <Banner {username} {profile_image_url} />
+        <Banner {username} {profile_image_url} showBackButton={false} />
     </header>
 
     <main class="main">
