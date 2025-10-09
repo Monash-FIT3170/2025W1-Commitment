@@ -1,25 +1,21 @@
-import { writable } from "svelte/store";
-
-export interface RefreshState {
-    refresh_function: (() => void) | null;
-    refreshing: boolean;
-    delete_function: (() => void) | null;
+// Refresh state using Svelte 5 runes pattern
+class RefreshState {
+    refresh_function = $state<(() => void) | null>(null);
+    refreshing = $state(false);
+    delete_function = $state<(() => void) | null>(null);
 }
 
-export const refresh_store = writable<RefreshState>({
-    refresh_function: null,
-    refreshing: false,
-    delete_function: null,
-});
+// Create a singleton instance
+export const refresh_state = new RefreshState();
 
 export function set_refresh_function(fn: () => void) {
-    refresh_store.update((state) => ({ ...state, refresh_function: fn }));
+    refresh_state.refresh_function = fn;
 }
 
 export function set_refreshing(value: boolean) {
-    refresh_store.update((state) => ({ ...state, refreshing: value }));
+    refresh_state.refreshing = value;
 }
 
 export function set_delete_function(fn: () => void) {
-    refresh_store.update((state) => ({ ...state, delete_function: fn }));
+    refresh_state.delete_function = fn;
 }
