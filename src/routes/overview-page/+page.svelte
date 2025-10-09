@@ -31,7 +31,7 @@
         (s.branches || []).filter((branch: string) => branch !== "All")
     );
     let contributors = $state(s.contributors || []);
-    let branch_selection = $state(s.branch_selection || "");
+    let branch_selection = $derived(s.branch_selection || branches[0]);
     let start_date = $state(s.start_date || "");
     let end_date = $state(s.end_date || "");
     let email_mapping: Config | null = $derived(
