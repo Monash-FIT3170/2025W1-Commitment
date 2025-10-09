@@ -3,6 +3,12 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
+fn generate_initials(name: &str) -> String {
+    name.split_whitespace()
+        .map(|s| s.chars().next().unwrap_or('?').to_ascii_uppercase())
+        .collect::<String>()
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Contacts {
     Email(String),
@@ -42,8 +48,6 @@ pub async fn group_contributors_by_config(
             let mut additions = 0;
             let mut deletions = 0;
             let mut contacts = Vec::new();
-            let mut profile_bg_colour = String::new();
-            let mut username_initials = String::new();
             let ai_summary = String::new();
 
             if let Value::Array(email_list) = emails_value {
@@ -59,18 +63,14 @@ pub async fn group_contributors_by_config(
                             additions += contrib.additions;
                             deletions += contrib.deletions;
                             contacts.push(email.to_string());
-
-                            if profile_bg_colour.is_empty() {
-                                profile_bg_colour = contrib.profile_colour.clone();
-                            }
-
-                            if username_initials.is_empty() {
-                                username_initials = contrib.username_initials.clone();
-                            }
                         }
                     }
                 }
             }
+
+            // Generate initials and profile color from the group name (mapped username)
+            let username_initials = generate_initials(group_name);
+            let profile_bg_colour = generate_profile_bg_colour(group_name);
 
             if !contacts.is_empty() {
                 result.push(Contributor {
