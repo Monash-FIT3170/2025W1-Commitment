@@ -22,7 +22,6 @@ plugins:
 
 watch:
   - data
-  - macros
 
 markdown_extensions:
   - attr_list
