@@ -73,18 +73,26 @@ contains the user's name and profile image.
         padding: 2rem 2rem 0rem 2rem;
         height: 1.375rem;
         display: flex;
-        justify-content: space-between;
         gap: 2rem;
-        width: calc(100vw - 4rem);
+        width: 100%;      
+        justify-content: center; 
+        align-items: center;
+        position: relative;
+        margin: 0 auto; 
     }
 
     .left-menu-container {
         flex: 1;
         min-width: 5rem;
         overflow: hidden;
+        display: flex;
+        justify-content: center;
     }
 
     .user-menu-container {
+        position: absolute;
+        right: 2rem; 
+        top: 2rem;         
         display: flex;
         align-items: center;
         min-width: 5rem;

@@ -34,8 +34,8 @@
         }
     });
 
-    let profile_image_url = "/mock_profile_img.png";
-    let username = "Baaset Moslih";
+    let profile_image_url = "";
+    let username = "";
 
     interface RepoBookmark {
         repo_name: string;
