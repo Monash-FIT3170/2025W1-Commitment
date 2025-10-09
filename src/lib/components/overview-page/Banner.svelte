@@ -13,7 +13,7 @@
         on_delete,
         username = "",
         profile_image_url = "",
-        showBackButton = false
+        showBackButton = false,
     }: {
         owner?: string;
         repo?: string;
@@ -55,11 +55,13 @@ contains the user's name and profile image.
 
 <div class="header">
     {#if showBackButton}
-        <button class="back-btn" on:click={goBack} aria-label="Back">
-            <Icon icon="tabler:arrow-left" width="2rem" height="2rem" />
-        </button>
-    {/if}
     <div class="left-menu-container">
+        <button class="back-btn" onclick={goBack} aria-label="Back">
+            <Icon icon="tabler:circle-arrow-left" class="icon-medium"/>
+        </button>
+    </div>
+    {/if}
+    <div class="center-menu-container">
         {#if repo_url && owner && repo}
             <LeftMenuWithRepo
                 {repo_url}
@@ -84,42 +86,40 @@ contains the user's name and profile image.
         height: 1.375rem;
         display: flex;
         gap: 2rem;
-        width: 100%;      
-        justify-content: center; 
+        width: 100%;
+        justify-content: space-between;
         align-items: center;
         position: relative;
-        margin: 0 auto; 
+        margin: 0 auto;
     }
 
     .left-menu-container {
-        flex: 1;
+        top: 2rem;
+        align-items: center;
+        display: flex;
+    }
+
+    .center-menu-container {
         min-width: 5rem;
         overflow: hidden;
-        display: flex;
         justify-content: center;
+        align-items: center;
     }
 
     .user-menu-container {
-        position: absolute;
-        right: 2rem; 
-        top: 2rem;         
+        min-width: 5rem;
+        top: 2rem;
         display: flex;
         align-items: center;
-        min-width: 5rem;
         overflow: hidden;
     }
 
     .back-btn {
-        position: absolute;
-        left: 2rem;
-        top: 2rem;
         background: none;
         border: none;
+        padding: 0px;
         cursor: pointer;
-        padding: 0;
         display: flex;
-        align-items: center;
-        z-index: 2;
-        color: white;
+        color: var(--label-primary);
     }
 </style>
