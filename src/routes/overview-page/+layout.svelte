@@ -15,8 +15,8 @@
     import Sidebar from "$lib/components/global/Sidebar.svelte";
     import { load_state } from "$lib/utils/localstorage";
 
-    let profile_image_url = "/mock_profile_img.png";
-    let username = "Baaset Moslih";
+    let profile_image_url = "";
+    let username = "";
 
     let { children } = $props();
 

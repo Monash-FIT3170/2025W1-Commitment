@@ -2,16 +2,18 @@
     import LeftMenu from "./LeftMenu.svelte";
     import LeftMenuWithRepo from "./LeftMenuWithRepo.svelte";
     import UserMenu from "$lib/components/overview-page/UserMenu.svelte";
+    import Icon from "@iconify/svelte";
 
     let {
         owner,
         repo,
         repo_url,
-        username = "Baaset Moslih",
-        profile_image_url = "/mock_profile_img.png",
         on_refresh,
         refreshing = false,
         on_delete,
+        username = "",
+        profile_image_url = "",
+        showBackButton = false
     }: {
         owner?: string;
         repo?: string;
@@ -22,6 +24,9 @@
         refreshing?: boolean;
         on_delete?: () => void;
     } = $props();
+    function goBack() {
+        window.history.back();
+    }
 </script>
 
 <!--
@@ -49,6 +54,11 @@ contains the user's name and profile image.
 -->
 
 <div class="header">
+    {#if showBackButton}
+        <button class="back-btn" on:click={goBack} aria-label="Back">
+            <Icon icon="tabler:arrow-left" width="2rem" height="2rem" />
+        </button>
+    {/if}
     <div class="left-menu-container">
         {#if repo_url && owner && repo}
             <LeftMenuWithRepo
@@ -97,5 +107,19 @@ contains the user's name and profile image.
         align-items: center;
         min-width: 5rem;
         overflow: hidden;
+    }
+
+    .back-btn {
+        position: absolute;
+        left: 2rem;
+        top: 2rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        z-index: 2;
+        color: white;
     }
 </style>

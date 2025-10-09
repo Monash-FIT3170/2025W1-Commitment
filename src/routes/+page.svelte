@@ -251,7 +251,7 @@
 
 <div class="page">
     <header class="header">
-        <Banner {username} {profile_image_url} />
+        <Banner {username} {profile_image_url} showBackButton={false} />
     </header>
 
     <main class="main">
