@@ -27,10 +27,11 @@
     let repo_path = $state(s.repo_path || "");
     let source_type: 0 | 1 | 2 = $state(s.source_type || 0); // 0 = GitHub, 1 = GitLab, 2 = Local
     let repo_url = $state(s.repo_url || "");
-
-    let branches = $state(s.branches || []);
+    let branches: string[] = $state(
+        (s.branches || []).filter((branch: string) => branch !== "All")
+    );
     let contributors = $state(s.contributors || []);
-    let branch_selection = $state(s.branch_selection || "");
+    let branch_selection = $derived(s.branch_selection || branches[0]);
     let start_date = $state(s.start_date || "");
     let end_date = $state(s.end_date || "");
     let email_mapping: Config | null = $derived(
