@@ -99,12 +99,12 @@
                         show_modal = false;
                     } catch (e) {
                         error("Error applying config: " + e);
-                        config_error_msg = "Error applying config: " + e;
+                        config_error_msg =
+                            "Error applying config. Please try again.";
                         config_error = true;
                     }
                 } else {
-                    config_error_msg =
-                        "Invalid format:\n" + JSON.stringify(errors, null, 2);
+                    config_error_msg = "Invalid format";
                     config_error = true;
                 }
             } catch {
@@ -174,7 +174,11 @@
                 label_class="body-accent"
                 icon_first={true}
                 width="4rem"
-                onclick={() => (show_modal = true)}
+                onclick={() => {
+                    show_modal = true;
+                    config_error = false;
+                    config_error_msg = "";
+                }}
             />
         </div>
 
