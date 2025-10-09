@@ -315,8 +315,15 @@
 
     onMount(async () => {
         // Set refresh and delete functions in store so layout can access them
-        set_refresh_function(refresh_repository);
-        set_delete_function(delete_repository);
+        // Only set these functions for remote repositories (not local)
+        if (source_type !== 2) {
+            set_refresh_function(refresh_repository);
+            set_delete_function(delete_repository);
+        } else {
+            // Clear functions for local repositories to ensure buttons don't show
+            set_refresh_function(null as any);
+            set_delete_function(null as any);
+        }
 
         try {
             let data = await invoke<ManifestSchema>("read_manifest");

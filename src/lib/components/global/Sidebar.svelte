@@ -18,6 +18,7 @@
         repo_name: string;
         repo_url: string;
         repo_bookmarked: boolean;
+        source_type: 0 | 1 | 2; // 0 = GitHub, 1 = GitLab, 2 = Local
     }
     onMount(async () => {
         try {
@@ -35,6 +36,7 @@
                 repo_name: item.name,
                 repo_url: item.url,
                 repo_bookmarked: item.bookmarked,
+                source_type: item.source_type,
             };
         })
     );
@@ -215,18 +217,20 @@
                             {repo.repo_url}
                         </h6>
                     </button>
-                    <button
-                        class="delete-button"
-                        type="button"
-                        onclick={(e) => delete_repository(repo.repo_url, e)}
-                        aria-label="Delete repository"
-                    >
-                        <Icon
-                            icon="tabler:trash"
-                            class="icon-medium"
-                            style="color: var(--label-secondary)"
-                        />
-                    </button>
+                    {#if repo.source_type !== 2}
+                        <button
+                            class="delete-button"
+                            type="button"
+                            onclick={(e) => delete_repository(repo.repo_url, e)}
+                            aria-label="Delete repository"
+                        >
+                            <Icon
+                                icon="tabler:trash"
+                                class="icon-medium"
+                                style="color: var(--label-secondary)"
+                            />
+                        </button>
+                    {/if}
                 </div>
             {/if}
         {/each}
