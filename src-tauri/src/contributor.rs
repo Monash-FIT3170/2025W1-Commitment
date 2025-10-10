@@ -186,10 +186,7 @@ pub async fn get_contributor_info(
 
         let username = author_signature.name().unwrap_or("unknown");
 
-        let initials = username
-            .split_whitespace()
-            .map(|s| s.chars().next().unwrap().to_ascii_uppercase())
-            .collect::<String>();
+        let initials = generate_initials(username);
 
         let profile_bg_colour = generate_profile_bg_colour(username);
 
