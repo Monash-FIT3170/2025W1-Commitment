@@ -13,9 +13,11 @@ pub async fn get_branch_names(path: &str) -> Result<Vec<String>, String> {
 
     let repo = Repository::open(canonical_path).map_err(|e| e.to_string())?;
     let head = repo.head().map_err(|e| e.to_string())?;
-    let head_name = head.shorthand();
+    let head_str = head.shorthand().unwrap_or("");
+    let origin_head = format!("origin/{head_str}");
 
-    info!("head: {}", head_name.unwrap());
+    info!("head: {head_str}");
+    info!("origin head: {origin_head}");
 
     let mut branches = repo
         .branches(None)
@@ -29,9 +31,15 @@ pub async fn get_branch_names(path: &str) -> Result<Vec<String>, String> {
                 .unwrap()
                 .to_string()
         })
+        .filter(|b| {
+            info!("branch: {b}");
+            info!("1: {}", b.ne("origin/HEAD"));
+            info!("2: {}", b.ne(origin_head.as_str()));
+            b.ne("origin/HEAD") && b.ne(origin_head.as_str())
+        })
         .collect::<Vec<String>>();
 
-    if let Some(head_str) = head_name {
+    if !head_str.is_empty() {
         branches
             .iter()
             .position(|b| b.eq(head_str))
