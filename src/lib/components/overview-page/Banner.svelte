@@ -11,18 +11,15 @@
         on_refresh,
         refreshing = false,
         on_delete,
-        username = "",
-        profile_image_url = "",
         showBackButton = false,
     }: {
         owner?: string;
         repo?: string;
         repo_url?: string;
-        username?: string;
-        profile_image_url?: string;
         on_refresh?: () => void;
         refreshing?: boolean;
         on_delete?: () => void;
+        showBackButton?: boolean;
     } = $props();
     function goBack() {
         window.history.back();
@@ -42,15 +39,11 @@ contains the user's name and profile image.
     <Banner
         repo_url={repo_url}
         repo_path={repo_path}
-        username={username}
-        profile_image_url={profile_image_url}
     />
   ```
 - Props:
     - `repo_url`: The URL of the repository (optional).
     - `repo_path`: The path of the repository (optional).
-    - `username`: The name of the user.
-    - `profile_image_url`: The URL of the user's profile image.
 -->
 
 <div class="header">

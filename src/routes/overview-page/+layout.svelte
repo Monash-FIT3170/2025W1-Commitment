@@ -39,11 +39,10 @@
             {repo}
             {owner}
             {repo_url}
-            {username}
-            {profile_image_url}
             {on_refresh}
             {refreshing}
             {on_delete}
+            showBackButton={true} 
         />
     </header>
     {@render children()}
