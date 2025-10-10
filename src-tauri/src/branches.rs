@@ -31,11 +31,12 @@ pub async fn get_branch_names(path: &str) -> Result<Vec<String>, String> {
                 .unwrap()
                 .to_string()
         })
-        .filter(|b| {
-            info!("branch: {b}");
-            info!("1: {}", b.ne("origin/HEAD"));
-            info!("2: {}", b.ne(origin_head.as_str()));
-            b.ne("origin/HEAD") && b.ne(origin_head.as_str())
+        .filter(|b| b.ne("origin/HEAD") && b.ne(origin_head.as_str()))
+        .map(|b| {
+            b.split("/")
+                .skip_while(|part| part.eq(&"origin"))
+                .collect::<Vec<&str>>()
+                .join("/")
         })
         .collect::<Vec<String>>();
 
