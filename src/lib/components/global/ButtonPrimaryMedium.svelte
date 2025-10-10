@@ -5,13 +5,20 @@
         icon?: string | null;
         label: string;
         disabled?: boolean;
+        variant?: "primary" | "secondary";
         onclick?: (event: MouseEvent) => void;
     };
 
-    let { icon = null, label, disabled = false, onclick }: $Props = $props();
+    let {
+        icon = null,
+        label,
+        disabled = false,
+        variant = "primary",
+        onclick,
+    }: $Props = $props();
 </script>
 
-<button class="medium" {disabled} {onclick}>
+<button class="medium {variant}" {disabled} {onclick}>
     {#if icon}
         <Icon
             icon={`tabler:${icon}`}
@@ -56,5 +63,10 @@
     button:disabled {
         background-color: var(--fill-04);
         cursor: not-allowed;
+    }
+
+    button.secondary {
+        background-color: var(--background-secondary);
+        color: var(--label-primary);
     }
 </style>
