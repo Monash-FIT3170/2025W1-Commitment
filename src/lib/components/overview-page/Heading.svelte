@@ -171,19 +171,15 @@
 
         <!-- Modal -->
         <Modal bind:show_modal>
+            {#snippet icon()}
+                <Icon
+                    icon={`tabler:settings-2`}
+                    class="icon-medium"
+                    style="color: currentColor"
+                />
+            {/snippet}
             {#snippet header()}
-                <div class="modal-header">
-                    <div class="icon-wrapper">
-                        <Icon
-                            icon={`tabler:settings-2`}
-                            class="icon-medium"
-                            style="color: currentColor"
-                        />
-                    </div>
-                    <h2 class="label-primary heading-1 modal-title">
-                        Contributor Mapping
-                    </h2>
-                </div>
+                Contributor Mapping
             {/snippet}
 
             {#snippet body()}
@@ -330,24 +326,11 @@
         }
     }
     /* MODAL */
-    .modal-title {
-        margin: 0px;
-        margin-left: 0.375rem;
-    }
-
-    .modal-header {
-        display: flex;
-    }
-
-    .icon-wrapper {
-        margin-top: 0.1rem;
-    }
-
-    .modal-button {
+    .-button {
         display: flex;
         justify-content: center;
         gap: 1rem;
-        margin-top: 1rem;
+        margin-top: 1.5rem;
     }
 
     /* Fix: Prevent background scrolling when modal is open */
