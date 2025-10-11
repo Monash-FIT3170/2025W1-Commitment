@@ -1,6 +1,12 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
 
+    let {
+        displayText = "Loading...",
+    }: {
+        displayText?: string;
+    } = $props();
+
     let images: string[] = [
         "/loading-indicators/loading-1.svg",
         "/loading-indicators/loading-2.svg",
@@ -9,7 +15,7 @@
     ];
     let interval: number = 500;
 
-    let currentIndex: number = 0;
+    let currentIndex: number = $state(0);
     let intervalId: number;
 
     onMount(() => {
@@ -34,7 +40,9 @@
         width="48"
         class="loading-image"
     />
-    <div class="display-body">Loading...</div>
+    <div class="display-body">
+        {displayText}
+    </div>
 </div>
 </div>
 

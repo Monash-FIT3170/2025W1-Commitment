@@ -13,9 +13,8 @@
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import { invoke } from "@tauri-apps/api/core";
     import { listen } from "@tauri-apps/api/event";
-    import ProgressBar from "$lib/components/global/ProgressBar.svelte";
     import { SvelteMap } from "svelte/reactivity";
-    import { get_source_type } from "$lib/github_url_verifier";
+    import LoadingIndicator from "../global/LoadingIndicator.svelte";
 
     let {
         contributors,
@@ -243,12 +242,9 @@
         </div>
     {/if}
     {#if loading}
-        <div class="w-full max-w-2xl mx-auto">
-            <ProgressBar
-                {progress}
-                label={`Generating summaries... (${generated_summaries}/${total_summaries})`}
+        <LoadingIndicator 
+                displayText={`Generating summaries... (${generated_summaries}/${total_summaries})`}
             />
-        </div>
     {/if}
     {#if !loading}
         {#if summaries && summaries.size > 0}
