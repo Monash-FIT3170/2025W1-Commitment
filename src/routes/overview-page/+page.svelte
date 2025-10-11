@@ -19,7 +19,20 @@
     } from "$lib/stores/manifest";
     import type { Contributor } from "$lib/metrics";
     import { onMount } from "svelte";
-    import { load_state } from "$lib/utils/localstorage";
+    import {
+        load_state,
+        save_state,
+        generate_state_object,
+    } from "$lib/utils/localstorage";
+    import { auth_error, retry_clone_with_token } from "$lib/stores/auth";
+    import AccessTokenModal from "$lib/components/global/AccessTokenModal.svelte";
+    import { get_repo_info } from "$lib/github_url_verifier";
+    import {
+        set_refresh_function,
+        set_refreshing,
+        set_delete_function,
+    } from "$lib/stores/refresh.svelte";
+    import { goto } from "$app/navigation";
 
     const s = page.state as any;
     load_state(s);
@@ -27,14 +40,26 @@
     let repo_path = $state(s.repo_path || "");
     let source_type: 0 | 1 | 2 = $state(s.source_type || 0); // 0 = GitHub, 1 = GitLab, 2 = Local
     let repo_url = $state(s.repo_url || "");
-
-    let branches = $state(s.branches || []);
+    let branches: string[] = $state(
+        (s.branches || []).filter((branch: string) => branch !== "All")
+    );
     let contributors = $state(s.contributors || []);
-    let branch_selection = $state(s.branch_selection || "");
+    let branch_selection = $derived(s.branch_selection || branches[0]);
     let start_date = $state(s.start_date || "");
     let end_date = $state(s.end_date || "");
+
+    let manifest_state = $state<ManifestSchema>({ repository: [] });
+
+    // Subscribe to manifest store
+    $effect(() => {
+        const unsubscribe = manifest.subscribe((value) => {
+            manifest_state = value;
+        });
+        return unsubscribe;
+    });
+
     let email_mapping: Config | null = $derived(
-        $manifest.repository.filter((r) => r.url === repo_url)[0]
+        manifest_state.repository.filter((r) => r.url === repo_url)[0]
             ?.email_mapping || null
     );
 
@@ -161,7 +186,146 @@
         }
     });
 
+    let auth_error_state = $state({ needs_token: false, message: "" });
+
+    // Subscribe to auth_error store
+    $effect(() => {
+        const unsubscribe = auth_error.subscribe((value) => {
+            auth_error_state = value;
+        });
+        return unsubscribe;
+    });
+
+    let show_auth_modal = $derived(auth_error_state.needs_token);
+
+    async function reload_repository_data() {
+        try {
+            info("Reloading branches and contributors data...");
+
+            const new_branches = await load_branches(repo_path);
+            branches = new_branches;
+
+            const new_contributors = await load_commit_data(repo_path);
+
+            if (email_mapping) {
+                try {
+                    const grouped = await invoke<Contributor[]>(
+                        "group_contributors_by_config",
+                        {
+                            config_json: email_mapping,
+                            contributors: new_contributors,
+                        }
+                    );
+                    contributors = grouped;
+                } catch (e) {
+                    error("Error applying config after refresh: " + e);
+                    contributors = new_contributors;
+                }
+            } else {
+                contributors = new_contributors;
+            }
+
+            const working_dir = await invoke<string>("get_working_directory");
+            const repository_information = get_repo_info(repo_url);
+            const storage_obj = await generate_state_object(
+                working_dir,
+                repository_information,
+                repo_url,
+                source_type,
+                branches,
+                contributors
+            );
+            await save_state(storage_obj);
+
+            info("Repository data reloaded successfully");
+        } catch (e) {
+            error("Failed to reload repository data: " + e);
+        }
+    }
+
+    async function refresh_repository() {
+        set_refreshing(true);
+        try {
+            info(`Refreshing repository: ${repo_url} at ${repo_path}`);
+
+            await invoke("refresh_repo", {
+                url: repo_url,
+                path: repo_path,
+            });
+
+            info("Repository refreshed successfully");
+            await reload_repository_data();
+        } catch (e: any) {
+            const error_message = e.message || String(e);
+            error("Failed to refresh repository: " + error_message);
+
+            if (error_message.includes("private and requires authentication")) {
+                info("Authentication required for refresh");
+                auth_error.set({
+                    needs_token: true,
+                    message:
+                        "This repository is private. Please provide a Personal Access Token to refresh.",
+                    repo_url: repo_url,
+                    repo_path: repo_path,
+                });
+            }
+        } finally {
+            set_refreshing(false);
+        }
+    }
+
+    async function handle_token_add(token: string) {
+        if (!token || token.trim().length === 0) {
+            info("No token entered");
+            return;
+        }
+
+        info("Authenticating with Personal Access Token for refresh...");
+
+        const success = await retry_clone_with_token(token);
+
+        if (success) {
+            info("Authentication successful, repository refreshed");
+            await reload_repository_data();
+        } else {
+            error("Authentication failed, please check your token");
+        }
+    }
+
+    async function delete_repository() {
+        try {
+            info(`Deleting repository at: ${repo_path}`);
+            await invoke("delete_repo", { path: repo_path });
+
+            // Remove from manifest
+            const updated_manifest = {
+                ...manifest_state,
+                repository: manifest_state.repository.filter(
+                    (item) => item.url !== repo_url
+                ),
+            };
+            manifest.set(updated_manifest);
+            await invoke("save_manifest", { manifest: updated_manifest });
+
+            info("Repository deleted successfully, navigating to home");
+            goto("/");
+        } catch (e) {
+            error("Failed to delete repository: " + e);
+        }
+    }
+
     onMount(async () => {
+        // Set refresh and delete functions in store so layout can access them
+        // Only set these functions for remote repositories (not local)
+        if (source_type !== 2) {
+            set_refresh_function(refresh_repository);
+            set_delete_function(delete_repository);
+        } else {
+            // Clear functions for local repositories to ensure buttons don't show
+            set_refresh_function(null as any);
+            set_delete_function(null as any);
+        }
+
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
@@ -189,11 +353,18 @@
     });
 </script>
 
+<!-- Access Token Modal for private repository refresh -->
+<AccessTokenModal
+    bind:show_modal={show_auth_modal}
+    on_token_add={handle_token_add}
+/>
+
 <div class="page">
     <Heading
         {repo}
         {source_type}
         {repo_url}
+        {repo_path}
         {branches}
         bind:branch_selection
         bind:start_date

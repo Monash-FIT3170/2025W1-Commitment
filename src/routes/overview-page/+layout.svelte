@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import { installGlobalDnDGuards } from "$lib/dnd_guards";
     import { info } from "@tauri-apps/plugin-log";
+    import { refresh_state } from "$lib/stores/refresh.svelte";
 
     onMount(() => {
         const cleanup = installGlobalDnDGuards();
@@ -14,8 +15,8 @@
     import Sidebar from "$lib/components/global/Sidebar.svelte";
     import { load_state } from "$lib/utils/localstorage";
 
-    let profile_image_url = "/mock_profile_img.png";
-    let username = "Baaset Moslih";
+    let profile_image_url = "";
+    let username = "";
 
     let { children } = $props();
 
@@ -25,11 +26,24 @@
     let owner = $derived(s.owner);
     let repo = $derived(s.repo);
     let repo_url = $derived(s.repo_url);
+
+    // Get refresh and delete functions from state (using runes)
+    let on_refresh = $derived(refresh_state.refresh_function ?? undefined);
+    let refreshing = $derived(refresh_state.refreshing);
+    let on_delete = $derived(refresh_state.delete_function ?? undefined);
 </script>
 
 <main class="page">
     <header class="header">
-        <Banner {repo} {owner} {repo_url} {username} {profile_image_url} />
+        <Banner
+            {repo}
+            {owner}
+            {repo_url}
+            {on_refresh}
+            {refreshing}
+            {on_delete}
+            showBackButton={true} 
+        />
     </header>
     {@render children()}
 </main>
@@ -37,11 +51,6 @@
 
 <style>
     .header {
-        padding-left: 2rem;
-        padding-right: 2rem;
-        padding-top: 2rem;
-        margin-bottom: 0.8125rem;
-        height: 1.375rem;
         display: flex;
         justify-content: space-between;
     }

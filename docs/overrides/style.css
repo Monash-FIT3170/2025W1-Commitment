@@ -1,0 +1,15 @@
+:root {
+  --gg-bg: #0a0e17;
+  --gg-accent: #34D399;
+  --gg-purple: #A78BFA;
+}
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: var(--gg-bg);
+  --md-primary-fg-color: #ffffff;
+  --md-accent-fg-color: var(--gg-accent);
+}
+.md-button--primary {
+  background: var(--gg-accent);
+  color: #0b0f16;
+  border: none;
+}
