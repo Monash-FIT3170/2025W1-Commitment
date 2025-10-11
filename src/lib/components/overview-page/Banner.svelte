@@ -1,21 +1,29 @@
 <script lang="ts">
     import LeftMenu from "./LeftMenu.svelte";
     import LeftMenuWithRepo from "./LeftMenuWithRepo.svelte";
-    import UserMenu from "$lib/components/overview-page/UserMenu.svelte";
+    import RightMenu from "$lib/components/overview-page/RightMenu.svelte";
+    import Icon from "@iconify/svelte";
 
     let {
         owner,
         repo,
         repo_url,
-        username = "Baaset Moslih",
-        profile_image_url = "/mock_profile_img.png",
+        on_refresh,
+        refreshing = false,
+        on_delete,
+        showBackButton = false,
     }: {
         owner?: string;
         repo?: string;
         repo_url?: string;
-        username?: string;
-        profile_image_url?: string;
+        on_refresh?: () => void;
+        refreshing?: boolean;
+        on_delete?: () => void;
+        showBackButton?: boolean;
     } = $props();
+    function goBack() {
+        window.history.back();
+    }
 </script>
 
 <!--
@@ -31,27 +39,37 @@ contains the user's name and profile image.
     <Banner
         repo_url={repo_url}
         repo_path={repo_path}
-        username={username}
-        profile_image_url={profile_image_url}
     />
   ```
 - Props:
     - `repo_url`: The URL of the repository (optional).
     - `repo_path`: The path of the repository (optional).
-    - `username`: The name of the user.
-    - `profile_image_url`: The URL of the user's profile image.
 -->
 
 <div class="header">
+    {#if showBackButton}
     <div class="left-menu-container">
+        <button class="back-btn" onclick={goBack} aria-label="Back">
+            <Icon icon="tabler:circle-arrow-left" class="icon-medium"/>
+        </button>
+    </div>
+    {/if}
+    <div class="center-menu-container">
         {#if repo_url && owner && repo}
-            <LeftMenuWithRepo {repo_url} {owner} {repo} />
+            <LeftMenuWithRepo
+                {repo_url}
+                {owner}
+                {repo}
+                {on_refresh}
+                {refreshing}
+                {on_delete}
+            />
         {:else}
             <LeftMenu />
         {/if}
     </div>
-    <div class="user-menu-container">
-        <UserMenu {username} {profile_image_url} />
+    <div class="right-menu-container">
+        <RightMenu />
     </div>
 </div>
 
@@ -60,21 +78,38 @@ contains the user's name and profile image.
         padding: 2rem 2rem 0rem 2rem;
         height: 1.375rem;
         display: flex;
-        justify-content: space-between;
         gap: 2rem;
-        width: calc(100vw - 4rem);
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        margin: 0 auto;
     }
 
     .left-menu-container {
-        flex: 1;
+        top: 2rem;
+        align-items: center;
+    }
+
+    .center-menu-container {
         min-width: 5rem;
+        overflow: hidden;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .right-menu-container {
+        top: 2rem;
+        align-items: center;
         overflow: hidden;
     }
 
-    .user-menu-container {
+    .back-btn {
+        background: none;
+        border: none;
+        padding: 0px;
+        cursor: pointer;
         display: flex;
-        align-items: center;
-        min-width: 5rem;
-        overflow: hidden;
+        color: var(--label-primary);
     }
 </style>

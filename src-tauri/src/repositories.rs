@@ -59,6 +59,29 @@ pub fn is_repo_cloned(path: &str) -> bool {
 }
 
 #[tauri::command(rename_all = "snake_case")]
+pub fn delete_repo(path: &str) -> Result<(), String> {
+    log::info!("Attempting to delete repository at: {}", path);
+
+    let repo_path = std::path::Path::new(path);
+
+    if !repo_path.exists() {
+        log::warn!("Repository path does not exist: {}", path);
+        return Ok(()); // Consider it successfully deleted if it doesn't exist
+    }
+
+    match std::fs::remove_dir_all(repo_path) {
+        Ok(()) => {
+            log::info!("Successfully deleted repository at: {}", path);
+            Ok(())
+        }
+        Err(e) => {
+            log::error!("Failed to delete repository at {}: {}", path, e);
+            Err(format!("Failed to delete repository: {}", e))
+        }
+    }
+}
+
+#[tauri::command(rename_all = "snake_case")]
 pub fn get_local_repo_information(path: &str) -> Result<String, String> {
     if !is_repo_cloned(path) {
         log::info!("No repository found at: {path}");
@@ -109,4 +132,19 @@ pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
 
     // Step 4: Repository is private and requires authentication
     Err("Repository appears to be private and requires authentication. Please use try_clone_with_token with a valid access token.".to_string())
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn refresh_repo(url: &str, path: &str) -> Result<(), String> {
+    log::info!("Refreshing repository at: {path}");
+
+    // Step 1: Delete the existing repository
+    if is_repo_cloned(path) {
+        log::info!("Deleting existing repository at: {path}");
+        delete_repo(path)?;
+    }
+
+    // Step 2: Re-clone the repository using bare_clone
+    log::info!("Re-cloning repository from {url} to {path}");
+    bare_clone(url, path).await
 }
