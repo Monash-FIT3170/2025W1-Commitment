@@ -64,3 +64,6 @@ build
 
 # Python intermediates for generated docs
 __pycache__
+
+#python virtual environment venv
+.venv

@@ -6,7 +6,7 @@
 
 ## Development Server
 
-Set up mkDocs with material theme:
+Set up mkDocs
 
 ```sh
 # In project root
