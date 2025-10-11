@@ -42,7 +42,7 @@
             {on_refresh}
             {refreshing}
             {on_delete}
-            showBackButton={true} 
+            showBackButton={true}
         />
     </header>
     {@render children()}
