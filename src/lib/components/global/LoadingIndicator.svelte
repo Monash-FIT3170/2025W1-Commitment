@@ -32,18 +32,18 @@
 </script>
 
 <div class="background-blur">
-<div class="loading-indicator">
-    <img
-        src={images[currentIndex]}
-        alt="loading..."
-        height="48"
-        width="48"
-        class="loading-image"
-    />
-    <div class="display-body">
-        {displayText}
+    <div class="loading-indicator">
+        <img
+            src={images[currentIndex]}
+            alt="loading..."
+            height="48"
+            width="48"
+            class="loading-image"
+        />
+        <div class="display-body">
+            {displayText}
+        </div>
     </div>
-</div>
 </div>
 
 <style>

@@ -231,6 +231,7 @@
             // Navigate to the overview page
             goto(`/overview-page`);
         } catch (error: any) {
+            loading = false;
             const error_message = error.message || "Verification failed.";
             error("Verification failed: " + error);
 
@@ -245,16 +246,14 @@
                 // This is a different kind of error
                 verification_error = true;
                 verification_message = error_message;
-                loading = false;
             }
         }
-        loading = false;
     }
 </script>
 
 <div class="page">
     {#if loading}
-    <LoadingIndicator />
+        <LoadingIndicator />
     {/if}
     <header class="header">
         <Banner />

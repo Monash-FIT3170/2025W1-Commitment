@@ -242,9 +242,9 @@
         </div>
     {/if}
     {#if loading}
-        <LoadingIndicator 
-                displayText={`Generating summaries... (${generated_summaries}/${total_summaries})`}
-            />
+        <LoadingIndicator
+            displayText={`Generating summaries... (${generated_summaries}/${total_summaries})`}
+        />
     {/if}
     {#if !loading}
         {#if summaries && summaries.size > 0}
