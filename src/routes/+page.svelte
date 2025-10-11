@@ -21,6 +21,7 @@
     import { onMount } from "svelte";
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
     import { info, error } from "@tauri-apps/plugin-log";
+    import LoadingIndicator from "$lib/components/global/LoadingIndicator.svelte";
 
     // only run on the browser
     onMount(async () => {
@@ -34,8 +35,7 @@
         }
     });
 
-    let profile_image_url = "";
-    let username = "";
+    let loading: boolean = $state(false);
 
     interface RepoBookmark {
         repo_name: string;
@@ -138,6 +138,7 @@
     }
 
     async function handle_verification() {
+        loading = true;
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
         );
@@ -244,12 +245,17 @@
                 // This is a different kind of error
                 verification_error = true;
                 verification_message = error_message;
+                loading = false;
             }
         }
+        loading = false;
     }
 </script>
 
 <div class="page">
+    {#if loading}
+    <LoadingIndicator />
+    {/if}
     <header class="header">
         <Banner />
     </header>
