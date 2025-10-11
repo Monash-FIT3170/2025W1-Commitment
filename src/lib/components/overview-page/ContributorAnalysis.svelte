@@ -16,8 +16,6 @@
     import ProgressBar from "$lib/components/global/ProgressBar.svelte";
     import { SvelteMap } from "svelte/reactivity";
     import { get_source_type } from "$lib/github_url_verifier";
-    import { summaries_store } from "$lib/stores/summaries";
-    import { onMount } from "svelte";
 
     let {
         contributors,
@@ -47,14 +45,38 @@
     let error_message = $state("");
 
     let summaries = new SvelteMap<string, string>();
-    let store_summaries = $derived($summaries_store);
 
-    // Load existing summaries when component mounts
-    onMount(() => {
-        if (repo_path && store_summaries.has(repo_path)) {
-            const repo_summaries = store_summaries.get(repo_path);
+    // Store summaries in localStorage for persistence
+    let summaries_cache = $state<Map<string, Map<string, string>>>(new Map());
+
+    // Load existing summaries from localStorage when component initializes
+    $effect(() => {
+        if (typeof window !== "undefined") {
+            const stored = localStorage.getItem("contributor_summaries");
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    summaries_cache = new Map(
+                        Object.entries(parsed).map(
+                            ([repo, summaryObj]: [string, any]) => [
+                                repo,
+                                new Map(Object.entries(summaryObj)),
+                            ]
+                        )
+                    );
+                } catch (e) {
+                    console.error("Failed to parse stored summaries:", e);
+                }
+            }
+        }
+    });
+
+    // Load summaries for current repo when repo_path changes
+    $effect(() => {
+        if (repo_path && summaries_cache.has(repo_path)) {
+            const repo_summaries = summaries_cache.get(repo_path);
             if (repo_summaries) {
-                // Convert Map to SvelteMap
+                summaries.clear();
                 for (const [email, summary] of repo_summaries) {
                     summaries.set(email, summary);
                 }
@@ -108,16 +130,28 @@
                 unlisten_total();
                 unlisten_progress();
 
-                // Save summaries to store
+                // Save summaries to localStorage
                 if (repo_path && summaries.size > 0) {
                     const repo_summaries = new Map<string, string>();
                     for (const [email, summary] of summaries) {
                         repo_summaries.set(email, summary);
                     }
-                    summaries_store.update((store) => {
-                        store.set(repo_path, repo_summaries);
-                        return store;
-                    });
+                    summaries_cache.set(repo_path, repo_summaries);
+
+                    // Persist to localStorage
+                    if (typeof window !== "undefined") {
+                        const cache_obj: Record<
+                            string,
+                            Record<string, string>
+                        > = {};
+                        for (const [repo, summaryMap] of summaries_cache) {
+                            cache_obj[repo] = Object.fromEntries(summaryMap);
+                        }
+                        localStorage.setItem(
+                            "contributor_summaries",
+                            JSON.stringify(cache_obj)
+                        );
+                    }
                 }
             }
         }
@@ -195,11 +229,11 @@
     );
 
     // Sort users by username alphabetically
-    function contributors_sorted() {
-        return people_with_analysis.sort((a, b) => {
+    let contributors_sorted = $derived(
+        people_with_analysis.sort((a, b) => {
             return a.username < b.username ? -1 : 1;
-        });
-    }
+        })
+    );
 </script>
 
 <main class="container">
@@ -219,7 +253,7 @@
     {#if !loading}
         {#if summaries && summaries.size > 0}
             <div class="cards-container">
-                {#each contributors_sorted() as person}
+                {#each contributors_sorted as person}
                     <ContributorCard
                         username={person.username}
                         profile_colour={person.profile_colour}
