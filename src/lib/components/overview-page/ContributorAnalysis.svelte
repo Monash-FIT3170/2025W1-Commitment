@@ -298,11 +298,10 @@
     }
 
     .cards-container {
-        margin-top: 1rem;
         display: grid;
         grid-template-columns: repeat(auto-fill, 26rem);
         gap: 1rem;
-        padding: 1rem;
+        padding: 2rem;
         width: 100%;
         justify-items: center;
         justify-content: center;
@@ -311,7 +310,6 @@
     .button-container {
         display: flex;
         justify-content: center;
-        height: calc(100vh - 45rem);
         align-items: center;
     }
 
