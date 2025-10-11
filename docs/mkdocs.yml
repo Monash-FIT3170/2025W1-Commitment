@@ -1,4 +1,6 @@
 site_name: gitgauge
+repo_name: 2025W1-Commitment
+repo_url: "https://github.com/Monash-FIT3170/2025W1-Commitment"
 nav:
 - Home: 'index.md'
 - Guide: 'guide/getting-started.md'
@@ -17,7 +19,7 @@ theme:
 plugins:
   - search
   - macros:
-      module_name: main
+      module_name: tools/main
 
 watch:
   - data

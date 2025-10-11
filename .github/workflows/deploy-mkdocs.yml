@@ -4,6 +4,9 @@
       push:
         branches:
           - main
+      release:
+        types: [ published ]
+      workflow_dispatch:
 
     permissions:
       contents: write
@@ -26,5 +29,21 @@
 
           - name: Install MkDocs and Theme
             run: pip install -r docs/requirements.txt
+
+          - name: Sync docs/data/releases.yml from latest GitHub Release
+            env:
+              GH_REPO: Monash-FIT3170/2025W1-Commitment
+            run: python update-releases.py
+
+          - name: Commit releases.yml if changed
+            run: |
+              if git diff --quiet -- docs/data/releases.yml; then
+                echo "No changes to releases.yml"
+              else
+                git add docs/data/releases.yml
+                git commit -m "chore: sync releases.yml from latest GitHub Release"
+                git push
+              fi
+
           - name: Deploy MkDocs Site
             run: cd docs;mkdocs gh-deploy --force
