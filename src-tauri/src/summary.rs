@@ -3,8 +3,8 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use std::collections::{HashMap, HashSet};
 use std::env;
-use tauri::Emitter;
 use std::time::Duration;
+use tauri::Emitter;
 
 #[derive(Clone, serde::Serialize)]
 struct SummaryProgress {
@@ -104,9 +104,9 @@ pub async fn get_ai_summary_with_config(
                             }
                         }
                         Err(e) => {
-                                let err_msg = e.to_string();
-                                Err(err_msg)?
-                            }
+                            let err_msg = e.to_string();
+                            Err(err_msg)?
+                        }
                     }
                 }
             }
@@ -133,7 +133,7 @@ pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
 
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(30)) //Set a timeout of 30 seconds
-        .connect_timeout(Duration::from_secs(10))// Set a connection timeout of 10 seconds
+        .connect_timeout(Duration::from_secs(10)) // Set a connection timeout of 10 seconds
         .build()
         .map_err(|e| e.to_string())?;
 
@@ -205,9 +205,9 @@ pub async fn summarize_commits(commits: &str) -> Result<String, String> {
     let prompt = COMMIT_SUMMARY_PROMPT.replace("{commits}", commits);
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(30)) //Set a timeout of 30 seconds
-        .connect_timeout(Duration::from_secs(10))// Set a connection timeout of 10 seconds
+        .connect_timeout(Duration::from_secs(10)) // Set a connection timeout of 10 seconds
         .build()
-        .map_err(|e| format!("Failed to build client: {}", e))?;
+        .map_err(|e| format!("Failed to build client: {e}"))?;
 
     let mut last_error: Option<String> = None;
 
@@ -227,23 +227,21 @@ pub async fn summarize_commits(commits: &str) -> Result<String, String> {
             .await;
 
         match res {
-            Ok(response) => {
-                match response.json::<GeminiResponse>().await {
-                    Ok(response_json) => {
-                        if let Some(candidate) = response_json.candidates.first() {
-                            if let Some(part) = candidate.content.parts.first() {
-                                return Ok(part.text.clone());
-                            }
+            Ok(response) => match response.json::<GeminiResponse>().await {
+                Ok(response_json) => {
+                    if let Some(candidate) = response_json.candidates.first() {
+                        if let Some(part) = candidate.content.parts.first() {
+                            return Ok(part.text.clone());
                         }
-                        last_error = Some(format!("Empty response from model {model}"));
-                        log::error!("{last_error:?}");
                     }
-                    Err(e) => {
-                        last_error = Some(format!("Failed to parse response from model {model}: {e}"));
-                        log::error!("{last_error:?}");
-                    }
+                    last_error = Some(format!("Empty response from model {model}"));
+                    log::error!("{last_error:?}");
                 }
-            }
+                Err(e) => {
+                    last_error = Some(format!("Failed to parse response from model {model}: {e}"));
+                    log::error!("{last_error:?}");
+                }
+            },
             Err(e) => {
                 let error_msg = if e.is_timeout() {
                     format!("Request to model {model} timed out")
@@ -254,7 +252,7 @@ pub async fn summarize_commits(commits: &str) -> Result<String, String> {
                 } else {
                     format!("Request to model {model} failed. Unknown Error: {e}")
                 };
-                log::error!("{}", error_msg);
+                log::error!("{error_msg}");
                 last_error = Some(error_msg);
             }
         }
@@ -264,7 +262,9 @@ pub async fn summarize_commits(commits: &str) -> Result<String, String> {
     //     "Failed to generate summary. Check internet connection or API key validity.",
     // ))
 
-    Err(last_error.unwrap_or_else(|| String::from("Failed to generate summary. Check internet connection or API key validity.")))
+    Err(last_error.unwrap_or_else(|| {
+        String::from("Failed to generate summary. Check internet connection or API key validity.")
+    }))
 }
 
 pub fn get_contributor_commits(

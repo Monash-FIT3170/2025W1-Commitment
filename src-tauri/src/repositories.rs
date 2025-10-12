@@ -1,7 +1,7 @@
 use git2::{build::RepoBuilder, RemoteCallbacks};
 
 fn clone_progress(cur_progress: usize, total_progress: usize) {
-    println!("\rProgress: {cur_progress}/{total_progress}");
+    print!("\rProgress: {cur_progress}/{total_progress}");
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -48,6 +48,9 @@ pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>) -> Resul
         }
         Err(e) => {
             log::error!("Clone failed with error: {e}");
+            log::error!("Code: {:?}", e.code());
+            log::error!("Class: {:?}", e.class());
+            log::error!("Msg: {}", e.message());
             Err(e.to_string())
         }
     }
@@ -127,11 +130,10 @@ pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
         }
         Err(e) => {
             let err_msg = format!("Clone failed: {e}. Checking if private.");
-            log::error!("{}", err_msg);
+            log::error!("{err_msg}");
             Err(err_msg)
         }
     }
-
 }
 
 #[tauri::command(rename_all = "snake_case")]
