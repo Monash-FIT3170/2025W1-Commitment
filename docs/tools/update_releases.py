@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional
 REPO = os.environ.get("GH_REPO", "Monash-FIT3170/2025W1-Commitment")
 YAML_PATH = os.environ.get("GG_YAML_PATH", "docs/data/releases.yml")
 API = f"https://api.github.com/repos/{REPO}/releases"
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
 
 PLAT = {
     "mac":   re.compile(r"\.(dmg|pkg|tar\.gz)$", re.I),
@@ -21,12 +22,16 @@ PLAT = {
 
 CHK = re.compile(r"(?P<sha>[A-Fa-f0-9]{64})")
 
+def _headers() -> Dict[str, str]:
+    h = {"User-Agent": "gitgauge-updater"}
+    if GITHUB_TOKEN:
+        h["Authorization"] = f"Bearer {GITHUB_TOKEN}"
+    return h
 
 def _get(url: str) -> bytes:
     req = urllib.request.Request(
         url,
-        headers={"User-Agent": "gitgauge-updater"}
-    )
+        headers=_headers())
 
     with urllib.request.urlopen(req, timeout=30) as r:
         return r.read()
@@ -83,11 +88,15 @@ def _pick_assets(assets: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, str]]
 
 
 def _latest_release(rels: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-    for r in rels:
-        if not r.get("draft") and not r.get("prerelease"):
-            return r
-
-    return None
+    drafts = [r for r in rels if r.get("draft")]
+    if drafts:
+        drafts.sort(key=lambda r: r.get("updated_at") or r.get("created_at") or "", reverse=True)
+        return drafts[0]
+    published = [r for r in rels if not r.get("draft")]
+    if not published:
+        return None
+    published.sort(key=lambda r: r.get("published_at") or r.get("created_at") or "", reverse=True)
+    return published[0]
 
 
 def main() -> int:
@@ -104,12 +113,10 @@ def main() -> int:
         return 1
 
     tag = latest.get("tag_name", "")
-    date = ((latest.get("published_at", "")[:10])
-            or datetime.utcnow().strftime("%Y-%m-%d"))
+    date = (latest.get("published_at") or latest.get("updated_at") or latest.get("created_at") or "")[:10]
+    is_draft = bool(latest.get("draft"))
 
-    notes_url = (latest.get("html_url")
-                 or f"https://github.com/{REPO}/releases/tag/{tag}")
-
+    notes_url = f"https://github.com/{REPO}/releases" if is_draft else (latest.get("html_url") or f"https://github.com/{REPO}/releases/tag/{tag}")
     assets = latest.get("assets", [])
     downloads = _pick_assets(assets)
 
@@ -129,6 +136,7 @@ def main() -> int:
             "date": cur_latest.get("date", ""),
             "downloads": cur_latest.get("downloads") or {},
             "notes_url": cur_latest.get("notes_url", ""),
+            "draft": bool(cur_latest.get("draft", False)),
         }
 
         prev = [p for p in prev if p.get("version") != prev_entry["version"]]
@@ -140,6 +148,7 @@ def main() -> int:
             "date": date,
             "notes_url": notes_url,
             "downloads": downloads,
+            "draft": is_draft,
         },
         "previous": prev,
     }
@@ -147,7 +156,10 @@ def main() -> int:
     with open(YAML_PATH, "w", encoding="utf-8") as f:
         yaml.safe_dump(new_doc, f, sort_keys=False, allow_unicode=True)
 
-    print(f"Updated {YAML_PATH} -> {tag}")
+    print(f"Updated {YAML_PATH} -> {tag} (draft={is_draft})")
+    
+    if is_draft and not GITHUB_TOKEN:
+        print("Warning: Drafts require GITHUB_TOKEN to be visible via API.", flush=True)
     return 0
 
 
