@@ -1,4 +1,5 @@
 use git2::{build::RepoBuilder, RemoteCallbacks};
+// use std::time::Duration;
 
 fn clone_progress(cur_progress: usize, total_progress: usize) {
     print!("\rProgress: {cur_progress}/{total_progress}");
@@ -150,3 +151,27 @@ pub async fn refresh_repo(url: &str, path: &str) -> Result<(), String> {
     log::info!("Re-cloning repository from {url} to {path}");
     bare_clone(url, path).await
 }
+
+// Function used to determine if the repository exists online or not
+// async fn check_repo_exists_online(url: &str) -> Result<bool, String> {
+
+//     // Set-up reqwest client
+//     let client = reqwest::Client::builder()
+//         .timeout(Duration::from_secs(30)) //Set a timeout of 30 seconds
+//         .connect_timeout(Duration::from_secs(10))// Set a connection timeout of 10 seconds
+//         .build()
+//         .map_err(|e| format!("Failed to build client: {}", e))?;
+
+//     let result = client.get(url)
+//         .send()
+//         .await
+//         .map_err(|e| format!("Request failed: {}", e))?;
+
+//     log::info!("Received status code: {}", result.status());
+//     match result.status() {
+//         reqwest::StatusCode::OK | reqwest::StatusCode::FORBIDDEN | reqwest::StatusCode::UNAUTHORIZED => Ok(true),
+//         reqwest::StatusCode::NOT_FOUND => Ok(false),
+//         status => Err(format!("Unexpected status code: {}", status)),
+//     }
+        
+// } 

@@ -210,6 +210,9 @@
                     ) {
                         verification_message =
                             "Unable to reach Git repository. Please check Internet connection.";
+                    } else if (err_check.includes("not found")) {
+                        verification_message =
+                            "Repository not found. Please check the URL.";
                     } else {
                         verification_message = "Unknown Error: " + err_check;
                     }
