@@ -201,3 +201,8 @@ html, body, #app {
     width: 2.625rem;
     height: 2.625rem;
 }
+
+.header {
+    display: flex;
+    justify-content: space-between;
+}
