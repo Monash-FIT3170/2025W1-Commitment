@@ -88,6 +88,7 @@
             // Modal was open and is now closed, and we don't have an error
             // This means the user closed the modal by clicking outside
             verification_message = "";
+            // waiting_for_auth = false;
         }
         previous_show_modal = show_modal;
     });
@@ -120,7 +121,7 @@
                 info("Authentication failed, please check your token");
                 // Show user-friendly error message above search bar and close modal
                 verification_message =
-                    "Access token is invalid. Please check your token and try again.";
+                    "Access token/URL is invalid. Please check your token/URL and try again.";
                 verification_error = true;
                 waiting_for_auth = false;
                 // Hide the modal since we're showing the error above the search bar
@@ -204,7 +205,7 @@
                     const err_check = String(err);
                     if (err_check.includes("remote authentication required")) {
                         verification_message =
-                            "Repository is private and requires authentication (PAT).";
+                            "Repository is private and requires authentication (PAT) or the URL is incorrect.";
                     } else if (
                         err_check.includes("failed to resolve address")
                     ) {
