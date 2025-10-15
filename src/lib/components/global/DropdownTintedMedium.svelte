@@ -131,7 +131,7 @@
         left: 0;
         width: 100%;
         margin: 0;
-        padding: 0.5rem 0;
+        padding: 0rem 0rem 0.5rem 0;
         list-style: none;
         background: var(--background-primary);
         border-radius: 0 0 8px 8px;
@@ -153,5 +153,33 @@
     .dropdown-item.selected {
         background-color: var(--tint-02);
         font-weight: 600;
+    }
+
+    .dropdown-list {
+        max-height: calc(
+            6 * 40px);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .dropdown-list::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .dropdown-list::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .dropdown-list::-webkit-scrollbar-thumb {
+        background: color-mix(
+            in srgb,
+            var(--tint-02) 75%,
+            transparent
+        ) !important;
+        border-radius: 4px;
+    }
+
+    .dropdown-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.3);
     }
 </style>
