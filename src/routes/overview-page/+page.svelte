@@ -189,17 +189,28 @@
         }
     });
 
-    let auth_error_state = $state({ needs_token: false, message: "" });
+    let show_auth_modal = $state(false);
+    let previous_auth_modal_state = $state(false);
 
-    // Subscribe to auth_error store
+    // Subscribe to auth_error store and update modal state
     $effect(() => {
         const unsubscribe = auth_error.subscribe((value) => {
-            auth_error_state = value;
+            show_auth_modal = value.needs_token;
         });
         return unsubscribe;
     });
 
-    let show_auth_modal = $derived(auth_error_state.needs_token);
+    // Clear auth error when modal is closed by user (clicking X or backdrop)
+    $effect(() => {
+        if (previous_auth_modal_state && !show_auth_modal) {
+            // Modal was open and is now closed, clear the auth error
+            auth_error.set({
+                needs_token: false,
+                message: "",
+            });
+        }
+        previous_auth_modal_state = show_auth_modal;
+    });
 
     async function reload_repository_data() {
         try {

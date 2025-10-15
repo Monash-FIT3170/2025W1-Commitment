@@ -83,18 +83,30 @@
     }
 
     // Subscribe to auth errors to show modal when needed
-    let show_modal = $derived($auth_error.needs_token);
-
-    // Track previous modal state to detect when modal closes
+    let show_modal = $state(false);
     let previous_show_modal = $state(false);
 
-    // Clear verification message when modal closes without using Add button
+    // Subscribe to auth_error store
     $effect(() => {
-        if (previous_show_modal && !show_modal && !verification_error) {
-            // Modal was open and is now closed, and we don't have an error
-            // This means the user closed the modal by clicking outside
-            verification_message = "";
-            // waiting_for_auth = false;
+        const unsubscribe = auth_error.subscribe((value) => {
+            show_modal = value.needs_token;
+        });
+        return unsubscribe;
+    });
+
+    // Clear verification message and auth error when modal closes
+    $effect(() => {
+        if (previous_show_modal && !show_modal) {
+            // Modal was open and is now closed
+            if (!verification_error) {
+                // User closed the modal without adding a token
+                verification_message = "";
+            }
+            // Clear the auth error store to prevent modal from showing on other pages
+            auth_error.set({
+                needs_token: false,
+                message: "",
+            });
         }
         previous_show_modal = show_modal;
     });
@@ -105,7 +117,7 @@
             info("No token entered, keeping modal open");
             verification_message = "Please enter a Personal Access Token";
             verification_error = true;
-            loading = false;
+            // Keep modal open by not clearing auth_error
             return;
         }
 
