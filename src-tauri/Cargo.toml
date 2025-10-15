@@ -1,6 +1,6 @@
 [package]
 name = "gitgauge"
-version = "0.6.2"
+version = "0.7.0"
 description = "pretty gui for git contribution stats"
 authors = [
     "Harshath Muruganantham",
