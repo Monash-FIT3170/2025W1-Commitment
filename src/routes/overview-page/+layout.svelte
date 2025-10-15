@@ -42,16 +42,9 @@
             {on_refresh}
             {refreshing}
             {on_delete}
-            showBackButton={true} 
+            showBackButton={true}
         />
     </header>
     {@render children()}
 </main>
 <Sidebar />
-
-<style>
-    .header {
-        display: flex;
-        justify-content: space-between;
-    }
-</style>
