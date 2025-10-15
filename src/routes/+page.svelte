@@ -93,7 +93,7 @@
     });
 
     async function handle_token_add(token: string) {
-        loading=true;
+        loading = true;
         // Validate that token is not empty
         if (!token || token.trim().length === 0) {
             info("No token entered, keeping modal open");
@@ -127,7 +127,7 @@
                 message: "",
             });
         }
-        loading=false;
+        loading = false;
     }
 
     function update_progress(progress: string) {
@@ -240,7 +240,7 @@
             // Check if this is an authentication error that requires a token
             if (error_message.includes("private and requires authentication")) {
                 info("Authentication required, showing modal");
-                loading=false;
+                loading = false;
                 waiting_for_auth = true;
                 // The modal will show automatically via the auth store
                 // Don't set verification_error here - we're waiting for user input
