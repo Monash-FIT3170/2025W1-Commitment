@@ -35,7 +35,7 @@
         }
     });
 
-    let loading: boolean = $state(false);
+    let is_loading: boolean = $state(false);
 
     interface RepoBookmark {
         repo_name: string;
@@ -93,12 +93,12 @@
     });
 
     async function handle_token_add(token: string) {
-        loading = true;
         // Validate that token is not empty
         if (!token || token.trim().length === 0) {
             info("No token entered, keeping modal open");
             verification_message = "Please enter a Personal Access Token";
             verification_error = true;
+            is_loading = false;
             return;
         }
 
@@ -127,7 +127,7 @@
                 message: "",
             });
         }
-        loading = false;
+        is_loading = false;
     }
 
     function update_progress(progress: string) {
@@ -140,7 +140,7 @@
     }
 
     async function handle_verification() {
-        loading = true;
+        is_loading = true;
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
         );
@@ -233,14 +233,13 @@
             // Navigate to the overview page
             goto(`/overview-page`);
         } catch (error: any) {
-            loading = false;
+            is_loading = false;
             const error_message = error.message || "Verification failed.";
             error("Verification failed: " + error);
 
             // Check if this is an authentication error that requires a token
             if (error_message.includes("private and requires authentication")) {
                 info("Authentication required, showing modal");
-                loading = false;
                 waiting_for_auth = true;
                 // The modal will show automatically via the auth store
                 // Don't set verification_error here - we're waiting for user input
@@ -255,7 +254,7 @@
 </script>
 
 <div class="page">
-    {#if loading}
+    {#if is_loading}
         <LoadingIndicator />
     {/if}
     <header class="header">
