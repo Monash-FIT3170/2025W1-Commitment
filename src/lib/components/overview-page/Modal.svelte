@@ -60,8 +60,6 @@
             bind:this={panel_el}
         >
             <div class="row">
-                
-
                 <div class="modal-header">
                     <div class="icon-wrapper">
                         {@render icon?.()}
@@ -70,7 +68,6 @@
                         {@render header?.()}
                     </h2>
                 </div>
-
 
                 <button
                     class="x"
