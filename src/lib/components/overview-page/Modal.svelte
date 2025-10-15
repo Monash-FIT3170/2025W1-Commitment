@@ -5,6 +5,7 @@
         show_modal = $bindable(false),
         header = null,
         body = null,
+        icon = null,
         on_cancel = null,
     } = $props();
 
@@ -41,7 +42,7 @@
 {#if show_modal}
     <!-- Backdrop -->
     <div
-        class="backdrop"
+        class="backdrop body"
         tabindex="0"
         role="button"
         aria-label="Close dialog"
@@ -59,7 +60,15 @@
             bind:this={panel_el}
         >
             <div class="row">
-                {@render header?.()}
+                <div class="modal-header">
+                    <div class="icon-wrapper">
+                        {@render icon?.()}
+                    </div>
+                    <h2 class="label-primary heading-1 modal-title">
+                        {@render header?.()}
+                    </h2>
+                </div>
+
                 <button
                     class="x"
                     type="button"
@@ -98,6 +107,13 @@
         outline: none;
     }
 
+    .modal-header {
+        display: flex;
+    }
+    .modal-title {
+        margin: 0px;
+        margin-left: 0.375rem;
+    }
     .row {
         display: flex;
         justify-content: space-between;
