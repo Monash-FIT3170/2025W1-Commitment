@@ -26,8 +26,9 @@ pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>) -> Resul
 
     let mut fetch_opts = git2::FetchOptions::new();
     fetch_opts.remote_callbacks(callbacks);
+    fetch_opts.depth(50); // Shallow clone with only the latest 50 commits
 
-    log::info!("Starting clone operation...");
+    log::info!("Starting shallow clone operation (depth: 50)...");
 
     let result = RepoBuilder::new()
         .bare(true)
