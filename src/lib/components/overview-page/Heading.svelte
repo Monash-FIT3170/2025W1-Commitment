@@ -326,7 +326,7 @@
         }
     }
     /* MODAL */
-    .-button {
+    .modal-button {
         display: flex;
         justify-content: center;
         gap: 1rem;
