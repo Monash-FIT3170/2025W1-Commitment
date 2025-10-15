@@ -16,6 +16,7 @@
     import Sidebar from "$lib/components/global/Sidebar.svelte";
     import RepoBookmarkList from "$lib/components/global/RepoBookmarkList.svelte";
     import AccessTokenModal from "$lib/components/global/AccessTokenModal.svelte";
+    import RepoSearchHistory from "$lib/components/global/RepoSearchHistory.svelte";
     import { auth_error, retry_clone_with_token } from "$lib/stores/auth";
     import { generate_state_object, save_state } from "$lib/utils/localstorage";
     import { onMount } from "svelte";
@@ -36,6 +37,8 @@
 
     let profile_image_url = "/mock_profile_img.png";
     let username = "Baaset Moslih";
+    let search_history_array: { repo_name: string;
+         repo_url: string; repo_visited: boolean; }[] = [];
 
     interface RepoBookmark {
         repo_name: string;
@@ -53,6 +56,23 @@
         })
     );
 
+    interface RepoSearchHistory {
+        repo_name: string;
+        repo_url: string;
+        repo_visited: boolean;
+    }
+
+    let search_history: RepoSearchHistory[] = $derived(
+        $manifest["repository"].map((item) => {
+            return {
+                repo_name: item.name,
+                repo_url: item.url,
+                repo_visited: item.visited,
+            };
+        })
+    );
+
+
     let selected: RepoOption = $state(repo_options[2]); // Default to Local
 
     $effect(() => {
@@ -67,6 +87,11 @@
     let waiting_for_auth: boolean = $state(false);
 
     async function select_bookmarked_repo(repo_url: string) {
+        repo_url_input = repo_url;
+        await handle_verification();
+    }
+
+    async function select_history_repo(repo_url: string) {
         repo_url_input = repo_url;
         await handle_verification();
     }
@@ -247,6 +272,20 @@
             }
         }
     }
+
+    function history_input_verification() {
+        if (repo_url_input.trim() !== "") {
+            search_history_array = [
+                {
+                repo_name: repo_url_input.split("/").pop() || "local-repo",
+                repo_url: repo_url_input,
+                repo_visited: true,
+            },
+            ...search_history_array
+        ]
+
+        }
+    }
 </script>
 
 <div class="page">
@@ -282,6 +321,11 @@
             <RepoBookmarkList
                 bookmarked_repos={recent_repos}
                 onclick={select_bookmarked_repo}
+            />
+            <!-- Repo Search history list -->
+            <RepoSearchHistory
+                stored_repo_url_input={search_history}
+                onclick={select_history_repo}
             />
         </div>
     </main>

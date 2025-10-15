@@ -7,6 +7,7 @@ export interface Config {
 
 export interface RepoSchema {
     bookmarked: boolean;
+    visited: boolean;
     cloned: boolean;
     email_mapping: Config | null;
     grading_sheet: string | null;
@@ -151,6 +152,7 @@ function create_manifest_store() {
                 url: repo_url,
                 path: repo_path,
                 bookmarked: false,
+                visited: false,
                 cloned: source_type !== 2,
                 email_mapping: null,
                 grading_sheet: null,
