@@ -20,7 +20,7 @@
         align-items: center;
         height: inherit;
     }
-    
+
     .hamburger-btn {
         background: none;
         border: none;
