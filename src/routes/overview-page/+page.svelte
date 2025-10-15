@@ -33,6 +33,7 @@
         set_delete_function,
     } from "$lib/stores/refresh.svelte";
     import { goto } from "$app/navigation";
+    import LoadingIndicator from "$lib/components/global/LoadingIndicator.svelte";
 
     const s = page.state as any;
     load_state(s);
@@ -83,6 +84,7 @@
 
     let show_modal = $state(false);
     const open_modal = () => (show_modal = true);
+    let loading = $state(false);
 
     let current_upload = $state<UploadedGradingFile | null>(null);
 
@@ -244,6 +246,7 @@
     }
 
     async function refresh_repository() {
+        loading = true;
         set_refreshing(true);
         try {
             info(`Refreshing repository: ${repo_url} at ${repo_path}`);
@@ -271,6 +274,7 @@
             }
         } finally {
             set_refreshing(false);
+            loading = false;
         }
     }
 
@@ -384,7 +388,9 @@
             />
         {/each}
     </div>
-
+    {#if loading}
+        <LoadingIndicator />
+    {/if}
     <!-- commit graph -->
     {#if selected_view === "overview"}
         {#key contributors}

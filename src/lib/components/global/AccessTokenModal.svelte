@@ -2,6 +2,7 @@
     import ButtonPrimaryMedium from "./ButtonPrimaryMedium.svelte";
     import Modal from "$lib/components/overview-page/Modal.svelte";
     import { info } from "@tauri-apps/plugin-log";
+    import LoadingIndicator from "./LoadingIndicator.svelte";
 
     let { show_modal = $bindable(), on_token_add } = $props();
 
