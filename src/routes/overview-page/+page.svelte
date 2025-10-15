@@ -360,6 +360,7 @@
 <!-- Access Token Modal for private repository refresh -->
 <AccessTokenModal
     bind:show_modal={show_auth_modal}
+    bind:is_loading={loading}
     on_token_add={handle_token_add}
 />
 
