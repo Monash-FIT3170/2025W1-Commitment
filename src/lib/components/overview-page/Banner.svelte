@@ -48,11 +48,11 @@ contains the user's name and profile image.
 
 <div class="header">
     {#if showBackButton}
-    <div class="left-menu-container">
-        <button class="back-btn" onclick={goBack} aria-label="Back">
-            <Icon icon="tabler:circle-arrow-left" class="icon-medium"/>
-        </button>
-    </div>
+        <div class="left-menu-container">
+            <button class="back-btn" onclick={goBack} aria-label="Back">
+                <Icon icon="tabler:circle-arrow-left" class="icon-medium" />
+            </button>
+        </div>
     {/if}
     <div class="center-menu-container">
         {#if repo_url && owner && repo}
