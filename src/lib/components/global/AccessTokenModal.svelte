@@ -33,18 +33,18 @@
 <!-- Personal Access Token Modal -->
 <Modal bind:show_modal>
     {#snippet header()}
-        <h2 id="modal-title">Use Personal Access Token</h2>
+        <h2 id="modal-title" class="heading-1">Use Personal Access Token</h2>
     {/snippet}
 
     {#snippet body()}
         {#if is_loading}
             <LoadingIndicator displayText="Processing token..." />
         {:else}
-            <p>
+            <p class="body warning-note">
                 It seems that the repository you are trying to access is
                 private. Please provide a Personal Access Token
             </p>
-            <p class="permission-note">
+            <p class="permission-note body">
                 Please ensure "Contents" permissions are granted for your
                 Personal Access Token
             </p>
@@ -71,6 +71,10 @@
         margin-bottom: 0.5em;
     }
 
+    .warning-note {
+        font-size: 0.875rem;
+    }
+
     .token-input {
         width: calc(100% - 2em);
         padding: 1em;
@@ -80,5 +84,14 @@
         color: #fff;
         font-size: 1em;
         margin-top: 1em;
+    }
+
+    .token-input::placeholder {
+        font-size: 0.875rem;
+        font-family:
+            DM Sans,
+            sans-serif;
+        font-weight: 400;
+        word-wrap: break-word;
     }
 </style>
