@@ -42,7 +42,7 @@
               GH_REPO: Monash-FIT3170/2025W1-Commitment
               GG_YAML_PATH: docs/data/releases.yml
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            run: python docs/tools/update-releases.py
+            run: python docs/tools/update_releases.py
 
           - name: Commit releases.yml if changed
             run: |
