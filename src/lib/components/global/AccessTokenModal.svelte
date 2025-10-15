@@ -37,8 +37,14 @@
 
     {#snippet body()}
         <p>
-            It seems that the repository you are trying to access is private.
-            Please provide a Personal Access Token
+            It seems that the repository you are trying to access is private.<br
+            />
+            Please provide a Personal Access Token<br />
+            <br />
+            <bold
+                >NOTE: If this repository is not private, please check the URL
+                entered</bold
+            >
         </p>
         <p class="permission-note">
             Please ensure "Contents" permissions are granted for your Personal

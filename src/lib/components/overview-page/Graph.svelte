@@ -19,7 +19,6 @@
         type Contributor,
         type UserDisplayData,
     } from "$lib/metrics";
-    import { info } from "@tauri-apps/plugin-log";
 
     let {
         contributors,
@@ -417,12 +416,7 @@
                     );
                 }
 
-                info(`${person.username}: ${person.profile_colour}`);
                 const z: number = idx * 4;
-                info(
-                    `idx: ${idx}, z: ${z}, +1: ${z + 1}, +2: ${z + 2}, +3: ${z + 3}`
-                );
-
                 const between_mid_max =
                     person.data_to_display >= ref_point_values[2];
 

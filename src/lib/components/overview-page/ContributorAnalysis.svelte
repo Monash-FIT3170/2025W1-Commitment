@@ -42,6 +42,8 @@
     let progress = $derived(
         total_summaries > 0 ? (generated_summaries / total_summaries) * 100 : 0
     );
+
+    let error_flag = $state(false);
     let error_message = $state("");
 
     let summaries = new SvelteMap<string, string>();
@@ -88,6 +90,8 @@
         loading = true;
         generated_summaries = 0;
         total_summaries = 0;
+        error_flag = false;
+        error_message = "";
 
         const unlisten_total = await listen("summary-total", (event) => {
             total_summaries = event.payload as number;
@@ -103,8 +107,8 @@
         });
 
         const key_set = await invoke("check_key_set");
-        info(String(key_set));
         if (!key_set) {
+            error_flag = true;
             error_message =
                 "Please set a valid Gemini API key in Settings to generate summaries.";
             loading = false;
@@ -125,6 +129,10 @@
                 }
             } catch (e) {
                 error("Error occurred: " + e);
+                error_flag = true;
+                error_message =
+                    "An error occurred while generating summaries.\n Error: " +
+                    e;
             } finally {
                 loading = false;
                 unlisten_total();
@@ -220,6 +228,8 @@
 
             return {
                 username: user.username,
+                profile_colour: user.profile_colour,
+                initials: user.username_initials,
                 analysis: analysis,
                 scaling_factor: scaling_factor.toFixed(1),
                 profile_colour: user.profile_colour,
@@ -237,9 +247,18 @@
 </script>
 
 <main class="container">
-    {#if error_message}
+    {#if error_flag}
         <div class="error-message">
             {error_message}
+        </div>
+        <div class="button-container">
+            <div>
+                <ButtonPrimaryMedium
+                    label={"Generate AI Summaries"}
+                    onclick={generate_summaries}
+                    disabled={loading}
+                />
+            </div>
         </div>
     {/if}
     {#if loading}
@@ -250,7 +269,7 @@
             />
         </div>
     {/if}
-    {#if !loading}
+    {#if !loading && !error_flag}
         {#if summaries && summaries.size > 0}
             <div class="cards-container">
                 {#each contributors_sorted as person}

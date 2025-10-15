@@ -88,6 +88,7 @@
             // Modal was open and is now closed, and we don't have an error
             // This means the user closed the modal by clicking outside
             verification_message = "";
+            // waiting_for_auth = false;
         }
         previous_show_modal = show_modal;
     });
@@ -103,21 +104,36 @@
 
         info("Authenticating with Personal Access Token...");
 
-        // Attempt to clone with the provided token
-        const success = await retry_clone_with_token(token);
+        try {
+            // Attempt to clone with the provided token
+            const success = await retry_clone_with_token(token);
 
-        if (success) {
-            info("Authentication successful, continuing repository loading...");
-            waiting_for_auth = false;
-            // The modal will be hidden automatically by the auth store
-            // The repository should now be accessible, so we can continue with the normal flow
-            // Re-trigger the verification process to load the now-accessible repository
-            await handle_verification();
-        } else {
-            info("Authentication failed, please check your token");
-            // Show user-friendly error message above search bar and close modal
+            if (success) {
+                info(
+                    "Authentication successful, continuing repository loading..."
+                );
+                waiting_for_auth = false;
+                // The modal will be hidden automatically by the auth store
+                // The repository should now be accessible, so we can continue with the normal flow
+                // Re-trigger the verification process to load the now-accessible repository
+                await handle_verification();
+            } else {
+                info("Authentication failed, please check your token");
+                // Show user-friendly error message above search bar and close modal
+                verification_message =
+                    "Access token/URL is invalid. Please check your token/URL and try again.";
+                verification_error = true;
+                waiting_for_auth = false;
+                // Hide the modal since we're showing the error above the search bar
+                auth_error.set({
+                    needs_token: false,
+                    message: "",
+                });
+            }
+        } catch (err) {
+            error("Error during token validation: " + err);
             verification_message =
-                "Access token is invalid. Please check your token and try again.";
+                "An error occurred during authentication. Please try again.";
             verification_error = true;
             waiting_for_auth = false;
             // Hide the modal since we're showing the error above the search bar
@@ -177,12 +193,33 @@
                 repo_path = repo_url_input;
             } else {
                 set_repo_url(repo_url_input);
-                repo_path = await bare_clone(
-                    repository_information.source,
-                    repository_information.owner,
-                    repository_information.repo,
-                    source_type
-                );
+                try {
+                    repo_path = await bare_clone(
+                        repository_information.source,
+                        repository_information.owner,
+                        repository_information.repo,
+                        source_type
+                    );
+                } catch (err: any) {
+                    error(err);
+                    const err_check = String(err);
+                    if (err_check.includes("remote authentication required")) {
+                        verification_message =
+                            "Repository is private and requires authentication (PAT) or the URL is incorrect.";
+                    } else if (
+                        err_check.includes("failed to resolve address")
+                    ) {
+                        verification_message =
+                            "Unable to reach Git repository. Please check Internet connection.";
+                    } else if (err_check.includes("not found")) {
+                        verification_message =
+                            "Repository not found. Please check the URL.";
+                    } else {
+                        verification_message = "Unknown Error: " + err_check;
+                    }
+                    verification_error = true;
+                    return;
+                }
             }
             // Call loadBranches and loadCommitData and wait for both to complete
 
