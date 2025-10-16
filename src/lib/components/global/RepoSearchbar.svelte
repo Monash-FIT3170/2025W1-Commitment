@@ -9,18 +9,11 @@
 
     function handle_input_keydown(event: KeyboardEvent) {
         if (event.key === "Enter") {
-            on_submit();
-            is_visited();          
+            on_submit();          
         }
     }
     let stored_repo_url_input: string[] = [];
 
-    function is_visited() {
-        if (repo_url_input && !stored_repo_url_input.includes(repo_url_input)) {
-            stored_repo_url_input.push(repo_url_input);
-            console.log(stored_repo_url_input);
-        }
-    }
 
 </script>
 
@@ -61,14 +54,6 @@ repository URL.
         />
     </button>
 
-    <button class= "repo-button" onclick={() => { is_visited();}}>
-        
-        <Icon
-            icon={"tabler:circle-plus"}
-            class="icon-medium"
-            style="color: white"
-        />
-    "</button>
 </div>
 
 <style>

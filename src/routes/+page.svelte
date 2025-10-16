@@ -37,8 +37,7 @@
 
     let profile_image_url = "/mock_profile_img.png";
     let username = "Baaset Moslih";
-    let search_history_array: { repo_name: string;
-         repo_url: string; repo_visited: boolean; }[] = [];
+    let search_history_array = $state<{ repo_name: string; repo_url: string; repo_visited: boolean; }[]>([]);
 
     interface RepoBookmark {
         repo_name: string;
@@ -271,6 +270,7 @@
                 verification_message = error_message;
             }
         }
+        history_input_verification();
     }
 
     function history_input_verification() {
@@ -322,9 +322,10 @@
                 bookmarked_repos={recent_repos}
                 onclick={select_bookmarked_repo}
             />
+            <div></div>
             <!-- Repo Search history list -->
             <RepoSearchHistory
-                stored_repo_url_input={search_history}
+                stored_repo_url_input={search_history_array}
                 onclick={select_history_repo}
             />
         </div>
