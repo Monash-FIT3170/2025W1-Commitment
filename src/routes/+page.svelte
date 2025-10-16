@@ -12,6 +12,7 @@
     import { set_repo_url } from "$lib/stores/repo";
     import ErrorMessage from "$lib/components/global/ErrorMessage.svelte";
     import RepoSearchbar from "$lib/components/global/RepoSearchbar.svelte";
+    import DepthInput from "$lib/components/global/DepthInput.svelte";
     import Banner from "$lib/components/overview-page/Banner.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
     import RepoBookmarkList from "$lib/components/global/RepoBookmarkList.svelte";
@@ -67,6 +68,7 @@
         }
     });
     let repo_url_input: string = $state("");
+    let depth_input: string = $state("");
 
     let verification_message: string = $state("");
     let verification_error: boolean = $state(false);
@@ -215,6 +217,14 @@
                 repository_information = get_repo_info(repo_url_input);
             }
 
+            // Parse depth input
+            const parsed_depth =
+                depth_input.trim() !== "" ? parseInt(depth_input.trim()) : null;
+            const depth_value =
+                parsed_depth && !isNaN(parsed_depth) && parsed_depth > 0
+                    ? parsed_depth
+                    : null;
+
             // Update the repo store with the new URL
             let repo_path: string;
             if (source_type === 2) {
@@ -226,7 +236,8 @@
                         repository_information.source,
                         repository_information.owner,
                         repository_information.repo,
-                        source_type
+                        source_type,
+                        depth_value
                     );
                 } catch (err: any) {
                     error(err);
@@ -275,7 +286,8 @@
                     repository_information,
                     url_trimmed,
                     source_type,
-                    repo_path
+                    repo_path,
+                    depth_value
                 );
             }
 
@@ -338,11 +350,18 @@
             <RepoDropdown bind:selected action={reset_verification_result} />
 
             <!-- Repo link -->
-            <RepoSearchbar
-                on_submit={handle_verification}
-                bind:repo_url_input
-                error={verification_error}
-            />
+            <div class="searchbar-row">
+                <RepoSearchbar
+                    on_submit={handle_verification}
+                    bind:repo_url_input
+                    error={verification_error}
+                />
+                <DepthInput
+                    bind:value={depth_input}
+                    placeholder="depth"
+                    error={verification_error}
+                />
+            </div>
 
             <!-- Repo link list -->
             <RepoBookmarkList
@@ -378,5 +397,11 @@
         justify-content: center;
         align-items: center;
         row-gap: 10px;
+    }
+
+    .searchbar-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
     }
 </style>

@@ -6,7 +6,7 @@ fn clone_progress(cur_progress: usize, total_progress: usize) {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>) -> Result<(), String> {
+pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>, depth: Option<i32>) -> Result<(), String> {
     log::info!("Starting try_clone_with_token: {url} -> {path}");
 
     let mut callbacks = RemoteCallbacks::new();
@@ -26,9 +26,11 @@ pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>) -> Resul
 
     let mut fetch_opts = git2::FetchOptions::new();
     fetch_opts.remote_callbacks(callbacks);
-    fetch_opts.depth(50); // Shallow clone with only the latest 50 commits
 
-    log::info!("Starting shallow clone operation (depth: 50)...");
+    // Set depth if provided
+    if let Some(d) = depth {
+        fetch_opts.depth(d);
+    }
 
     let result = RepoBuilder::new()
         .bare(true)
@@ -114,7 +116,7 @@ pub fn get_local_repo_information(path: &str) -> Result<String, String> {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
+pub async fn bare_clone(url: &str, path: &str, depth: Option<i32>) -> Result<(), String> {
     // Check if path already exists
     if is_repo_cloned(path) {
         log::info!("Repository already exists at: {path}");
@@ -125,7 +127,7 @@ pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
 
     // Step 1: Try cloning without authentication (public repository)
     log::info!("Attempting to clone as public repository");
-    match try_clone_with_token(url, path, None) {
+    match try_clone_with_token(url, path, None, depth) {
         Ok(()) => {
             log::info!("Successfully cloned public repository at: {path}");
             Ok(())
@@ -139,7 +141,7 @@ pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn refresh_repo(url: &str, path: &str) -> Result<(), String> {
+pub async fn refresh_repo(url: &str, path: &str, depth: Option<i32>) -> Result<(), String> {
     log::info!("Refreshing repository at: {path}");
 
     // Step 1: Delete the existing repository
@@ -150,7 +152,7 @@ pub async fn refresh_repo(url: &str, path: &str) -> Result<(), String> {
 
     // Step 2: Re-clone the repository using bare_clone
     log::info!("Re-cloning repository from {url} to {path}");
-    bare_clone(url, path).await
+    bare_clone(url, path, depth).await
 }
 
 // Function used to determine if the repository exists online or not

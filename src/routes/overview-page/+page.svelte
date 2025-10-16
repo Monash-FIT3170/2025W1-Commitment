@@ -264,9 +264,16 @@
         try {
             info(`Refreshing repository: ${repo_url} at ${repo_path}`);
 
+            // Get the depth from the manifest
+            const repo_data = manifest_state.repository.find(
+                (r) => r.url === repo_url
+            );
+            const depth = repo_data?.depth || null;
+
             await invoke("refresh_repo", {
                 url: repo_url,
                 path: repo_path,
+                depth: depth,
             });
 
             info("Repository refreshed successfully");
@@ -277,12 +284,19 @@
 
             if (error_message.includes("private and requires authentication")) {
                 info("Authentication required for refresh");
+                // Get depth from manifest for auth retry
+                const repo_data = manifest_state.repository.find(
+                    (r) => r.url === repo_url
+                );
+                const depth = repo_data?.depth || null;
+
                 auth_error.set({
                     needs_token: true,
                     message:
                         "This repository is private. Please provide a Personal Access Token to refresh.",
                     repo_url: repo_url,
                     repo_path: repo_path,
+                    depth: depth,
                 });
             }
         } finally {
