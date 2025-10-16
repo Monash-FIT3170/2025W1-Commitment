@@ -21,14 +21,13 @@
             {#each Object.entries(email_mapping()) as [groupName, emails]}
                 <div class="mapping-group">
                     <div class="group-header">
-                        <span class="body-accent label-primary"
-                            >{groupName}</span
-                        >
+                        <p class="body-accent label-primary">{groupName}</p>
                     </div>
                     <div class="email-list">
                         {#each emails as email}
-                            <div class="email-item">
-                                <span class="body label-secondary">{email}</span
+                            <div class="email-item-container">
+                                <span class="email-item body label-secondary"
+                                    >{email}</span
                                 >
                             </div>
                         {/each}
@@ -47,6 +46,7 @@
         margin-top: 0.5rem;
         max-height: 400px;
         overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .mapping-list {
@@ -65,12 +65,15 @@
         align-items: start;
     }
 
+    .email-item {
+        text-overflow: ellipsis;
+    }
     .group-header {
         margin-bottom: 0;
     }
 
     .email-list {
-        display: flex;
+        /* display: flex; */
         flex-direction: column;
         gap: 0.25rem;
         margin-left: 0;

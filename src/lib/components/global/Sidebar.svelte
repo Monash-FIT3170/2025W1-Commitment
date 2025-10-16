@@ -42,24 +42,37 @@
     );
     let api_input = $state("");
     let api_error = $state(false);
+    let api_err_desc = $state("");
+
+    let bookmark_error = $state(false);
+    let bookmark_err_desc = $state("");
 
     async function on_submit(): Promise<Boolean> {
         // Key validation
-        let is_valid_key = await invoke<Boolean>("gemini_key_validation", {
-            apiKey: api_input,
-        });
+        info("Attempting to validate key");
+        try {
+            let is_valid_key = await invoke<Boolean>("gemini_key_validation", {
+                apiKey: api_input,
+            });
 
-        // If key is valid, store securely
-        if (is_valid_key) {
-            info("Valid API Key");
-            api_error = false;
-            // Store key securely
-        } else {
-            // Else, prompt user to re-enter
-            info("Invalid API Key");
+            // If key is valid, store securely
+            if (is_valid_key) {
+                info("Valid API Key");
+                api_error = false;
+                // Store key securely
+            } else {
+                // Else, prompt user to re-enter
+                info("Invalid API Key");
+                api_error = true;
+                api_err_desc = "Invalid API Key. Please try again.";
+            }
+            return is_valid_key;
+        } catch (err) {
+            error("Failed to validate key: " + err);
             api_error = true;
+            api_err_desc = "Error validating key. Please try again.";
+            return false;
         }
-        return is_valid_key;
     }
 
     async function bookmark_open(repo_url_input: string) {
@@ -104,8 +117,16 @@
             await save_state(storage_obj);
             await goto("/");
             await goto(`/overview-page`);
-        } catch (e: any) {
-            error("Verification failed: " + e);
+        } catch (error: any) {
+            const error_message = error.message || "Verification failed";
+            info("Failed to open bookmarked repo: " + error_message);
+
+            // Since a private bookmarked repo shouldn't fail from PAT Token errors, we do not need to display the modal.
+            // Or check for it even like in other areas.
+
+            bookmark_error = true;
+            bookmark_err_desc =
+                "Failed to open bookmarked repository. Please try again.";
         }
     }
 
@@ -188,7 +209,12 @@
         <div class="caption label-secondary">
             Add your Gemini API key to enable AI-powered features.
         </div>
-        <ApiKeyField bind:api_input {on_submit} error={api_error} />
+        <ApiKeyField bind:api_input {on_submit} {api_error} />
+        {#if api_error}
+            <div class="caption error" style="margin-top: 0.25rem;">
+                {api_err_desc}
+            </div>
+        {/if}
     </div>
     <div class="sidebar-item-container">
         <div class="header">
@@ -200,6 +226,11 @@
             <h2 class="heading-1 sidebar-item-header white">Bookmarks</h2>
         </div>
 
+        {#if bookmark_error}
+            <div class="caption error" style="margin-top: 0.25rem;">
+                {bookmark_err_desc}
+            </div>
+        {/if}
         {#each bookmarked_repos as repo (repo.repo_url)}
             {#if repo.repo_bookmarked}
                 <div class="bookmark-wrapper">

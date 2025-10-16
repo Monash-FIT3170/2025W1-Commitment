@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { info } from "@tauri-apps/plugin-log";
+import { info, error } from "@tauri-apps/plugin-log";
 import { show_token_modal } from "./stores/auth";
 
 export type Contacts =
@@ -42,7 +42,7 @@ export async function load_branches(repo_path: string): Promise<string[]> {
         info("REAL BRANCHES " + real_branches);
         return ["All", ...real_branches];
     } catch (err) {
-        info("Failed to load branches: " + err);
+        error("Failed to load branches: " + err);
         return ["All"];
     }
 }
@@ -59,9 +59,10 @@ export async function bare_clone(
     source_type: 0 | 1 | 2
 ): Promise<string> {
     const repo_url = `${source}/${owner}/${repo}`;
-    const working_dir = await invoke<string>("get_working_directory");
-    const repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
+
     try {
+        const working_dir = await invoke<string>("get_working_directory");
+        const repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
         await invoke("bare_clone", {
             url: repo_url,
             path: repo_path,
@@ -69,14 +70,18 @@ export async function bare_clone(
         return repo_path;
     } catch (err) {
         const error_message = String(err);
-        info(`Failed to clone the repository: ${error_message}`);
+        error(`Failed to clone the repository: ${error_message}`);
+        let repo_path: string;
 
         // Check if this is an authentication error that requires a token
-        if (error_message.includes("private and requires authentication")) {
+        if (error_message.includes("remote authentication required")) {
+            const working_dir = await invoke<string>("get_working_directory");
+            repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
             show_token_modal(error_message, repo_url, repo_path);
+            return repo_path;
         }
 
-        return repo_path;
+        throw new Error(error_message);
     }
 }
 
@@ -105,7 +110,7 @@ export async function load_commit_data(
         const commit_array = Object.values(commit_data);
         return commit_array;
     } catch (err) {
-        info(`Failed to get contributor data: ${err}`);
+        error(`Failed to get contributor data: ${err}`);
         return [];
     }
 }

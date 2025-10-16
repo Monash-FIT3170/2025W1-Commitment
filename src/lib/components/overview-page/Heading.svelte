@@ -2,6 +2,7 @@
     import Icon from "@iconify/svelte";
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
+    import ErrorMessage from "../global/ErrorMessage.svelte";
     import Tab from "$lib/components/global/Tab.svelte";
     import Calendar from "$lib/components/global/Calendar.svelte";
     import Modal from "$lib/components/overview-page/Modal.svelte";
@@ -35,6 +36,8 @@
               ? "gitlab"
               : "folder-code";
     let show_modal = $state(false);
+    let config_error = $state(false);
+    let config_error_msg = $state("");
 
     // Add effect to manage body class when modal state changes
     $effect(() => {
@@ -56,11 +59,14 @@
         file_input.click();
     }
 
-    let textarea_value = "";
-
     async function handle_file_change(event: Event) {
         const selected_files = (event.target as HTMLInputElement).files;
         if (selected_files && selected_files.length > 0) {
+            if (!selected_files[0].name.toLowerCase().endsWith(".json")) {
+                config_error_msg = "Please upload a .json file";
+                config_error = true;
+                return;
+            }
             // Helper to read file as text using Promise
             function read_file_async(file: File): Promise<string> {
                 return new Promise((resolve, reject) => {
@@ -85,23 +91,26 @@
                             }
                         );
 
-                        info("Config applied successfully:", result);
+                        info("Config applied successfully:" + result);
 
                         contributors = result;
                         manifest.update_email_mapping(json, repo_url);
                         await invoke("save_manifest", { manifest: $manifest });
+                        show_modal = false;
                     } catch (e) {
                         error("Error applying config: " + e);
+                        config_error_msg =
+                            "Error applying config. Please try again.";
+                        config_error = true;
                     }
                 } else {
-                    textarea_value =
-                        "Invalid format:\n" + JSON.stringify(errors, null, 2);
+                    config_error_msg = "Invalid format";
+                    config_error = true;
                 }
             } catch {
-                textarea_value = "Not valid JSON";
+                config_error_msg = "Not valid JSON";
+                config_error = true;
             }
-
-            show_modal = false;
         }
     }
 
@@ -165,25 +174,25 @@
                 label_class="body-accent"
                 icon_first={true}
                 width="4rem"
-                onclick={() => (show_modal = true)}
+                onclick={() => {
+                    show_modal = true;
+                    config_error = false;
+                    config_error_msg = "";
+                }}
             />
         </div>
 
         <!-- Modal -->
         <Modal bind:show_modal>
+            {#snippet icon()}
+                <Icon
+                    icon={`tabler:settings-2`}
+                    class="icon-medium"
+                    style="color: currentColor"
+                />
+            {/snippet}
             {#snippet header()}
-                <div class="modal-header">
-                    <div class="icon-wrapper">
-                        <Icon
-                            icon={`tabler:settings-2`}
-                            class="icon-medium"
-                            style="color: currentColor"
-                        />
-                    </div>
-                    <h2 class="label-primary heading-1 modal-title">
-                        Contributor Mapping
-                    </h2>
-                </div>
+                Contributor Mapping
             {/snippet}
 
             {#snippet body()}
@@ -218,6 +227,10 @@
                         label="Upload"
                         icon="upload"
                         onclick={trigger_file_input}
+                    />
+                    <ErrorMessage
+                        verification_message={config_error_msg}
+                        error={config_error}
                     />
                 </div>
             {/snippet}
@@ -330,24 +343,11 @@
         }
     }
     /* MODAL */
-    .modal-title {
-        margin: 0px;
-        margin-left: 0.375rem;
-    }
-
-    .modal-header {
-        display: flex;
-    }
-
-    .icon-wrapper {
-        margin-top: 0.1rem;
-    }
-
     .modal-button {
         display: flex;
         justify-content: center;
         gap: 1rem;
-        margin-top: 1rem;
+        margin-top: 1.5rem;
     }
 
     /* Fix: Prevent background scrolling when modal is open */

@@ -13,9 +13,8 @@
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import { invoke } from "@tauri-apps/api/core";
     import { listen } from "@tauri-apps/api/event";
-    import ProgressBar from "$lib/components/global/ProgressBar.svelte";
     import { SvelteMap } from "svelte/reactivity";
-    import { get_source_type } from "$lib/github_url_verifier";
+    import LoadingIndicator from "../global/LoadingIndicator.svelte";
 
     let {
         contributors,
@@ -42,6 +41,8 @@
     let progress = $derived(
         total_summaries > 0 ? (generated_summaries / total_summaries) * 100 : 0
     );
+
+    let error_flag = $state(false);
     let error_message = $state("");
 
     let summaries = new SvelteMap<string, string>();
@@ -88,6 +89,8 @@
         loading = true;
         generated_summaries = 0;
         total_summaries = 0;
+        error_flag = false;
+        error_message = "";
 
         const unlisten_total = await listen("summary-total", (event) => {
             total_summaries = event.payload as number;
@@ -103,8 +106,8 @@
         });
 
         const key_set = await invoke("check_key_set");
-        info(String(key_set));
         if (!key_set) {
+            error_flag = true;
             error_message =
                 "Please set a valid Gemini API key in Settings to generate summaries.";
             loading = false;
@@ -125,6 +128,10 @@
                 }
             } catch (e) {
                 error("Error occurred: " + e);
+                error_flag = true;
+                error_message =
+                    "An error occurred while generating summaries.\n Error: " +
+                    e;
             } finally {
                 loading = false;
                 unlisten_total();
@@ -220,6 +227,8 @@
 
             return {
                 username: user.username,
+                profile_colour: user.profile_colour,
+                initials: user.username_initials,
                 analysis: analysis,
                 scaling_factor: scaling_factor.toFixed(1),
                 profile_colour: user.profile_colour,
@@ -237,20 +246,26 @@
 </script>
 
 <main class="container">
-    {#if error_message}
+    {#if error_flag}
         <div class="error-message">
             {error_message}
         </div>
-    {/if}
-    {#if loading}
-        <div class="w-full max-w-2xl mx-auto">
-            <ProgressBar
-                {progress}
-                label={`Generating summaries... (${generated_summaries}/${total_summaries})`}
-            />
+        <div class="button-container">
+            <div>
+                <ButtonPrimaryMedium
+                    label={"Generate AI Summaries"}
+                    onclick={generate_summaries}
+                    disabled={loading}
+                />
+            </div>
         </div>
     {/if}
-    {#if !loading}
+    {#if loading}
+        <LoadingIndicator
+            displayText={`Generating summaries... (${generated_summaries}/${total_summaries})`}
+        />
+    {/if}
+    {#if !loading && !error_flag}
         {#if summaries && summaries.size > 0}
             <div class="cards-container">
                 {#each contributors_sorted as person}
@@ -302,11 +317,10 @@
     }
 
     .cards-container {
-        margin-top: 1rem;
         display: grid;
         grid-template-columns: repeat(auto-fill, 26rem);
         gap: 1rem;
-        padding: 1rem;
+        padding: 2rem;
         width: 100%;
         justify-items: center;
         justify-content: center;
@@ -315,7 +329,6 @@
     .button-container {
         display: flex;
         justify-content: center;
-        height: calc(100vh - 45rem);
         align-items: center;
     }
 

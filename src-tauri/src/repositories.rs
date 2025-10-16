@@ -1,7 +1,8 @@
 use git2::{build::RepoBuilder, RemoteCallbacks};
+// use std::time::Duration;
 
 fn clone_progress(cur_progress: usize, total_progress: usize) {
-    println!("\rProgress: {cur_progress}/{total_progress}");
+    print!("\rProgress: {cur_progress}/{total_progress}");
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -48,6 +49,9 @@ pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>) -> Resul
         }
         Err(e) => {
             log::error!("Clone failed with error: {e}");
+            log::error!("Code: {:?}", e.code());
+            log::error!("Class: {:?}", e.class());
+            log::error!("Msg: {}", e.message());
             Err(e.to_string())
         }
     }
@@ -60,23 +64,23 @@ pub fn is_repo_cloned(path: &str) -> bool {
 
 #[tauri::command(rename_all = "snake_case")]
 pub fn delete_repo(path: &str) -> Result<(), String> {
-    log::info!("Attempting to delete repository at: {}", path);
+    log::info!("Attempting to delete repository at: {path}");
 
     let repo_path = std::path::Path::new(path);
 
     if !repo_path.exists() {
-        log::warn!("Repository path does not exist: {}", path);
+        log::warn!("Repository path does not exist: {path}");
         return Ok(()); // Consider it successfully deleted if it doesn't exist
     }
 
     match std::fs::remove_dir_all(repo_path) {
         Ok(()) => {
-            log::info!("Successfully deleted repository at: {}", path);
+            log::info!("Successfully deleted repository at: {path}");
             Ok(())
         }
         Err(e) => {
-            log::error!("Failed to delete repository at {}: {}", path, e);
-            Err(format!("Failed to delete repository: {}", e))
+            log::error!("Failed to delete repository at {path}: {e}");
+            Err(format!("Failed to delete repository: {e}"))
         }
     }
 }
@@ -123,15 +127,14 @@ pub async fn bare_clone(url: &str, path: &str) -> Result<(), String> {
     match try_clone_with_token(url, path, None) {
         Ok(()) => {
             log::info!("Successfully cloned public repository at: {path}");
-            return Ok(());
+            Ok(())
         }
         Err(e) => {
-            log::info!("Public clone failed: {e}. Trying with access tokens");
+            let err_msg = format!("Clone failed: {e}. Checking if private.");
+            log::error!("{err_msg}");
+            Err(err_msg)
         }
     }
-
-    // Step 4: Repository is private and requires authentication
-    Err("Repository appears to be private and requires authentication. Please use try_clone_with_token with a valid access token.".to_string())
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -148,3 +151,27 @@ pub async fn refresh_repo(url: &str, path: &str) -> Result<(), String> {
     log::info!("Re-cloning repository from {url} to {path}");
     bare_clone(url, path).await
 }
+
+// Function used to determine if the repository exists online or not
+// async fn check_repo_exists_online(url: &str) -> Result<bool, String> {
+
+//     // Set-up reqwest client
+//     let client = reqwest::Client::builder()
+//         .timeout(Duration::from_secs(30)) //Set a timeout of 30 seconds
+//         .connect_timeout(Duration::from_secs(10))// Set a connection timeout of 10 seconds
+//         .build()
+//         .map_err(|e| format!("Failed to build client: {}", e))?;
+
+//     let result = client.get(url)
+//         .send()
+//         .await
+//         .map_err(|e| format!("Request failed: {}", e))?;
+
+//     log::info!("Received status code: {}", result.status());
+//     match result.status() {
+//         reqwest::StatusCode::OK | reqwest::StatusCode::FORBIDDEN | reqwest::StatusCode::UNAUTHORIZED => Ok(true),
+//         reqwest::StatusCode::NOT_FOUND => Ok(false),
+//         status => Err(format!("Unexpected status code: {}", status)),
+//     }
+
+// }

@@ -1,7 +1,8 @@
 <script lang="ts">
-    import ButtonPrimaryMedium from "./ButtonPrimaryMedium.svelte";
+    import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import Modal from "$lib/components/overview-page/Modal.svelte";
     import { info } from "@tauri-apps/plugin-log";
+    import Icon from "@iconify/svelte";
 
     let { show_modal = $bindable(), on_token_add } = $props();
 
@@ -22,14 +23,28 @@
 
 <!-- Personal Access Token Modal -->
 <Modal bind:show_modal>
+    {#snippet icon()}
+        <Icon
+            icon={`tabler:key`}
+            class="icon-medium"
+            style="color: currentColor"
+        />
+    {/snippet}
+
     {#snippet header()}
-        <h2 id="modal-title">Use Personal Access Token</h2>
+        Use Personal Access Token
     {/snippet}
 
     {#snippet body()}
         <p>
-            It seems that the repository you are trying to access is private.
-            Please provide a Personal Access Token
+            It seems that the repository you are trying to access is private.<br
+            />
+            Please provide a Personal Access Token<br />
+            <br />
+            <bold
+                >NOTE: If this repository is not private, please check the URL
+                entered</bold
+            >
         </p>
         <p class="permission-note">
             Please ensure "Contents" permissions are granted for your Personal

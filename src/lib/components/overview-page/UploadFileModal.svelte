@@ -5,6 +5,7 @@
     import Modal from "$lib/components/overview-page/Modal.svelte";
     import type { Contributor } from "$lib/metrics";
     import { count_matches } from "$lib/utils/grading";
+    import { error } from "@tauri-apps/plugin-log";
 
     // Props:
     // - show_modal: controlled by parent (bind)
@@ -65,6 +66,9 @@
             const { matched, total } = count_matches(contributors, bytes);
             match_matched = matched;
             match_total = total;
+        } catch (err: any) {
+            error_msg = "Incorrect file format.";
+            throw err;
         } finally {
             match_loading = false;
         }
@@ -90,7 +94,11 @@
             match_loading = false;
             const bytes = (current as any)?.bytes as Uint8Array | undefined;
             if (bytes && bytes.length) {
-                void compute_preview_from_bytes(bytes);
+                try {
+                    void compute_preview_from_bytes(bytes);
+                } catch (err: any) {
+                    error(err);
+                }
             }
         }
     });
@@ -125,7 +133,12 @@
 
         // compute preview for newly staged file
         const bytes = new Uint8Array(await file.arrayBuffer());
-        void compute_preview_from_bytes(bytes);
+
+        try {
+            void compute_preview_from_bytes(bytes);
+        } catch (err: any) {
+            error(err);
+        }
     }
 
     function on_clear_click() {
@@ -158,7 +171,11 @@
         match_loading = false;
         const bytes = (current as any)?.bytes as Uint8Array | undefined;
         if (bytes && bytes.length) {
-            void compute_preview_from_bytes(bytes);
+            try {
+                void compute_preview_from_bytes(bytes);
+            } catch (err: any) {
+                error(err);
+            }
         }
     }
 
@@ -281,13 +298,26 @@
                 }}
                 width="8%"
             />
-
-            <ButtonPrimaryMedium
-                icon="device-floppy"
-                label="Save"
-                onclick={on_save}
-                disabled={!can_save}
-            />
+            {#if !error_msg}
+                <ButtonPrimaryMedium
+                    icon="device-floppy"
+                    label="Save"
+                    onclick={on_save}
+                    disabled={!can_save}
+                />
+            {/if}
+            {#if error_msg}
+                <ButtonPrimaryMedium
+                    icon="device-floppy"
+                    label="Save"
+                    onclick={on_save}
+                    disabled={true}
+                />
+                <div class="error err-banner caption">
+                    <Icon icon="tabler:alert-circle" class="err-ico" />
+                    {error_msg}
+                </div>
+            {/if}
         </div>
 
         {#if has_selection}
@@ -309,16 +339,9 @@
 
         {#if match_loading}
             <div class="match-preview caption">Checking contributors…</div>
-        {:else if match_total > 0}
+        {:else if match_total > 0 && !error_msg}
             <div class="match-preview caption">
                 {match_matched} / {match_total} contributors found in the repository
-            </div>
-        {/if}
-
-        {#if error_msg}
-            <div class="error err-banner caption">
-                <Icon icon="tabler:alert-circle" class="err-ico" />
-                {error_msg}
             </div>
         {/if}
     {/snippet}
