@@ -9,6 +9,7 @@ export interface Config {
 export interface RepoSchema {
     bookmarked: boolean;
     cloned: boolean;
+    depth?: number | null;
     email_mapping: Config | null;
     grading_sheet: string | null;
     last_accessed: string;
@@ -136,7 +137,8 @@ function create_manifest_store() {
             repo_info: RepositoryInformation,
             repo_url: string,
             source_type: 0 | 1 | 2,
-            repo_local_path: string
+            repo_local_path: string,
+            depth?: number | null
         ) {
             try {
                 const working_dir = await invoke<string>(
@@ -156,6 +158,7 @@ function create_manifest_store() {
                     path: repo_path,
                     bookmarked: false,
                     cloned: source_type !== 2,
+                    depth: depth && depth > 0 ? depth : null,
                     email_mapping: null,
                     grading_sheet: null,
                     last_accessed: new Date().toISOString(),
