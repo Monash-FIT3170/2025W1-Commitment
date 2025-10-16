@@ -282,7 +282,8 @@
             const error_message = e.message || String(e);
             error("Failed to refresh repository: " + error_message);
 
-            if (error_message.includes("private and requires authentication")) {
+            // Check for authentication errors - the error can come in different forms
+            if (error_message.includes("remote authentication required")) {
                 info("Authentication required for refresh");
                 // Get depth from manifest for auth retry
                 const repo_data = manifest_state.repository.find(
