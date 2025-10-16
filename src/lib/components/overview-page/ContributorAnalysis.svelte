@@ -13,9 +13,8 @@
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import { invoke } from "@tauri-apps/api/core";
     import { listen } from "@tauri-apps/api/event";
-    import ProgressBar from "$lib/components/global/ProgressBar.svelte";
     import { SvelteMap } from "svelte/reactivity";
-    import { get_source_type } from "$lib/github_url_verifier";
+    import LoadingIndicator from "../global/LoadingIndicator.svelte";
 
     let {
         contributors,
@@ -262,12 +261,9 @@
         </div>
     {/if}
     {#if loading}
-        <div class="w-full max-w-2xl mx-auto">
-            <ProgressBar
-                {progress}
-                label={`Generating summaries... (${generated_summaries}/${total_summaries})`}
-            />
-        </div>
+        <LoadingIndicator
+            displayText={`Generating summaries... (${generated_summaries}/${total_summaries})`}
+        />
     {/if}
     {#if !loading && !error_flag}
         {#if summaries && summaries.size > 0}
@@ -321,11 +317,10 @@
     }
 
     .cards-container {
-        margin-top: 1rem;
         display: grid;
         grid-template-columns: repeat(auto-fill, 26rem);
         gap: 1rem;
-        padding: 1rem;
+        padding: 2rem;
         width: 100%;
         justify-items: center;
         justify-content: center;
@@ -334,7 +329,6 @@
     .button-container {
         display: flex;
         justify-content: center;
-        height: calc(100vh - 45rem);
         align-items: center;
     }
 

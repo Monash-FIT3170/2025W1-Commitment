@@ -21,6 +21,7 @@
     import { onMount } from "svelte";
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
     import { info, error } from "@tauri-apps/plugin-log";
+    import LoadingIndicator from "$lib/components/global/LoadingIndicator.svelte";
 
     // only run on the browser
     onMount(async () => {
@@ -34,8 +35,7 @@
         }
     });
 
-    let profile_image_url = "";
-    let username = "";
+    let loading: boolean = $state(false);
 
     interface RepoBookmark {
         repo_name: string;
@@ -94,6 +94,7 @@
     });
 
     async function handle_token_add(token: string) {
+        loading = true;
         // Validate that token is not empty
         if (!token || token.trim().length === 0) {
             info("No token entered, keeping modal open");
@@ -142,6 +143,7 @@
                 message: "",
             });
         }
+        loading = false;
     }
 
     function update_progress(progress: string) {
@@ -154,6 +156,7 @@
     }
 
     async function handle_verification() {
+        loading = true;
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
         );
@@ -267,12 +270,14 @@
             // Navigate to the overview page
             goto(`/overview-page`);
         } catch (error: any) {
+            loading = false;
             const error_message = error.message || "Verification failed.";
             error("Verification failed: " + error);
 
             // Check if this is an authentication error that requires a token
             if (error_message.includes("private and requires authentication")) {
                 info("Authentication required, showing modal");
+                loading = false;
                 waiting_for_auth = true;
                 // The modal will show automatically via the auth store
                 // Don't set verification_error here - we're waiting for user input
@@ -287,6 +292,9 @@
 </script>
 
 <div class="page">
+    {#if loading}
+        <LoadingIndicator />
+    {/if}
     <header class="header">
         <Banner />
     </header>

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import ButtonPrimaryMedium from "./ButtonPrimaryMedium.svelte";
+    import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import Modal from "$lib/components/overview-page/Modal.svelte";
     import { info } from "@tauri-apps/plugin-log";
     import Icon from "@iconify/svelte";
