@@ -10,6 +10,7 @@
         get_user_total_commits,
     } from "$lib/metrics";
     import { info, error } from "@tauri-apps/plugin-log";
+    import { onDestroy } from "svelte";
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import { invoke } from "@tauri-apps/api/core";
@@ -45,11 +46,34 @@
 
     let error_flag = $state(false);
     let error_message = $state("");
+    let loadingImageIndex = $state(0);
 
     let summaries = new SvelteMap<string, string>();
 
     // Store summaries in localStorage for persistence
     let summaries_cache = $state<Map<string, Map<string, string>>>(new Map());
+
+    // Loading animation interval
+    let loadingIntervalId: number | undefined;
+
+    $effect(() => {
+        if (loading) {
+            loadingIntervalId = window.setInterval(() => {
+                loadingImageIndex = (loadingImageIndex + 1) % 4;
+            }, 500);
+        } else {
+            if (loadingIntervalId) {
+                clearInterval(loadingIntervalId);
+                loadingIntervalId = undefined;
+            }
+        }
+    });
+
+    onDestroy(() => {
+        if (loadingIntervalId) {
+            clearInterval(loadingIntervalId);
+        }
+    });
 
     // Load existing summaries from localStorage when component initializes
     $effect(() => {
@@ -273,16 +297,28 @@
         </div>
     {/if}
     {#if loading}
-        <div class="loading-container">
-            <LoadingIndicator
-                displayText={`Generating summaries... (${generated_summaries}/${total_summaries})`}
-            />
-            <div class="cancel-button-container">
-                <ButtonTintedMedium
-                    label="Cancel"
-                    icon="x"
-                    onclick={cancel_generation}
-                />
+        <div class="background-blur">
+            <div class="loading-content">
+                <div class="loading-indicator">
+                    <img
+                        src="/loading-indicators/loading-{loadingImageIndex +
+                            1}.svg"
+                        alt="loading..."
+                        height="48"
+                        width="48"
+                        class="loading-image"
+                    />
+                    <div class="display-body">
+                        Generating summaries... ({generated_summaries}/{total_summaries})
+                    </div>
+                </div>
+                <div class="cancel-button-container">
+                    <ButtonTintedMedium
+                        label="Cancel"
+                        icon="x"
+                        onclick={cancel_generation}
+                    />
+                </div>
             </div>
         </div>
     {/if}
@@ -353,12 +389,32 @@
         align-items: center;
     }
 
-    .loading-container {
+    .background-blur {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loading-content {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 1.5rem;
-        padding: 2rem;
+        gap: 2rem;
+    }
+
+    .loading-indicator {
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        flex-direction: column;
     }
 
     .cancel-button-container {
