@@ -105,6 +105,10 @@
             error("Verification failed: " + e);
         }
     }
+    function clear_search_history() {
+        manifest.clear_search_history();
+        invoke("save_manifest", { manifest: $manifest });
+    }
 </script>
 
 <div class={`sidebar ${$sidebar_open ? "open" : "closed"}`}>
@@ -125,6 +129,26 @@
             <Icon icon="tabler:x" class="icon-medium" style="color: white" />
         </button>
     </div>
+
+    <div class= "clear-history-button">
+    
+        <Icon 
+        icon="tabler:trash" 
+        class="icon-medium" 
+        style="color: white"
+        />
+        <button
+            type="button"
+            class="heading-1 sidebar-item-header white"
+            onclick={clear_search_history}
+            aria-label="Clear search history"
+        >
+            Clear Search History
+        </button>
+
+    </div>
+
+    
     <div class="sidebar-item-container">
         <div class="header">
             <Icon
@@ -214,6 +238,26 @@
         background: none;
         border: none;
         padding: 0;
+    }
+    .clear-history-button {
+        padding: 0rem 0.375rem 1.5rem 0.375rem;
+        display: flex;
+        align-items: center;
+        justify-content: left;
+        background:var(--tint-00);
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font: inherit;
+        
+    }
+    .clear-history-button > button {
+        background: none;
+        border: none;
+        color: var(--white);
+        cursor: pointer;
+        padding: 0.5rem;
+        margin: 0;
+        font-size: 0.95rem;
     }
     .sidebar-item-container {
         display: grid;
