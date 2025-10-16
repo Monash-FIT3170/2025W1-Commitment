@@ -11,6 +11,7 @@
     } from "$lib/metrics";
     import { info, error } from "@tauri-apps/plugin-log";
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
+    import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import { invoke } from "@tauri-apps/api/core";
     import { listen } from "@tauri-apps/api/event";
     import { SvelteMap } from "svelte/reactivity";
@@ -85,6 +86,14 @@
         }
     });
 
+    async function cancel_generation() {
+        try {
+            await invoke("cancel_summary_generation");
+        } catch (e) {
+            error("Error cancelling generation: " + e);
+        }
+    }
+
     async function generate_summaries() {
         loading = true;
         generated_summaries = 0;
@@ -128,10 +137,15 @@
                 }
             } catch (e) {
                 error("Error occurred: " + e);
+                // Check if it was a cancellation
+                if (e && typeof e === "string" && e.includes("cancelled")) {
+                    error_message = "Summary generation was cancelled.";
+                } else {
+                    error_message =
+                        "An error occurred while generating summaries.\n Error: " +
+                        e;
+                }
                 error_flag = true;
-                error_message =
-                    "An error occurred while generating summaries.\n Error: " +
-                    e;
             } finally {
                 loading = false;
                 unlisten_total();
@@ -231,8 +245,6 @@
                 initials: user.username_initials,
                 analysis: analysis,
                 scaling_factor: scaling_factor.toFixed(1),
-                profile_colour: user.profile_colour,
-                initials: user.username_initials,
             };
         })
     );
@@ -261,9 +273,18 @@
         </div>
     {/if}
     {#if loading}
-        <LoadingIndicator
-            displayText={`Generating summaries... (${generated_summaries}/${total_summaries})`}
-        />
+        <div class="loading-container">
+            <LoadingIndicator
+                displayText={`Generating summaries... (${generated_summaries}/${total_summaries})`}
+            />
+            <div class="cancel-button-container">
+                <ButtonTintedMedium
+                    label="Cancel"
+                    icon="x"
+                    onclick={cancel_generation}
+                />
+            </div>
+        </div>
     {/if}
     {#if !loading && !error_flag}
         {#if summaries && summaries.size > 0}
@@ -327,6 +348,20 @@
     }
 
     .button-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 2rem;
+    }
+
+    .cancel-button-container {
         display: flex;
         justify-content: center;
         align-items: center;

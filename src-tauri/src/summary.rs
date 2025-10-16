@@ -3,8 +3,10 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use std::collections::{HashMap, HashSet};
 use std::env;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
-use tauri::Emitter;
+use tauri::{Emitter, State};
 
 #[derive(Clone, serde::Serialize)]
 struct SummaryProgress {
@@ -12,8 +14,28 @@ struct SummaryProgress {
     summary: String,
 }
 
+// Global state for cancellation
+pub struct CancellationState {
+    pub cancelled: Arc<AtomicBool>,
+}
+
+impl Default for CancellationState {
+    fn default() -> Self {
+        Self {
+            cancelled: Arc::new(AtomicBool::new(false)),
+        }
+    }
+}
+
 #[tauri::command]
-pub async fn get_ai_summary(window: tauri::Window, path: &str) -> Result<(), String> {
+pub async fn get_ai_summary(
+    window: tauri::Window,
+    path: &str,
+    cancellation_state: State<'_, CancellationState>,
+) -> Result<(), String> {
+    // Reset cancellation flag at the start
+    cancellation_state.cancelled.store(false, Ordering::SeqCst);
+    
     match get_all_contributors(path) {
         Ok(contributors) => {
             let total = contributors.len();
@@ -27,6 +49,12 @@ pub async fn get_ai_summary(window: tauri::Window, path: &str) -> Result<(), Str
             window.emit("summary-total", total).unwrap();
 
             for (contributor_name, contributor_email) in contributors {
+                // Check if cancelled
+                if cancellation_state.cancelled.load(Ordering::SeqCst) {
+                    log::info!("Summary generation cancelled by user");
+                    return Err("Summary generation cancelled".to_string());
+                }
+                
                 if let Ok(commits) = get_contributor_commits(path, &contributor_name) {
                     if !commits.is_empty() {
                         match summarize_commits(&commits).await {
@@ -61,7 +89,11 @@ pub async fn get_ai_summary_with_config(
     window: tauri::Window,
     path: &str,
     config_json: Value,
+    cancellation_state: State<'_, CancellationState>,
 ) -> Result<(), String> {
+    // Reset cancellation flag at the start
+    cancellation_state.cancelled.store(false, Ordering::SeqCst);
+    
     match get_squashed_commits_by_config(path, config_json.clone()).await {
         Ok(squashed_commits) => {
             let total = squashed_commits.len();
@@ -89,6 +121,12 @@ pub async fn get_ai_summary_with_config(
             }
 
             for (user_name, commit_data) in squashed_commits {
+                // Check if cancelled
+                if cancellation_state.cancelled.load(Ordering::SeqCst) {
+                    log::info!("Summary generation cancelled by user");
+                    return Err("Summary generation cancelled".to_string());
+                }
+                
                 if !commit_data.is_empty() {
                     match summarize_commits(&commit_data).await {
                         Ok(summary) => {
@@ -118,6 +156,12 @@ pub async fn get_ai_summary_with_config(
             Err(msg)
         }
     }
+}
+
+#[tauri::command]
+pub fn cancel_summary_generation(cancellation_state: State<'_, CancellationState>) {
+    cancellation_state.cancelled.store(true, Ordering::SeqCst);
+    log::info!("Cancellation requested for summary generation");
 }
 
 #[tauri::command]
