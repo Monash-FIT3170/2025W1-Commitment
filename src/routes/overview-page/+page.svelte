@@ -205,7 +205,7 @@
             info("Reloading branches and contributors data...");
 
             const new_branches = await load_branches(repo_path);
-            branches = new_branches;
+            branches = new_branches.filter((branch) => branch !== "All");
 
             const new_contributors = await load_commit_data(repo_path);
 

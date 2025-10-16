@@ -156,8 +156,7 @@
     }
 
     .dropdown-list {
-        max-height: calc(
-            6 * 40px);
+        max-height: calc(6 * 40px);
         overflow-y: auto;
         overflow-x: hidden;
     }
