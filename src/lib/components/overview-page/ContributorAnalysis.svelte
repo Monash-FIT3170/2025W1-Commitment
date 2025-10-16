@@ -174,8 +174,9 @@
                     for (const [email, summary] of previous_summaries) {
                         summaries.set(email, summary);
                     }
-                    // Don't show error flag for cancellation - just revert to previous state
-                    error_flag = false;
+                    // Show cancellation message but keep previous summaries visible
+                    error_message = "Summary generation was cancelled.";
+                    error_flag = true;
                 } else {
                     error_message =
                         "An error occurred while generating summaries.\n Error: " +
@@ -294,20 +295,6 @@
 </script>
 
 <main class="container">
-    {#if error_flag}
-        <div class="error-message">
-            {error_message}
-        </div>
-        <div class="button-container">
-            <div>
-                <ButtonPrimaryMedium
-                    label={"Generate AI Summaries"}
-                    onclick={generate_summaries}
-                    disabled={loading}
-                />
-            </div>
-        </div>
-    {/if}
     {#if loading}
         <div class="background-blur">
             <div class="loading-content">
@@ -334,7 +321,12 @@
             </div>
         </div>
     {/if}
-    {#if !loading && !error_flag}
+    {#if !loading}
+        {#if error_flag}
+            <div class="error-message">
+                {error_message}
+            </div>
+        {/if}
         {#if summaries && summaries.size > 0}
             <div class="cards-container">
                 {#each contributors_sorted as person}
