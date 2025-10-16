@@ -282,8 +282,7 @@
                 repo_visited: true,
             },
             ...search_history_array
-        ]
-
+        ].slice(0,10); 
         }
     }
 </script>
