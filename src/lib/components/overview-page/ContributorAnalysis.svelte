@@ -125,6 +125,12 @@
         error_flag = false;
         error_message = "";
 
+        // Store the current summaries before regeneration in case of cancellation
+        const previous_summaries = new Map<string, string>();
+        for (const [email, summary] of summaries) {
+            previous_summaries.set(email, summary);
+        }
+
         const unlisten_total = await listen("summary-total", (event) => {
             total_summaries = event.payload as number;
         });
@@ -163,20 +169,26 @@
                 error("Error occurred: " + e);
                 // Check if it was a cancellation
                 if (e && typeof e === "string" && e.includes("cancelled")) {
-                    error_message = "Summary generation was cancelled.";
+                    // Restore previous summaries from backup
+                    summaries.clear();
+                    for (const [email, summary] of previous_summaries) {
+                        summaries.set(email, summary);
+                    }
+                    // Don't show error flag for cancellation - just revert to previous state
+                    error_flag = false;
                 } else {
                     error_message =
                         "An error occurred while generating summaries.\n Error: " +
                         e;
+                    error_flag = true;
                 }
-                error_flag = true;
             } finally {
                 loading = false;
                 unlisten_total();
                 unlisten_progress();
 
-                // Save summaries to localStorage
-                if (repo_path && summaries.size > 0) {
+                // Save summaries to localStorage only if not cancelled
+                if (repo_path && summaries.size > 0 && !error_flag) {
                     const repo_summaries = new Map<string, string>();
                     for (const [email, summary] of summaries) {
                         repo_summaries.set(email, summary);
