@@ -3,7 +3,7 @@
 
 # gitgauge
 
-**Latest:** {{ R.version | default('') }} — {{ R.date | default('') }}
+**Latest:** {{ R.version | default('') }} — {{ R.date | default('') }}{% if R.draft %} _(draft)_{% endif %}
 
 Contribution analytics for modern classrooms & teams. Visualise commits, additions, deletions and branch activity.
 
