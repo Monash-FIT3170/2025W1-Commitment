@@ -1,8 +1,8 @@
 <script lang="ts">
-    import ButtonPrimaryMedium from "./ButtonPrimaryMedium.svelte";
+    import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import Modal from "$lib/components/overview-page/Modal.svelte";
     import { info } from "@tauri-apps/plugin-log";
-    import LoadingIndicator from "./LoadingIndicator.svelte";
+    import Icon from "@iconify/svelte";
 
     let { show_modal = $bindable(), on_token_add } = $props();
 
