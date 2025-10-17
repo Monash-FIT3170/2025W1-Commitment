@@ -179,6 +179,7 @@
         try {
             if (
                 !repo_url_input.startsWith("/") &&
+                !repo_url_input.startsWith("C:\\") &&
                 !repo_url_input.startsWith("https://")
             ) {
                 verification_error = true;
