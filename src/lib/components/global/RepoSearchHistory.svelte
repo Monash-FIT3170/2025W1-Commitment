@@ -10,6 +10,7 @@
     </script>
 
 <div class="repo-search-history">
+
     {#each stored_repo_url_input as history (history.repo_url)}
         {#if history.repo_visited}
             <button

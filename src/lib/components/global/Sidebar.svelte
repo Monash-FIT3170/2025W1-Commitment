@@ -2,6 +2,7 @@
     import { sidebar_open, close_sidebar } from "$lib/stores/sidebar";
     import Icon from "@iconify/svelte";
     import ApiKeyField from "./APIKeyField.svelte";
+    import { createEventDispatcher } from "svelte";
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
     import { onMount } from "svelte";
     import { info, error } from "@tauri-apps/plugin-log";
@@ -12,6 +13,8 @@
     import { bare_clone, load_branches, load_commit_data } from "$lib/metrics";
     import { goto } from "$app/navigation";
     import { generate_state_object, save_state } from "$lib/utils/localstorage";
+
+    const dispatch = createEventDispatcher();
 
     interface RepoBookmark {
         repo_name: string;
@@ -106,8 +109,7 @@
         }
     }
     function clear_search_history() {
-        manifest.clear_search_history();
-        invoke("save_manifest", { manifest: $manifest });
+        dispatch("clear_history");
     }
 </script>
 

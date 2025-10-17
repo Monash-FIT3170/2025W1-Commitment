@@ -321,6 +321,17 @@
         ...search_history_array
         ].slice(0,10);
     }
+
+    function clear_history() {
+        search_history_array = [];
+
+        if ($manifest && Array.isArray($manifest.repository)) {
+            $manifest.repository = [];
+
+            invoke("save_manifest", { manifest: $manifest });
+                console.error("save_manifest failed:", err);
+        }
+    }
 </script>
 
 <div class="page">
@@ -368,7 +379,7 @@
         </div>
     </main>
 </div>
-<Sidebar />
+<Sidebar on:clear_history={clear_history} />
 
 <!-- Access Token Modal -->
 <AccessTokenModal bind:show_modal on_token_add={handle_token_add} />
