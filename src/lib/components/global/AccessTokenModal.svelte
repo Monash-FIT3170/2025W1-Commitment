@@ -15,6 +15,10 @@
 
     async function handle_add_token() {
         is_loading = true;
+
+        // Force a UI update before proceeding with the heavy operation
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
         try {
             info("Processing Personal Access Token...");
             // Call the parent's callback function if provided
