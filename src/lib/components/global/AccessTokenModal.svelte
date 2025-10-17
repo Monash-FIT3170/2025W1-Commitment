@@ -18,20 +18,21 @@
 
         // Force a UI update before proceeding with the heavy operation
         await new Promise((resolve) => setTimeout(resolve, 0));
-
-        try {
-            info("Processing Personal Access Token...");
-            // Call the parent's callback function if provided
-            if (on_token_add) {
-                await on_token_add(personal_access_token);
+        setTimeout(async () => {
+            try {
+                info("Processing Personal Access Token...");
+                // Call the parent's callback function if provided
+                if (on_token_add) {
+                    await on_token_add(personal_access_token);
+                }
+            } catch (error_message) {
+                error(`Error processing token: ${error_message}`);
+            } finally {
+                is_loading = false;
+                // Close the modal
+                show_modal = false;
             }
-        } catch (error_message) {
-            error(`Error processing token: ${error_message}`);
-        } finally {
-            is_loading = false;
-            // Close the modal
-            show_modal = false;
-        }
+        });
     }
 </script>
 

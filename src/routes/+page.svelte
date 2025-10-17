@@ -164,9 +164,6 @@
     async function handle_verification() {
         loading = true;
 
-        // Force a UI update before proceeding with heavy operations
-        await new Promise((resolve) => setTimeout(resolve, 0));
-
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
         );
