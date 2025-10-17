@@ -16,7 +16,6 @@
         is_loading = true;
 
         // Force a UI update before proceeding with the heavy operation
-        await new Promise((resolve) => setTimeout(resolve, 0));
         setTimeout(async () => {
             try {
                 info("Processing Personal Access Token...");
