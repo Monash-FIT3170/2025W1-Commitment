@@ -249,9 +249,6 @@
         loading = true;
         set_refreshing(true);
 
-        // Force a UI update before proceeding with heavy operations
-        await new Promise((resolve) => setTimeout(resolve, 0));
-
         try {
             info(`Refreshing repository: ${repo_url} at ${repo_path}`);
 
