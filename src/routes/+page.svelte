@@ -156,18 +156,20 @@
     }
 
     async function handle_verification() {
-        loading = true;
+        
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
         );
         reset_verification_result();
-
+        
         if (!repo_url_input.trim()) {
             verification_error = true;
             verification_message = "Please enter a URL/path.";
             return;
         }
-
+        
+        loading = true;
+        
         let source_type = get_source_type(repo_url_input);
 
         let repository_information: {
