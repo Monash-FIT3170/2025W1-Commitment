@@ -23,11 +23,32 @@
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
     import { info, error } from "@tauri-apps/plugin-log";
 
+    let search_history_array = $state<{ repo_name: string; repo_url: string; repo_visited: boolean }[]>([]);
+
+
     // only run on the browser
     onMount(async () => {
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
+
+            const get_time_stamp = (v: any) => {
+                const s = v?.repo_last_accessed ?? v ?? "";
+                const t = Date.parse(s);
+                return isNaN(t) ? 0 : t;
+            }
+
+            search_history_array = (data.repository ?? [])
+                .slice()
+                .sort((a: any, b: any) => get_time_stamp(b) - get_time_stamp(a))
+                .map((item: any) => ({
+                        repo_name: item.name ?? "unknown",
+                        repo_url: item.url ?? "",
+                        repo_visited: item.visited ?? false,
+                        repo_last_accessed: item.last_accessed ?? ""
+                    }
+                )).slice(0, 10);
+
             info("page " + JSON.stringify(data));
         } catch (e: any) {
             let err = typeof e === "string" ? e : (e?.message ?? String(e));
@@ -35,10 +56,30 @@
         }
     });
 
+    $effect(() => {
+        const repos = $manifest["repository"] ?? [];
+
+        const get_time_stamp = (v: any) => {
+            const s = v?.repo_last_accessed ?? v ?? "";
+            const t = Date.parse(s);
+            return isNaN(t) ? 0 : t;
+        };
+
+        search_history_array = repos
+            .slice()
+            .sort((a: any, b: any) => get_time_stamp(b) - get_time_stamp(a))
+            .map((item: any) => ({
+                repo_name: item.name ?? "unknown",
+                repo_url: item.url ?? "",
+                repo_visited: item.visited ?? false,
+                repo_last_accessed: item.last_accessed ?? ""
+            }))
+            .slice(0, 10);
+    });
+
     let profile_image_url = "/mock_profile_img.png";
     let username = "Baaset Moslih";
-    let search_history_array = $state<{ repo_name: string; repo_url: string; repo_visited: boolean; }[]>([]);
-
+  
     interface RepoBookmark {
         repo_name: string;
         repo_url: string;
@@ -238,6 +279,7 @@
             }
 
             await manifest.update_repository_timestamp(url_trimmed);
+            await manifest.visited(url_trimmed);
             await invoke("save_manifest", { manifest: $manifest });
 
             const working_dir = await invoke<string>("get_working_directory");
@@ -270,20 +312,14 @@
                 verification_message = error_message;
             }
         }
-        history_input_verification();
-    }
-
-    function history_input_verification() {
-        if (repo_url_input.trim() !== "") {
-            search_history_array = [
-                {
-                repo_name: repo_url_input.split("/").pop() || "local-repo",
-                repo_url: repo_url_input,
-                repo_visited: true,
-            },
-            ...search_history_array
-        ].slice(0,10); 
-        }
+        search_history_array = [{
+            repo_name: repo_name,
+            repo_url: url_trimmed,
+            repo_visited: true,
+            repo_last_accessed: new Date().toISOString()
+        },
+        ...search_history_array
+        ].slice(0,10);
     }
 </script>
 
@@ -314,18 +350,20 @@
                 error={verification_error}
             />
 
+            
+            <div></div>
+            <!-- Repo Search history list -->
+            <RepoSearchHistory
+                stored_repo_url_input={search_history_array}
+                onclick={select_history_repo}
+            />
+
             <div></div>
 
             <!-- Repo link list -->
             <RepoBookmarkList
                 bookmarked_repos={recent_repos}
                 onclick={select_bookmarked_repo}
-            />
-            <div></div>
-            <!-- Repo Search history list -->
-            <RepoSearchHistory
-                stored_repo_url_input={search_history_array}
-                onclick={select_history_repo}
             />
         </div>
     </main>

@@ -131,6 +131,21 @@ function create_manifest_store() {
             return get({ subscribe }).repository.filter((r) => r.bookmarked);
         },
 
+        visited(url: string): RepoSchema | undefined {
+            let changed: RepoSchema | undefined;
+            update((m) => {
+                const next = m.repository.map((r) => {
+                    if (r.url === url) {
+                        changed = { ...r, visited: true };
+                        return changed!;
+                    }
+                    return r;
+                });
+                return { repository: next };
+            });
+            return changed;
+        },
+
         /** Create a new repository inside of the manifest file */
         async create_repository(
             repo_info: RepositoryInformation,
