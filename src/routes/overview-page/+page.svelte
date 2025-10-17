@@ -280,11 +280,8 @@
     }
 
     async function handle_token_add(token: string) {
-        loading = true;
-
         if (!token || token.trim().length === 0) {
             info("No token entered");
-            loading = false;
             return;
         }
 
@@ -298,8 +295,6 @@
         } else {
             error("Authentication failed, please check your token");
         }
-
-        loading = false;
     }
 
     async function delete_repository() {

@@ -98,7 +98,6 @@
             info("No token entered, keeping modal open");
             verification_message = "Please enter a Personal Access Token";
             verification_error = true;
-            is_loading = false;
             return;
         }
 
@@ -127,7 +126,6 @@
                 message: "",
             });
         }
-        is_loading = false;
     }
 
     function update_progress(progress: string) {
