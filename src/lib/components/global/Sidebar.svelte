@@ -145,7 +145,7 @@
             onclick={clear_search_history}
             aria-label="Clear search history"
         >
-            Clear Search History
+            Clear History & Bookmarks
         </button>
 
     </div>
