@@ -18,8 +18,10 @@
         is_loading = true;
 
         await tick();
+
         try {
             info("Processing Personal Access Token...");
+            await new Promise((resolve) => setTimeout(resolve, 3000)); // delay for 3s
             // Call the parent's callback function if provided
             if (on_token_add) {
                 await on_token_add(personal_access_token);
