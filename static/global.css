@@ -206,3 +206,20 @@ html, body, #app {
     display: flex;
     justify-content: space-between;
 }
+
+.button-primary {
+    color: var(--label-primary) !important;
+}
+
+.button-primary:hover, .button-primary:focus {
+    background-color: var(--tint-03) !important;
+    color: var(--label-secondary) !important;
+}
+
+.button-secondary {
+    color: var(--background-primary) !important;
+}
+
+.button-secondary:hover, .button-secondary:focus {
+    color: var(--background-tertiary) !important;
+}

@@ -71,7 +71,7 @@ toggle button.
         {#if on_refresh}
             <button
                 type="button"
-                class="refresh-btn"
+                class="refresh-btn button-primary"
                 onclick={on_refresh}
                 disabled={refreshing}
                 aria-label="Refresh repository"
@@ -87,7 +87,7 @@ toggle button.
         <!-- bookmark toggle -->
         <button
             type="button"
-            class="bookmark-btn"
+            class="bookmark-btn button-primary"
             onclick={toggle_bookmark}
             aria-pressed={bookmarked}
         >
@@ -101,7 +101,7 @@ toggle button.
         {#if on_delete}
             <button
                 type="button"
-                class="delete-btn"
+                class="delete-btn button-primary"
                 onclick={on_delete}
                 aria-label="Delete repository"
             >

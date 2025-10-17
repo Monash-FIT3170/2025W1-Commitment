@@ -52,10 +52,6 @@
         border-radius: 8px;
     }
 
-    button:hover {
-        background-color: var(--fill-02);
-    }
-
     button:active {
         background-color: var(--fill-00);
     }
@@ -65,8 +61,17 @@
         cursor: not-allowed;
     }
 
+    button:hover, button:focus {
+        background-color: var(--fill-03);
+        color: var(--background-tertiary) !important;
+    }
+
     button.secondary {
         background-color: var(--background-secondary);
         color: var(--label-primary);
+    }
+
+    button.secondary:hover, button.secondary:focus {
+        color: var(--label-secondary) !important;
     }
 </style>
