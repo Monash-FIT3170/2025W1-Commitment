@@ -4,6 +4,7 @@
     import { info, error } from "@tauri-apps/plugin-log";
     import LoadingIndicator from "./LoadingIndicator.svelte";
     import Icon from "@iconify/svelte";
+    import { tick } from "svelte";
 
     let { 
         show_modal = $bindable(), 
@@ -16,22 +17,20 @@
     async function handle_add_token() {
         is_loading = true;
 
-        // Force a UI update before proceeding with the heavy operation
-        setTimeout(async () => {
-            try {
-                info("Processing Personal Access Token...");
-                // Call the parent's callback function if provided
-                if (on_token_add) {
-                    await on_token_add(personal_access_token);
-                }
-            } catch (error_message) {
-                error(`Error processing token: ${error_message}`);
-            } finally {
-                is_loading = false;
-                // Close the modal
-                show_modal = false;
+        await tick();
+        try {
+            info("Processing Personal Access Token...");
+            // Call the parent's callback function if provided
+            if (on_token_add) {
+                await on_token_add(personal_access_token);
             }
-        });
+        } catch (error_message) {
+            error(`Error processing token: ${error_message}`);
+        } finally {
+            is_loading = false;
+            // Close the modal
+            show_modal = false;
+        }
     }
 </script>
 
