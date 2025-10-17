@@ -323,6 +323,7 @@
         display: flex;
         align-items: center;
         height: 22px;
+        justify-content: flex-start;
     }
     .sidebar-item-header {
         padding: 0px 6px;
