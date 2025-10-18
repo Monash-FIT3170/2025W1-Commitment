@@ -35,7 +35,6 @@
             : source_type === 1
               ? "gitlab"
               : "folder-code";
-    let show_modal = $state(false); //TODO: REMOVE
 
     let show_config_modal = $state(false);
     let config_error = $state(false);
@@ -52,7 +51,7 @@
 
     // Add effect to manage body class when modal state changes
     $effect(() => {
-        if (show_modal) {
+        if (show_config_modal || show_regex_modal) {
             document.body.classList.add("modal-open");
         } else {
             document.body.classList.remove("modal-open");
@@ -107,7 +106,7 @@
                         contributors = result;
                         manifest.update_email_mapping(json, repo_url);
                         await invoke("save_manifest", { manifest: $manifest });
-                        show_modal = false;
+                        show_config_modal = false;
                     } catch (e) {
                         error("Error applying config: " + e);
                         config_error_msg =
@@ -157,7 +156,7 @@
             // Update contributors without email mapping
             contributors = [...new_contributors];
 
-            show_modal = false;
+            show_config_modal = false;
         } catch (e) {
             error("Error removing email mapping: " + e);
         }
@@ -201,36 +200,27 @@
                 />
             {/snippet}
 
-            {#snippet header()}Enter Regex Statement{/snippet}
+            {#snippet header()}Exclude Commits Using Regex{/snippet}
 
             {#snippet body()}
                 <div class="regex-modal-content">
                     <p class="label-primary body">
-                        Please enter your regex statement for excluded elements.
-                        <br />
-                        <a
-                            href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions/Cheatsheet"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="regex-link"
-                        >
-                            View regex syntax guide
-                        </a>
+                        Please enter your regex statement to exclude commits with certain elements found in the commit messages.
+                        <br>
                     </p>
 
                     <!-- Multiline input -->
-                    <textarea>
-                        bind:value={regex_input}
-                        placeholder="Enter your regex pattern here..."
+                    <textarea
                         class="regex-textarea"
-                        rows="6"
-                    </textarea>
+                        bind:value={regex_input}
+                        placeholder="Enter your regex statement here..."
+                    ></textarea>
 
                     <!-- Buttons -->
                     <div class="modal-button">
-                        <ButtonPrimaryMedium
+                        <ButtonTintedMedium
                             label="Cancel"
-                            variant="secondary"
+                            width="3rem"
                             onclick={() => {
                                 regex_input = saved_regex; 
                                 show_regex_modal = false;
@@ -239,7 +229,7 @@
 
                         <ButtonPrimaryMedium
                             label="Save"
-                            icon="check"
+                            icon="device-floppy"
                             onclick={save_regex}
                         />
                     </div>
@@ -295,7 +285,7 @@
                     <ButtonPrimaryMedium
                         label="Cancel"
                         variant="secondary"
-                        onclick={() => (show_modal = false)}
+                        onclick={() => (show_config_modal = false)}
                     />
                     {#if $manifest.repository.find((r) => r.url === repo_url)?.email_mapping}
                         <ButtonPrimaryMedium
@@ -440,4 +430,35 @@
     :global(body.modal-open) {
         overflow: hidden;
     }
+
+.regex-textarea {
+    width: 100%;
+    min-height: 8rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--fill-03);
+    background: var(--background-tertiary);
+    color: var(--label-primary); 
+    font-size: 0.8rem;
+    resize: vertical;
+    box-sizing: border-box;
+    transition: border 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.regex-textarea:hover {
+    border-color: var(--fill-02);
+    background: var(--background-secondary);
+}
+
+.regex-textarea:focus {
+    border-color: var(--accent-primary);
+    background: var(--background-secondary);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-primary-10);
+}
+
+
+.regex-textarea::placeholder {
+    color: var(--label-secondary);
+    opacity: 0.7;
+}
 </style>
