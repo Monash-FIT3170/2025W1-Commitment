@@ -40,6 +40,14 @@
         }
     }
 
+    function handle_input_focus() {
+        editing = true;
+    }
+
+    function handle_input_blur() {
+        editing = false;
+    }
+
     async function toggle_edit() {
         const input_field = document.getElementById(
             "api-input-field"
@@ -89,6 +97,8 @@ repository URL.
         placeholder="enter your gemini API key..."
         bind:value={api_input}
         onkeydown={handle_input_keydown}
+        onfocus={handle_input_focus}
+        onblur={handle_input_blur}
     />
     <button class="api-button btn-icon" onclick={toggle_edit}>
         {#if !editing}
