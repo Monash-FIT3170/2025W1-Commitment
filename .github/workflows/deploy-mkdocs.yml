@@ -51,7 +51,6 @@
               else
                 git add docs/data/releases.yml
                 git commit -m "chore: sync releases.yml from latest GitHub Release"
-                git push
               fi
 
           - name: Deploy MkDocs Site
