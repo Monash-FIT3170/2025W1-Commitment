@@ -27,7 +27,8 @@
         start_date = $bindable(),
         end_date = $bindable(),
         contributors = $bindable<Contributor[]>([]),
-        regex_is_active = $bindable<Boolean>()
+        regex_is_active = $bindable<Boolean>(),
+        config_is_active = $bindable<Boolean>()
     } = $props();
 
 
@@ -74,6 +75,7 @@
 
     function trigger_file_input() {
         file_input.click();
+        config_is_active = true;
     }
 
     async function handle_file_change(event: Event) {
@@ -163,6 +165,7 @@
             // Update contributors without email mapping
             contributors = [...new_contributors];
 
+            config_is_active = false;
             show_config_modal = false;
         } catch (e) {
             error("Error removing email mapping: " + e);
@@ -269,18 +272,32 @@
 
         <!-- config btn -->
         <div class="config-btn heading-btn">
-            <ButtonTintedMedium
-                label="Config"
-                icon="settings-2"
-                label_class="body-accent"
-                icon_first={true}
-                width="4rem"
-                onclick={() => {
-                    show_config_modal = true;
-                    config_error = false;
-                    config_error_msg = "";
-                }}
-            />
+            {#if config_is_active}
+                <ButtonPrimaryMedium
+                    label="Config"
+                    icon="settings-2"
+                    onclick={() => {
+                        show_config_modal = true;
+                        config_error = false;
+                        config_error_msg = "";
+                    }}
+                />
+            {:else}
+                <ButtonTintedMedium
+                    label="Config"
+                    icon="settings-2"
+                    label_class="body-accent"
+                    icon_first={true}
+                    width="4rem"
+                    onclick={() => {
+                        show_config_modal = true;
+                        config_error = false;
+                        config_error_msg = "";
+                    }}
+                />
+
+
+            {/if}
         </div>
 
         <!-- Config Modal -->
