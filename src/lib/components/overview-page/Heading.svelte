@@ -35,11 +35,20 @@
             : source_type === 1
               ? "gitlab"
               : "folder-code";
-    let show_modal = $state(false);
+    let show_modal = $state(false); //TODO: REMOVE
+
     let show_config_modal = $state(false);
-    let show_regex_modal = $state(false);
     let config_error = $state(false);
     let config_error_msg = $state("");
+
+    let show_regex_modal = $state(false);
+    let regex_input = $state(""); 
+    let saved_regex = $state("");
+
+    function save_regex() {
+        saved_regex = regex_input.trim();
+        show_regex_modal = false;
+    }
 
     // Add effect to manage body class when modal state changes
     $effect(() => {
@@ -186,25 +195,56 @@
         <Modal bind:show_modal={show_regex_modal}>
             {#snippet icon()}
                 <Icon
-                    icon={`tabler:regex`}
+                    icon="tabler:regex"
                     class="icon-medium"
                     style="color: currentColor"
                 />
             {/snippet}
-            {#snippet header()}
-                Enter Regex Statement
-            {/snippet}
+
+            {#snippet header()}Enter Regex Statement{/snippet}
 
             {#snippet body()}
-                <p class="label-primary body">
-                    Please enter your regex statement of exlcuded elements. 
-                    Find instuctions on how to form regex statements here
-                </p>
-                <p class="label-primary body">
-                    extended text box placeholder<br><br><br>
-                </p>
-            {/snippet}
+                <div class="regex-modal-content">
+                    <p class="label-primary body">
+                        Please enter your regex statement for excluded elements.
+                        <br />
+                        <a
+                            href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions/Cheatsheet"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="regex-link"
+                        >
+                            View regex syntax guide
+                        </a>
+                    </p>
 
+                    <!-- Multiline input -->
+                    <textarea>
+                        bind:value={regex_input}
+                        placeholder="Enter your regex pattern here..."
+                        class="regex-textarea"
+                        rows="6"
+                    </textarea>
+
+                    <!-- Buttons -->
+                    <div class="modal-button">
+                        <ButtonPrimaryMedium
+                            label="Cancel"
+                            variant="secondary"
+                            onclick={() => {
+                                regex_input = saved_regex; 
+                                show_regex_modal = false;
+                            }}
+                        />
+
+                        <ButtonPrimaryMedium
+                            label="Save"
+                            icon="check"
+                            onclick={save_regex}
+                        />
+                    </div>
+                </div>
+            {/snippet}
         </Modal>
 
 
