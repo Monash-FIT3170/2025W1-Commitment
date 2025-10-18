@@ -61,7 +61,8 @@
         cursor: not-allowed;
     }
 
-    button:hover, button:focus {
+    button:hover,
+    button:focus {
         background-color: var(--fill-03);
         color: var(--background-tertiary) !important;
     }
@@ -71,7 +72,8 @@
         color: var(--label-primary);
     }
 
-    button.secondary:hover, button.secondary:focus {
+    button.secondary:hover,
+    button.secondary:focus {
         color: var(--label-secondary) !important;
     }
 </style>

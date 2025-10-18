@@ -156,20 +156,19 @@
     }
 
     async function handle_verification() {
-        
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
         );
         reset_verification_result();
-        
+
         if (!repo_url_input.trim()) {
             verification_error = true;
             verification_message = "Please enter a URL/path.";
             return;
         }
-        
+
         loading = true;
-        
+
         let source_type = get_source_type(repo_url_input);
 
         let repository_information: {
@@ -179,6 +178,18 @@
             repo: string;
         };
         try {
+            if (
+                !repo_url_input.startsWith("/") &&
+                !repo_url_input.startsWith("C:\\") &&
+                !repo_url_input.startsWith("https://")
+            ) {
+                verification_error = true;
+                verification_message =
+                    "Please enter a valid URL/path. (Prefix with https:// or /)";
+                loading = false;
+                return;
+            }
+
             if (source_type === 2) {
                 let remote_url = await invoke<string>(
                     "get_local_repo_information",
