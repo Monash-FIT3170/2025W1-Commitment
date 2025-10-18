@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { on_modal_open } from "$lib/stores/dropdown";
 
     let {
         show_modal = $bindable(false),
@@ -35,7 +36,11 @@
     });
 
     $effect(() => {
-        if (show_modal) queueMicrotask(() => panel_el?.focus());
+        if (show_modal) {
+            // Close all dropdowns when modal opens
+            on_modal_open();
+            queueMicrotask(() => panel_el?.focus());
+        }
     });
 </script>
 

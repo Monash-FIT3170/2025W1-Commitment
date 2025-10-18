@@ -1,6 +1,11 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
     import Icon from "@iconify/svelte";
+    import {
+        open_dropdown_id,
+        open_dropdown,
+        close_all_dropdowns,
+    } from "$lib/stores/dropdown";
 
     let {
         options = [],
@@ -15,15 +20,32 @@
         get_label?: (opt: any) => string;
     } = $props();
 
+    // Generate a unique ID for this dropdown instance
+    const dropdown_id = Math.random().toString(36).substring(2, 11);
+
     let open = $state(false);
 
+    // Subscribe to global dropdown state
+    $effect(() => {
+        const unsubscribe = open_dropdown_id.subscribe((active_id) => {
+            open = active_id === dropdown_id;
+        });
+        return unsubscribe;
+    });
+
     function toggle_dropdown() {
-        if (!disabled) open = !open;
+        if (!disabled) {
+            if (open) {
+                close_all_dropdowns();
+            } else {
+                open_dropdown(dropdown_id);
+            }
+        }
     }
 
     function select_option(option: any) {
         selected = option;
-        open = false;
+        close_all_dropdowns();
     }
 
     function handle_click_outside(event: MouseEvent) {
@@ -31,7 +53,7 @@
             !event.target ||
             !(event.target as HTMLElement).closest(".dropdown-wrapper")
         ) {
-            open = false;
+            close_all_dropdowns();
         }
     }
 

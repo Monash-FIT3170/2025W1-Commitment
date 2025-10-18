@@ -5,6 +5,11 @@
     import Icon from "@iconify/svelte";
     import { TauriEvent } from "@tauri-apps/api/event";
     import { info } from "@tauri-apps/plugin-log";
+    import {
+        open_dropdown_id,
+        open_dropdown,
+        close_all_dropdowns,
+    } from "$lib/stores/dropdown";
 
     let {
         start = $bindable(),
@@ -35,16 +40,41 @@
     let input_elem: HTMLInputElement;
     let picker: flatpickr.Instance;
 
+    // Generate a unique ID for this calendar instance
+    const calendar_id = Math.random().toString(36).substring(2, 11);
+    let calendar_is_open = $state(false);
+
     let displayLabel = $derived(
         start && end ? `${start} → ${end}` : "Select dates"
     );
+
+    // Subscribe to global dropdown state to close calendar when other dropdowns open
+    $effect(() => {
+        const unsubscribe = open_dropdown_id.subscribe((active_id) => {
+            if (
+                active_id !== null &&
+                active_id !== calendar_id &&
+                picker &&
+                calendar_is_open
+            ) {
+                picker.close();
+            }
+        });
+        return unsubscribe;
+    });
 
     onMount(() => {
         picker = flatpickr(input_elem, {
             mode: "range",
             dateFormat: date_format,
             defaultDate: [start, end].filter(Boolean),
+            onOpen: () => {
+                calendar_is_open = true;
+                open_dropdown(calendar_id);
+            },
             onClose: (selected_dates) => {
+                calendar_is_open = false;
+                close_all_dropdowns();
                 if (selected_dates.length === 2) {
                     const [s, e] = selected_dates.map((d) =>
                         flatpickr.formatDate(d, date_format)
@@ -61,7 +91,11 @@
     });
 
     function open() {
-        if (!disabled) picker.open();
+        if (!disabled) {
+            // Close any other open dropdowns first
+            close_all_dropdowns();
+            picker.open();
+        }
     }
 
     function reset_dates() {
@@ -69,6 +103,7 @@
         end = "";
         dispatch("change", { start, end });
         picker.clear();
+        close_all_dropdowns();
     }
 </script>
 
