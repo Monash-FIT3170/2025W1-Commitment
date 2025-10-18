@@ -10,7 +10,9 @@
         get_user_total_commits,
     } from "$lib/metrics";
     import { info, error } from "@tauri-apps/plugin-log";
+    import { onDestroy } from "svelte";
     import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
+    import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import { invoke } from "@tauri-apps/api/core";
     import { listen } from "@tauri-apps/api/event";
     import { SvelteMap } from "svelte/reactivity";
@@ -44,11 +46,34 @@
 
     let error_flag = $state(false);
     let error_message = $state("");
+    let loadingImageIndex = $state(0);
 
     let summaries = new SvelteMap<string, string>();
 
     // Store summaries in localStorage for persistence
     let summaries_cache = $state<Map<string, Map<string, string>>>(new Map());
+
+    // Loading animation interval
+    let loadingIntervalId: number | undefined;
+
+    $effect(() => {
+        if (loading) {
+            loadingIntervalId = window.setInterval(() => {
+                loadingImageIndex = (loadingImageIndex + 1) % 4;
+            }, 500);
+        } else {
+            if (loadingIntervalId) {
+                clearInterval(loadingIntervalId);
+                loadingIntervalId = undefined;
+            }
+        }
+    });
+
+    onDestroy(() => {
+        if (loadingIntervalId) {
+            clearInterval(loadingIntervalId);
+        }
+    });
 
     // Load existing summaries from localStorage when component initializes
     $effect(() => {
@@ -85,12 +110,26 @@
         }
     });
 
+    async function cancel_generation() {
+        try {
+            await invoke("cancel_summary_generation");
+        } catch (e) {
+            error("Error cancelling generation: " + e);
+        }
+    }
+
     async function generate_summaries() {
         loading = true;
         generated_summaries = 0;
         total_summaries = 0;
         error_flag = false;
         error_message = "";
+
+        // Store the current summaries before regeneration in case of cancellation
+        const previous_summaries = new Map<string, string>();
+        for (const [email, summary] of summaries) {
+            previous_summaries.set(email, summary);
+        }
 
         const unlisten_total = await listen("summary-total", (event) => {
             total_summaries = event.payload as number;
@@ -128,17 +167,29 @@
                 }
             } catch (e) {
                 error("Error occurred: " + e);
-                error_flag = true;
-                error_message =
-                    "An error occurred while generating summaries.\n Error: " +
-                    e;
+                // Check if it was a cancellation
+                if (e && typeof e === "string" && e.includes("cancelled")) {
+                    // Restore previous summaries from backup
+                    summaries.clear();
+                    for (const [email, summary] of previous_summaries) {
+                        summaries.set(email, summary);
+                    }
+                    // Show cancellation message but keep previous summaries visible
+                    error_message = "Summary generation was cancelled.";
+                    error_flag = true;
+                } else {
+                    error_message =
+                        "An error occurred while generating summaries.\n Error: " +
+                        e;
+                    error_flag = true;
+                }
             } finally {
                 loading = false;
                 unlisten_total();
                 unlisten_progress();
 
-                // Save summaries to localStorage
-                if (repo_path && summaries.size > 0) {
+                // Save summaries to localStorage only if not cancelled
+                if (repo_path && summaries.size > 0 && !error_flag) {
                     const repo_summaries = new Map<string, string>();
                     for (const [email, summary] of summaries) {
                         repo_summaries.set(email, summary);
@@ -231,8 +282,6 @@
                 initials: user.username_initials,
                 analysis: analysis,
                 scaling_factor: scaling_factor.toFixed(1),
-                profile_colour: user.profile_colour,
-                initials: user.username_initials,
             };
         })
     );
@@ -246,26 +295,38 @@
 </script>
 
 <main class="container">
-    {#if error_flag}
-        <div class="error-message">
-            {error_message}
-        </div>
-        <div class="button-container">
-            <div>
-                <ButtonPrimaryMedium
-                    label={"Generate AI Summaries"}
-                    onclick={generate_summaries}
-                    disabled={loading}
-                />
+    {#if loading}
+        <div class="background-blur">
+            <div class="loading-content">
+                <div class="loading-indicator">
+                    <img
+                        src="/loading-indicators/loading-{loadingImageIndex +
+                            1}.svg"
+                        alt="loading..."
+                        height="48"
+                        width="48"
+                        class="loading-image"
+                    />
+                    <div class="display-body">
+                        Generating summaries... ({generated_summaries}/{total_summaries})
+                    </div>
+                </div>
+                <div class="cancel-button-container">
+                    <ButtonTintedMedium
+                        label="Cancel"
+                        icon="x"
+                        onclick={cancel_generation}
+                    />
+                </div>
             </div>
         </div>
     {/if}
-    {#if loading}
-        <LoadingIndicator
-            displayText={`Generating summaries... (${generated_summaries}/${total_summaries})`}
-        />
-    {/if}
-    {#if !loading && !error_flag}
+    {#if !loading}
+        {#if error_flag}
+            <div class="error-message">
+                {error_message}
+            </div>
+        {/if}
         {#if summaries && summaries.size > 0}
             <div class="cards-container">
                 {#each contributors_sorted as person}
@@ -327,6 +388,40 @@
     }
 
     .button-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .background-blur {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loading-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .loading-indicator {
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cancel-button-container {
         display: flex;
         justify-content: center;
         align-items: center;

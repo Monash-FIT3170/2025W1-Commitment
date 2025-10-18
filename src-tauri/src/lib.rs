@@ -25,6 +25,7 @@ pub fn run() {
         .plugin(tauri_plugin_log::Builder::new().build())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+        .manage(summary::CancellationState::default())
         .invoke_handler(tauri::generate_handler![
             branches::get_branch_names,
             contributor::get_contributor_info,
@@ -40,6 +41,7 @@ pub fn run() {
             manifest::save_manifest,
             summary::get_ai_summary,
             summary::get_ai_summary_with_config,
+            summary::cancel_summary_generation,
             summary::gemini_key_validation,
             summary::check_key_set,
             manifest::get_working_directory,
