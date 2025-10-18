@@ -27,7 +27,9 @@
         start_date = $bindable(),
         end_date = $bindable(),
         contributors = $bindable<Contributor[]>([]),
+        regex_is_active = $bindable<Boolean>()
     } = $props();
+
 
     let source_name =
         source_type === 0
@@ -47,6 +49,11 @@
     function save_regex() {
         saved_regex = regex_input.trim();
         show_regex_modal = false;
+        if (saved_regex.length > 0) {
+            regex_is_active = true;
+        } else {
+            regex_is_active = false;
+        }
     }
 
     // Add effect to manage body class when modal state changes
@@ -178,16 +185,27 @@
 
         <!-- regex btn -->
         <div class="regex-btn heading-btn">
-            <ButtonTintedMedium
-                label="Regex"
-                icon="regex"
-                label_class="body-accent"
-                icon_first={true}
-                width="4rem"
-                onclick={() => {
-                    show_regex_modal=true;
-                }}
-            />
+            {#if regex_is_active}
+                <ButtonPrimaryMedium
+                    label="Regex"
+                    icon="regex"
+                    variant = "primary"
+                    onclick={() => {
+                        show_regex_modal = true;
+                    }}
+                />
+            {:else}
+                <ButtonTintedMedium
+                    label="Regex"
+                    icon="regex"
+                    label_class="body-accent"
+                    icon_first={true}
+                    width="4rem"
+                    onclick={() => {
+                        show_regex_modal = true;
+                    }}
+                />
+            {/if}
         </div>
 
         <!-- Regex Modal -->
@@ -220,12 +238,23 @@
                     <div class="modal-button">
                         <ButtonTintedMedium
                             label="Cancel"
-                            width="3rem"
+                            icon="x"
+                            width="4rem"
                             onclick={() => {
                                 regex_input = saved_regex; 
                                 show_regex_modal = false;
                             }}
                         />
+                        {#if regex_input.length != 0}
+                            <ButtonTintedMedium
+                                label="Clear Regex Statement"
+                                width="10rem"
+                                icon="trash"
+                                onclick={() => {
+                                    regex_input = "";
+                                }}
+                            />
+                        {/if}
 
                         <ButtonPrimaryMedium
                             label="Save"
@@ -282,15 +311,19 @@
                 <MappingDisplay {repo_url} />
 
                 <div class="modal-button">
-                    <ButtonPrimaryMedium
+                    <ButtonTintedMedium
                         label="Cancel"
-                        variant="secondary"
-                        onclick={() => (show_config_modal = false)}
+                        icon="x"
+                        icon_first={true}
+                        width="4rem"
+                        onclick={() => 
+                            show_config_modal = false
+                        }
                     />
                     {#if $manifest.repository.find((r) => r.url === repo_url)?.email_mapping}
-                        <ButtonPrimaryMedium
+                        <ButtonTintedMedium
                             label="Remove Mapping"
-                            variant="secondary"
+                            width="8rem"
                             icon="trash"
                             onclick={handle_remove_mapping}
                         />
