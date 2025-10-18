@@ -56,8 +56,7 @@ This is a dropdown component that allows users to select a repository type.
     .dropdown-btn {
         width: 100%;
         height: inherit;
-        padding: 0.625rem 0.75rem 0.5rem 0rem;
-        background: var(--tint-00);
+        background: transparent;
         border: none;
         display: flex;
         align-items: center;

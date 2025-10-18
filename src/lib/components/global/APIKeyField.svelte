@@ -99,7 +99,7 @@ repository URL.
             />
         {:else}
             <Icon
-                icon={"tabler:circle-arrow-right"}
+                icon={"tabler:device-floppy"}
                 class="icon-medium"
                 style="color: white"
             />
