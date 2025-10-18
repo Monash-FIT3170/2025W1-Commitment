@@ -56,9 +56,14 @@ export async function bare_clone(
     source: string,
     owner: string,
     repo: string,
-    source_type: 0 | 1 | 2
+    source_type: 0 | 1 | 2,
+    depth?: number | null
 ): Promise<string> {
     const repo_url = `${source}/${owner}/${repo}`;
+    const working_dir = await invoke<string>("get_working_directory");
+    const repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
+
+    const depth_value = depth && depth > 0 ? depth : null;
 
     try {
         const working_dir = await invoke<string>("get_working_directory");
@@ -66,6 +71,7 @@ export async function bare_clone(
         await invoke("bare_clone", {
             url: repo_url,
             path: repo_path,
+            depth: depth_value,
         });
         return repo_path;
     } catch (err) {
@@ -77,7 +83,7 @@ export async function bare_clone(
         if (error_message.includes("remote authentication required")) {
             const working_dir = await invoke<string>("get_working_directory");
             repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
-            show_token_modal(error_message, repo_url, repo_path);
+            show_token_modal(error_message, repo_url, repo_path, depth_value);
             return repo_path;
         }
 

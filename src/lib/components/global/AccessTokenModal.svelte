@@ -8,6 +8,13 @@
 
     let personal_access_token = $state("");
 
+    // Clear token input when modal is opened
+    $effect(() => {
+        if (show_modal) {
+            personal_access_token = "";
+        }
+    });
+
     function handle_add_token() {
         info("Processing Personal Access Token...");
 
@@ -16,8 +23,9 @@
             on_token_add(personal_access_token);
         }
 
-        // Close the modal
-        show_modal = false;
+        // Don't automatically close the modal here - let the parent handle it
+        // The parent will close it after successful authentication
+        // or keep it open if authentication fails
     }
 </script>
 

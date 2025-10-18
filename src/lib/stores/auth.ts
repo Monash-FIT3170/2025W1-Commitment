@@ -6,6 +6,7 @@ export interface AuthError {
     message: string;
     repo_url?: string;
     repo_path?: string;
+    depth?: number | null;
 }
 
 export const auth_error = writable<AuthError>({
@@ -16,13 +17,15 @@ export const auth_error = writable<AuthError>({
 export function show_token_modal(
     message: string,
     repo_url?: string,
-    repo_path?: string
+    repo_path?: string,
+    depth?: number | null
 ) {
     auth_error.set({
         needs_token: true,
         message,
         repo_url,
         repo_path,
+        depth,
     });
 
     // Throw an error to stop the current execution flow
@@ -55,11 +58,14 @@ export async function retry_clone_with_token(token: string): Promise<boolean> {
     const repo_url = current_error.repo_url;
     const repo_path = current_error.repo_path;
 
+    const depth = current_error.depth;
+
     try {
         await invoke("try_clone_with_token", {
             url: repo_url,
             path: repo_path,
             token: token,
+            depth: depth,
         });
 
         info("Repository cloned successfully with token");
@@ -68,13 +74,14 @@ export async function retry_clone_with_token(token: string): Promise<boolean> {
         hide_token_modal();
         return true;
     } catch (e) {
-        error("Clone with token failed:", e);
+        error("Clone with token failed:", String(e));
         // Update the error message but keep modal open
         auth_error.set({
             needs_token: true,
             message: String(e),
             repo_url: repo_url,
             repo_path: repo_path,
+            depth: depth,
         });
         return false;
     }
