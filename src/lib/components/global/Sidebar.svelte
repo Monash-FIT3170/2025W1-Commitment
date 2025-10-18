@@ -189,7 +189,7 @@
             <h1 class="title sidebar-title-text white">Settings</h1>
         </div>
         <button
-            class="close-button button-primary"
+            class="close-button btn-icon"
             onclick={close_sidebar}
             aria-label="Close sidebar"
         >

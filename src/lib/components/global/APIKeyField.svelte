@@ -90,7 +90,7 @@ repository URL.
         bind:value={api_input}
         onkeydown={handle_input_keydown}
     />
-    <button class="api-button button-primary" onclick={toggle_edit}>
+    <button class="api-button btn-icon" onclick={toggle_edit}>
         {#if !editing}
             <Icon
                 icon={"tabler:pencil"}
