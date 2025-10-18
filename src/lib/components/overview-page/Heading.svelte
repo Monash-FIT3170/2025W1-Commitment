@@ -166,6 +166,23 @@
             </div>
         </div>
 
+        <!-- regex btn -->
+        <div class="regex-btn heading-btn">
+            <ButtonTintedMedium
+                label="Regex"
+                icon="regex"
+                label_class="body-accent"
+                icon_first={true}
+                width="4rem"
+                onclick={() => {
+                    show_modal = true;
+                    config_error = false;
+                    config_error_msg = "";
+                }}
+            />
+        
+        </div>
+
         <!-- config btn -->
         <div class="config-btn heading-btn">
             <ButtonTintedMedium
@@ -275,12 +292,16 @@
 
     .top-container {
         display: grid;
-        grid-template-columns: 1fr auto auto auto;
+        grid-template-columns: 1fr auto auto auto auto;
         grid-template-areas:
-            "repo-path config branch calendar"
-            "subtitle subtitle subtitle heading-btn-spacer";
+            "repo-path regex config branch calendar"
+            "subtitle subtitle subtitle subtitle heading-btn-spacer";
         align-items: center;
         column-gap: 1rem;
+    }
+
+    .regex-btn {
+        grid-area: regex;
     }
 
     .repo-path-container {
