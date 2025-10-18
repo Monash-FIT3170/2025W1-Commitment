@@ -36,6 +36,8 @@
               ? "gitlab"
               : "folder-code";
     let show_modal = $state(false);
+    let show_config_modal = $state(false);
+    let show_regex_modal = $state(false);
     let config_error = $state(false);
     let config_error_msg = $state("");
 
@@ -175,13 +177,36 @@
                 icon_first={true}
                 width="4rem"
                 onclick={() => {
-                    show_modal = true;
-                    config_error = false;
-                    config_error_msg = "";
+                    show_regex_modal=true;
                 }}
             />
-        
         </div>
+
+        <!-- Regex Modal -->
+        <Modal bind:show_modal={show_regex_modal}>
+            {#snippet icon()}
+                <Icon
+                    icon={`tabler:regex`}
+                    class="icon-medium"
+                    style="color: currentColor"
+                />
+            {/snippet}
+            {#snippet header()}
+                Enter Regex Statement
+            {/snippet}
+
+            {#snippet body()}
+                <p class="label-primary body">
+                    Please enter your regex statement of exlcuded elements. 
+                    Find instuctions on how to form regex statements here
+                </p>
+                <p class="label-primary body">
+                    extended text box placeholder<br><br><br>
+                </p>
+            {/snippet}
+
+        </Modal>
+
 
         <!-- config btn -->
         <div class="config-btn heading-btn">
@@ -192,15 +217,15 @@
                 icon_first={true}
                 width="4rem"
                 onclick={() => {
-                    show_modal = true;
+                    show_config_modal = true;
                     config_error = false;
                     config_error_msg = "";
                 }}
             />
         </div>
 
-        <!-- Modal -->
-        <Modal bind:show_modal>
+        <!-- Config Modal -->
+        <Modal bind:show_modal={show_config_modal}>
             {#snippet icon()}
                 <Icon
                     icon={`tabler:settings-2`}
