@@ -156,7 +156,6 @@
     }
 
     async function handle_verification() {
-        loading = true;
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
         );
@@ -167,6 +166,8 @@
             verification_message = "Please enter a URL/path.";
             return;
         }
+
+        loading = true;
 
         let source_type = get_source_type(repo_url_input);
 
