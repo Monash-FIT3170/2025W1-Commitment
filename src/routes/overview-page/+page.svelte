@@ -52,7 +52,7 @@
 
     let manifest_state = $state<ManifestSchema>({ repository: [] });
 
-    let regex_query = $state("feat:");
+    let regex_query = $state<string | undefined>("feat:");
 
     // Subscribe to manifest store
     $effect(() => {
@@ -455,6 +455,7 @@
                 bind:selected_criteria
                 {aggregation_options}
                 bind:selected_aggregation
+                querying_msgs={regex_query !== undefined}
             />
         {/key}
     {:else if selected_view === "analysis"}
