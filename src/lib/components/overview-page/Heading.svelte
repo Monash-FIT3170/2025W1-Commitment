@@ -59,6 +59,10 @@
 
     // Add effect to manage body class when modal state changes
     $effect(() => {
+        const repo_entry = $manifest.repository.find((r) => r.url === repo_url);
+        config_is_active = !!repo_entry?.email_mapping;
+
+
         if (show_config_modal || show_regex_modal) {
             document.body.classList.add("modal-open");
         } else {
