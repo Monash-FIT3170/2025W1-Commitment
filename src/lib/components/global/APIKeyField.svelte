@@ -44,10 +44,6 @@
         editing = true;
     }
 
-    function handle_input_blur() {
-        editing = false;
-    }
-
     async function toggle_edit() {
         const input_field = document.getElementById(
             "api-input-field"
@@ -56,6 +52,7 @@
             let error = await on_submit();
             if (!error) {
                 api_input = "";
+                editing = false; // Set to false after successful submit to show edit icon
                 return;
             } else {
                 input_field.disabled = true;
@@ -98,7 +95,6 @@ repository URL.
         bind:value={api_input}
         onkeydown={handle_input_keydown}
         onfocus={handle_input_focus}
-        onblur={handle_input_blur}
     />
     <button class="api-button btn-icon" onclick={toggle_edit}>
         {#if !editing}
