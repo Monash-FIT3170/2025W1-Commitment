@@ -25,6 +25,12 @@
 
     // only run on the browser
     onMount(async () => {
+        // Clear AI summaries from localStorage on app startup
+        if (typeof window !== "undefined") {
+            localStorage.removeItem("contributor_summaries");
+            info("Cleared AI summaries from localStorage on app startup");
+        }
+
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
@@ -156,7 +162,6 @@
     }
 
     async function handle_verification() {
-        loading = true;
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
         );
@@ -168,6 +173,8 @@
             return;
         }
 
+        loading = true;
+
         let source_type = get_source_type(repo_url_input);
 
         let repository_information: {
@@ -177,6 +184,18 @@
             repo: string;
         };
         try {
+            if (
+                !repo_url_input.startsWith("/") &&
+                !repo_url_input.startsWith("C:\\") &&
+                !repo_url_input.startsWith("https://")
+            ) {
+                verification_error = true;
+                verification_message =
+                    "Please enter a valid URL/path. (Prefix with https:// or /)";
+                loading = false;
+                return;
+            }
+
             if (source_type === 2) {
                 let remote_url = await invoke<string>(
                     "get_local_repo_information",
@@ -301,7 +320,6 @@
 
     <main class="main">
         <div class="repo-menu">
-            <div></div>
 
             <!-- Verification Feedback -->
             <div class="align-with-searchbar">
@@ -321,16 +339,19 @@
                 error={verification_error}
             />
 
-            <div></div>
-
             <!-- Repo link list -->
             <RepoBookmarkList
                 bookmarked_repos={recent_repos}
                 onclick={select_bookmarked_repo}
             />
+
         </div>
+
+
+
     </main>
 </div>
+
 <Sidebar />
 
 <!-- Access Token Modal -->
@@ -352,9 +373,9 @@
 
     .repo-menu {
         display: grid;
-        grid-template-columns: 13rem 35.5rem; /* 2 columns */
         grid-template-rows: auto auto auto; /* 3 rows for dropdown, input, feedback */
-        column-gap: 1rem;
+        justify-content: center;
+        align-items: center;
         row-gap: 10px;
     }
 </style>

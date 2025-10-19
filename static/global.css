@@ -206,3 +206,10 @@ html, body, #app {
     display: flex;
     justify-content: space-between;
 }
+
+.btn-icon {
+    color: var(--label-primary) !important;
+}
+.btn-icon:hover, .btn-icon:focus {
+    color: var(--label-secondary) !important;
+}

@@ -6,7 +6,6 @@
     import { onMount } from "svelte";
     import { info, error } from "@tauri-apps/plugin-log";
     import { invoke } from "@tauri-apps/api/core";
-    import ButtonPrimaryMedium from "./ButtonPrimaryMedium.svelte";
     import { get_repo_info, get_source_type } from "$lib/github_url_verifier";
     import { set_repo_url } from "$lib/stores/repo";
     import { bare_clone, load_branches, load_commit_data } from "$lib/metrics";
@@ -190,11 +189,11 @@
             <h1 class="title sidebar-title-text white">Settings</h1>
         </div>
         <button
-            class="close-button"
+            class="close-button btn-icon"
             onclick={close_sidebar}
             aria-label="Close sidebar"
         >
-            <Icon icon="tabler:x" class="icon-medium" style="color: white" />
+            <Icon icon="tabler:x" class="icon-medium" style="color: inherit" />
         </button>
     </div>
     <div class="sidebar-item-container">
