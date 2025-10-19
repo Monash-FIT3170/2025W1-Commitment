@@ -35,7 +35,7 @@ pub async fn get_ai_summary(
 ) -> Result<(), String> {
     // Reset cancellation flag at the start
     cancellation_state.cancelled.store(false, Ordering::SeqCst);
-    
+
     match get_all_contributors(path) {
         Ok(contributors) => {
             let total = contributors.len();
@@ -54,7 +54,7 @@ pub async fn get_ai_summary(
                     log::info!("Summary generation cancelled by user");
                     return Err("Summary generation cancelled".to_string());
                 }
-                
+
                 if let Ok(commits) = get_contributor_commits(path, &contributor_name) {
                     if !commits.is_empty() {
                         match summarize_commits(&commits).await {
@@ -93,7 +93,7 @@ pub async fn get_ai_summary_with_config(
 ) -> Result<(), String> {
     // Reset cancellation flag at the start
     cancellation_state.cancelled.store(false, Ordering::SeqCst);
-    
+
     match get_squashed_commits_by_config(path, config_json.clone()).await {
         Ok(squashed_commits) => {
             let total = squashed_commits.len();
@@ -126,7 +126,7 @@ pub async fn get_ai_summary_with_config(
                     log::info!("Summary generation cancelled by user");
                     return Err("Summary generation cancelled".to_string());
                 }
-                
+
                 if !commit_data.is_empty() {
                     match summarize_commits(&commit_data).await {
                         Ok(summary) => {
