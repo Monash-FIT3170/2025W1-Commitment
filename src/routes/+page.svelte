@@ -25,6 +25,12 @@
 
     // only run on the browser
     onMount(async () => {
+        // Clear AI summaries from localStorage on app startup
+        if (typeof window !== "undefined") {
+            localStorage.removeItem("contributor_summaries");
+            info("Cleared AI summaries from localStorage on app startup");
+        }
+
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
@@ -156,7 +162,6 @@
     }
 
     async function handle_verification() {
-        loading = true;
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
         );
@@ -167,6 +172,8 @@
             verification_message = "Please enter a URL/path.";
             return;
         }
+
+        loading = true;
 
         let source_type = get_source_type(repo_url_input);
 
