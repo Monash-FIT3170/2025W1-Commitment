@@ -1,121 +1,164 @@
-# User Guide
+# **User Guide**
 
-## Introduction
+## **What is gitgauge?**
 
-gitgauge is a desktop application that helps Teaching Assistants (TAs) fairly and
-efficiently assess how much each student has contributed to a group coding project.
-
-By analysing a local or remote Git repository, gitgauge provides clear visual insights
-into who contributed, how much they contributed, and when. This enables more objective
-grading through holistic analysis and easily recognisable contribution patterns.
+gitgauge is a desktop tool that helps Teaching Assistants (TAs) assess student group contributions in Git-based projects. It analyses repository activity to provide visual summaries, AI-generated insights, and grading exports, making group assessment more transparent and manageable.
 
 ---
 
-## Install Guide
+## **Before You Start**
 
-1. Install gitgauge from [Downloads](../index.md#downloads).
-2. Open the app and select your repository path.
-3. Choose branches and date range to analyse.
-4. Have fun!
+### **Generate a Gemini API Key (for AI summaries)**
 
----
+gitgauge uses Google Gemini to generate commit insights. You will need an API key to enable this feature.
 
-## Features
+**Steps:**
 
-### Repository Import
+1. Visit: [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)  
+2. Sign in with a Google account.  
+3. Click "Create API Key"  
+4. Name your key  
+5. Attach your key to a Cloud Project  
+6. Copy and paste the key into the application when prompted.
 
-- Select any Git repository to begin analysis.  
-- For private repositories, input a Personal Access Token (PAT) to authenticate.  
-- gitgauge automatically scans the project’s commit history, branches, and file changes.
-
----
-
-### Visual Analytics Dashboard
-
-- Displays intuitive graphs showing how contributions are distributed among group
-  members.
-- Helps you quickly identify:
-
-    - Uneven workloads  
-    - Inactive or less active contributors  
-    - High-performing contributors
-
-- Apply custom filters to exclude specific types of commits (for example, minor fixes or
-  formatting) using regular expressions (regex).
-
-- Supports grouping of multiple Git accounts under a single student by uploading a
-  configuration file.
-
-    - Each alternate email must be explicitly linked to the student’s main email for
-      accurate analysis.
-
-#### Available Analysis Metrics:
-
-- Total number of commits (default)  
-- Commit size (lines added or removed)  
-- Absolute difference per commit
+> Note: Gemini summaries are optional, gitgauge will still function without AI insights.
 
 ---
 
-### Contributor Overview
+## **Step-by-Step Workflow**
 
-- View a comprehensive summary of each contributor’s activity:
+### **1\. Launch gitgauge**
 
-    - Name and contribution statistics  
-    - Total commits made  
-    - Lines of code added and deleted  
-    - Scaled weighting according to the selected metric
+Open the gitgauge application from your desktop.
 
-- Includes AI-generated analysis to highlight contribution patterns and potential
-  anomalies.
+### **2\. Import a Repository**
 
----
+- Click "Import Repository"  
+- Paste the HTTPS Git URL or choose a local folder.  
+- For private repos, enter your Personal Access Token (PAT) when prompted.
 
-### Artificial Intelligence (AI) Analysis
-
-- Automatically generates insights and summaries for each contributor’s commit history.  
-- Highlights key contribution trends, outliers, and areas that may warrant closer review.  
-- Designed to support holistic, well-rounded evaluation of individual performance within
-  a group project.
+\img of homepage 
+\img of PAT screen
 
 ---
 
-### Report Exporting
+### **3\. Link Contributor Emails (Optional)**
 
-- Import a CSV grading sheet containing contributor names for analysis.  
-- gitgauge automatically matches contributors found in the repository and scales their
-  metrics accordingly.  
-- Export your grading results as a CSV file for seamless upload to Moodle or other
-  grading systems.
+Students may have committed using multiple email addresses. To group these under one name:
 
----
+- Click "Upload Config File"  
+- Upload a `.json` file mapping alternate emails to the main student email (see format below)
 
-## How to Use
+This ensures accurate grouping in the dashboard and grading report.
 
-1. Launch gitgauge from your desktop.  
-2. Enter the HTTPS link of the repository you wish to analyse.  
-3. Select the branch and metric for analysis.  
-4. (Optional) Link different contributor email addresses to a single contributor.  
-5. (Optional) Exclude specific commits using a regex filter.  
-6. Explore contribution data through the Visual Dashboard.  
-7. Upload your CSV grading sheet with contributor details.  
-8. Export the completed grading report as needed.
+\img of empy config modal 
+\img of uploaded config modal
 
 ---
 
-## Privacy and Security
+### **4\. Explore the Visual Dashboard**
 
-Before using gitgauge, Teaching Assistants must obtain student consent to analyse their
-repository contributions.
+- View commit timelines, activity graphs, and contribution summaries.  
+- Use filters (e.g., regex to exclude "typo", "test", etc.) to refine the data.
 
-gitgauge runs entirely on your local machine. It does not upload, share, or store any
-data externally.
+\img of regex modal 
+\img of active regex modal
 
-- All cloned repositories are automatically deleted after 30 days.  
-- Personal Access Tokens (PATs) are required for actions such as cloning and syncing
-  private repositories.  
-- gitgauge does not store any PATs or Gemini API tokens, they are used only during the
-  current session and never saved to disk.
+---
 
-This ensures that all analysis remains secure, private, and fully under your control.
+### **5\. Review Contributor Overview**
 
+See each student’s:  
+
+- Total commits  
+- Lines added/deleted  
+- Contribution weighting based on your selected metric
+
+\img of overview page with card highlightedz and icon highlighted
+
+---
+
+### **6\. View AI-Generated Analysis**
+
+- Toggle the "AI Analysis" tab to see summaries of each student’s contribution patterns, effort, and anomalies.  
+- Helps identify under-contributors, red flags, or standout efforts.
+
+AI tokens are never stored and used only for session-based summaries.
+
+\img of AI summary screen 
+\img of AI loading screen 
+\img of finished AI summary screen
+
+---
+
+### **7\. Import Grading Sheet & Export**
+
+- Upload a CSV containing student names/emails.  
+- gitgauge maps found contributors to this list.  
+- Export your grading summary (CSV format) for upload to Moodle or your LMS.
+
+\img of inputted grading sheet 
+\img of upload grading sheet modal 
+\img of downloaded grading sheet modal 
+\img of outputted grading sheet
+
+### **What happens if an email is missing from the grading sheet?**
+
+If an email in the grading CSV is not found in the Git history or config file, gitgauge will:  
+
+- Flag it as "missing" in the results  
+- Leave that contributor's row empty in the export  
+- Still include other matched students normally
+
+It's strongly recommended to review and update the config file before final grading export.
+
+---
+
+## **Contributor Config File**
+
+To group multiple commit emails under one student identity, create a `.json` config file with the following format:
+
+```
+{
+    "student1@university.edu": [
+        "alt1@gmail.com", 
+        "alt2@users.noreply.github.com"
+    ],
+
+    "student2@university.edu": ["another.email@example.com"]
+}
+```
+
+### **What happens if an email is missing from the config file?**
+
+If a contributor’s email address is not found in the config file, gitgauge will:
+
+- Not include those contributions in any statistics for any other contributor  
+- Not include those contributions as an additional person  
+- Contributions under the unlinked email address are discarded
+
+It is the responsibility of the students providing their information to make sure potential contributing email addresses are all accounted for.
+
+---
+
+## **Privacy and Security**
+
+- gitgauge runs entirely on your local machine  
+- No data is uploaded, shared, or stored externally  
+- Cloned repositories are automatically deleted after 30 days  
+- PATs and Gemini tokens are not stored, they are used only for the active session
+
+Always obtain student consent before analysing their contributions.
+
+---
+
+## **Troubleshooting & FAQ**
+
+**Q: The AI summary isn’t loading.**  
+A: Check that your Gemini API key is valid and hasn’t exceeded quota.
+
+**Q: A contributor shows up as multiple people.**  
+A: Use the config file to map all alternate emails to the main student email.
+
+**Q: A student in my grading sheet isn’t showing up.**  
+A: They may not have committed to the repo or their email isn’t included in the config file.
