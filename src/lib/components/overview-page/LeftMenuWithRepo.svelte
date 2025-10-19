@@ -1,9 +1,12 @@
 <script lang="ts">
     import Icon from "@iconify/svelte";
     import LeftMenu from "./LeftMenu.svelte";
+    import Modal from "$lib/components/overview-page/Modal.svelte";
     import { manifest } from "$lib/stores/manifest";
     import { invoke } from "@tauri-apps/api/core";
     import { onMount } from "svelte";
+    import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
+    import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
 
     let {
         repo_url,
@@ -21,6 +24,7 @@
         on_delete?: () => void;
     } = $props();
 
+    let show_delete_repo_modal = $state(false);
     let bookmarked = $state(
         $manifest.repository.some((r) => r.url === repo_url && r.bookmarked)
     );
@@ -102,12 +106,41 @@ toggle button.
             <button
                 type="button"
                 class="delete-btn btn-icon"
-                onclick={on_delete}
+                onclick={() => (show_delete_repo_modal = true)}
                 aria-label="Delete repository"
             >
                 <Icon icon="tabler:trash" class="icon-medium" />
             </button>
         {/if}
+
+        <!-- Delete Repo Warning Modal -->
+        <Modal bind:show_modal={show_delete_repo_modal}>
+            {#snippet icon()}
+                <Icon icon="tabler:trash" class="icon-large" style="color: currentColor" />
+            {/snippet}
+
+            {#snippet header()}Delete Repository{/snippet}
+
+            {#snippet body()}
+                <p class="label-primary body">
+                    Are you sure you want to delete the repository:  <b>{repo}</b>?
+                </p>
+                <div class="delete-modal-btns">
+                    <ButtonTintedMedium
+                        label="No. Go Back"
+                        icon="x"
+                        icon_first={true}
+                        width="6rem"
+                        onclick={() => (show_delete_repo_modal = false)}
+                    />
+                    <ButtonPrimaryMedium
+                        label="Yes. Delete Repository"
+                        icon="trash"
+                        onclick={on_delete}
+                    />
+                </div>
+            {/snippet}
+        </Modal>
     {/snippet}
 </LeftMenu>
 
@@ -165,5 +198,14 @@ toggle button.
 
     .delete-btn:hover {
         opacity: 0.7;
+    }
+
+    .delete-modal-btns {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-top: 3rem;
+        gap: 1rem;
     }
 </style>

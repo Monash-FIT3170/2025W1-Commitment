@@ -320,7 +320,6 @@
 
     <main class="main">
         <div class="repo-menu">
-            <div></div>
 
             <!-- Verification Feedback -->
             <div class="align-with-searchbar">
@@ -340,16 +339,19 @@
                 error={verification_error}
             />
 
-            <div></div>
-
             <!-- Repo link list -->
             <RepoBookmarkList
                 bookmarked_repos={recent_repos}
                 onclick={select_bookmarked_repo}
             />
+
         </div>
+
+
+
     </main>
 </div>
+
 <Sidebar />
 
 <!-- Access Token Modal -->
@@ -371,9 +373,9 @@
 
     .repo-menu {
         display: grid;
-        grid-template-columns: 13rem 35.5rem; /* 2 columns */
         grid-template-rows: auto auto auto; /* 3 rows for dropdown, input, feedback */
-        column-gap: 1rem;
+        justify-content: center;
+        align-items: center;
         row-gap: 10px;
     }
 </style>
