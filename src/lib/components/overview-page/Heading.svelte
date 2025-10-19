@@ -28,9 +28,8 @@
         end_date = $bindable(),
         contributors = $bindable<Contributor[]>([]),
         regex_is_active = $bindable<Boolean>(),
-        config_is_active = $bindable<Boolean>()
+        config_is_active = $bindable<Boolean>(),
     } = $props();
-
 
     let source_name =
         source_type === 0
@@ -44,7 +43,7 @@
     let config_error_msg = $state("");
 
     let show_regex_modal = $state(false);
-    let regex_input = $state(""); 
+    let regex_input = $state("");
     let saved_regex = $state("");
 
     function save_regex() {
@@ -61,7 +60,6 @@
     $effect(() => {
         const repo_entry = $manifest.repository.find((r) => r.url === repo_url);
         config_is_active = !!repo_entry?.email_mapping;
-
 
         if (show_config_modal || show_regex_modal) {
             document.body.classList.add("modal-open");
@@ -196,7 +194,7 @@
                 <ButtonPrimaryMedium
                     label="Regex"
                     icon="regex"
-                    variant = "primary"
+                    variant="primary"
                     onclick={() => {
                         show_regex_modal = true;
                     }}
@@ -230,8 +228,9 @@
             {#snippet body()}
                 <div class="regex-modal-content">
                     <p class="label-primary body">
-                        Please enter your regex statement to exclude commits with certain elements found in the commit messages.
-                        <br>
+                        Please enter your regex statement to exclude commits
+                        with certain elements found in the commit messages.
+                        <br />
                     </p>
 
                     <!-- Multiline input -->
@@ -248,7 +247,7 @@
                             icon="x"
                             width="4rem"
                             onclick={() => {
-                                regex_input = saved_regex; 
+                                regex_input = saved_regex;
                                 show_regex_modal = false;
                             }}
                         />
@@ -272,7 +271,6 @@
                 </div>
             {/snippet}
         </Modal>
-
 
         <!-- config btn -->
         <div class="config-btn heading-btn">
@@ -299,8 +297,6 @@
                         config_error_msg = "";
                     }}
                 />
-
-
             {/if}
         </div>
 
@@ -337,9 +333,7 @@
                         icon="x"
                         icon_first={true}
                         width="4rem"
-                        onclick={() => 
-                            show_config_modal = false
-                        }
+                        onclick={() => (show_config_modal = false)}
                     />
                     {#if $manifest.repository.find((r) => r.url === repo_url)?.email_mapping}
                         <ButtonTintedMedium
@@ -401,16 +395,12 @@
 
     .top-container {
         display: grid;
-        grid-template-columns: 1fr auto auto auto auto;
+        grid-template-columns: 1fr auto auto auto auto auto;
         grid-template-areas:
             "repo-path regex config branch calendar"
             "subtitle subtitle subtitle subtitle heading-btn-spacer";
         align-items: center;
         column-gap: 1rem;
-    }
-
-    .regex-btn {
-        grid-area: regex;
     }
 
     .repo-path-container {
@@ -438,6 +428,14 @@
         padding: 0.6rem 0;
     }
 
+    .subtitle {
+        grid-area: subtitle;
+    }
+
+    .regex-btn {
+        grid-area: regex;
+    }
+
     .config-btn {
         grid-area: config;
     }
@@ -450,10 +448,6 @@
         grid-area: calendar;
     }
 
-    .subtitle {
-        grid-area: subtitle;
-    }
-
     .heading-btn-spacer {
         grid-area: heading-btn-spacer;
         display: flex;
@@ -462,10 +456,11 @@
     @media (max-width: 85rem) {
         .top-container {
             display: grid;
-            grid-template-columns: 1fr auto auto auto auto;
+            grid-template-columns: auto auto auto auto auto 1fr;
             grid-template-areas:
-                "repo-path regex config branch calendar"
-                "subtitle subtitle subtitle subtitle heading-btn-spacer";
+                "repo-path repo-path repo-path repo-path repo-path"
+                "subtitle subtitle subtitle subtitle subtitle"
+                "regex config branch calendar heading-btn-spacer";
             align-items: center;
             column-gap: 1rem;
         }
@@ -489,34 +484,36 @@
         overflow: hidden;
     }
 
-.regex-textarea {
-    width: 100%;
-    min-height: 8rem;
-    padding: 1rem;
-    border-radius: 0.75rem;
-    border: 1px solid var(--fill-03);
-    background: var(--background-tertiary);
-    color: var(--label-primary); 
-    font-size: 0.8rem;
-    resize: vertical;
-    box-sizing: border-box;
-    transition: border 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
-}
-.regex-textarea:hover {
-    border-color: var(--fill-02);
-    background: var(--background-secondary);
-}
+    .regex-textarea {
+        width: 100%;
+        min-height: 8rem;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--fill-03);
+        background: var(--background-tertiary);
+        color: var(--label-primary);
+        font-size: 0.8rem;
+        resize: vertical;
+        box-sizing: border-box;
+        transition:
+            border 0.15s ease,
+            background 0.15s ease,
+            box-shadow 0.15s ease;
+    }
+    .regex-textarea:hover {
+        border-color: var(--fill-02);
+        background: var(--background-secondary);
+    }
 
-.regex-textarea:focus {
-    border-color: var(--accent-primary);
-    background: var(--background-secondary);
-    outline: none;
-    box-shadow: 0 0 0 2px var(--accent-primary-10);
-}
+    .regex-textarea:focus {
+        border-color: var(--accent-primary);
+        background: var(--background-secondary);
+        outline: none;
+        box-shadow: 0 0 0 2px var(--accent-primary-10);
+    }
 
-
-.regex-textarea::placeholder {
-    color: var(--label-secondary);
-    opacity: 0.7;
-}
+    .regex-textarea::placeholder {
+        color: var(--label-secondary);
+        opacity: 0.7;
+    }
 </style>
