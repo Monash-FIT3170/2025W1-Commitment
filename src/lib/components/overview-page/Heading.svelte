@@ -457,15 +457,19 @@
 
     @media (max-width: 85rem) {
         .top-container {
-            grid-template-columns: auto auto auto 1fr;
+            display: grid;
+            grid-template-columns: 1fr auto auto auto auto;
             grid-template-areas:
-                "repo-path repo-path repo-path repo-path"
-                "subtitle subtitle subtitle subtitle"
-                "config branch calendar heading-btn-spacer";
+                "repo-path regex config branch calendar"
+                "subtitle subtitle subtitle subtitle heading-btn-spacer";
+            align-items: center;
+            column-gap: 1rem;
         }
 
         .heading-btn {
             padding-top: 1rem;
+            min-width: 4rem;
+            flex-shrink: 0;
         }
     }
     /* MODAL */
