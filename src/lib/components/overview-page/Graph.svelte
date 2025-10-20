@@ -502,12 +502,140 @@
                 };
             }
         );
-        chart.setOption({
-            graphic: [
+
+        let box_plot_graphics: any[] = [];
+        if (aggregation === "median") {
+            const [min, q1, median, q3, max] = ref_point_values;
+            const box_x = x_scale(q1);
+            const box_width = x_scale(q3) - x_scale(q1);
+            const median_x = x_scale(median);
+            const min_x = x_scale(min);
+            const max_x = x_scale(max);
+            
+            // Position box plot at the very top with proper spacing
+            const box_y = 10; // Fixed position at top
+            const box_height = 30;
+            const whisker_height = 8;
+
+            box_plot_graphics = [
+                // Box
+                {
+                    type: "rect",
+                    shape: {
+                        x: box_x,
+                        y: box_y,
+                        width: box_width,
+                        height: box_height,
+                    },
+                    style: {
+                        fill: "rgba(255, 255, 255, 0.1)",
+                        stroke: "#fff",
+                        lineWidth: 2,
+                    },
+                    silent: true,
+                    z: 0, // Lower z-index to be behind user graphics
+                },
+                // Median line
+                {
+                    type: "line",
+                    shape: {
+                        x1: median_x,
+                        y1: box_y,
+                        x2: median_x,
+                        y2: box_y + box_height,
+                    },
+                    style: {
+                        stroke: "#fff",
+                        lineWidth: 3,
+                    },
+                    silent: true,
+                    z: 0,
+                },
+                // Lower whisker
+                {
+                    type: "group",
+                    children: [
+                        {
+                            type: "line",
+                            shape: {
+                                x1: min_x,
+                                y1: box_y + box_height / 2,
+                                x2: box_x,
+                                y2: box_y + box_height / 2,
+                            },
+                            style: {
+                                stroke: "#fff",
+                                lineWidth: 2,
+                            },
+                            silent: true,
+                        },
+                        {
+                            type: "line",
+                            shape: {
+                                x1: min_x,
+                                y1: box_y + box_height / 2 - whisker_height / 2,
+                                x2: min_x,
+                                y2: box_y + box_height / 2 + whisker_height / 2,
+                            },
+                            style: {
+                                stroke: "#fff",
+                                lineWidth: 2,
+                            },
+                            silent: true,
+                        },
+                    ],
+                    z: 0,
+                },
+                // Upper whisker
+                {
+                    type: "group",
+                    children: [
+                        {
+                            type: "line",
+                            shape: {
+                                x1: x_scale(q3),
+                                y1: box_y + box_height / 2,
+                                x2: max_x,
+                                y2: box_y + box_height / 2,
+                            },
+                            style: {
+                                stroke: "#fff",
+                                lineWidth: 2,
+                            },
+                            silent: true,
+                        },
+                        {
+                            type: "line",
+                            shape: {
+                                x1: max_x,
+                                y1: box_y + box_height / 2 - whisker_height / 2,
+                                x2: max_x,
+                                y2: box_y + box_height / 2 + whisker_height / 2,
+                            },
+                            style: {
+                                stroke: "#fff",
+                                lineWidth: 2,
+                            },
+                            silent: true,
+                        },
+                    ],
+                    z: 0,
+                },
+            ];
+        }
+        
+        const base_graphics = aggregation === "median" 
+            ? [...box_plot_graphics]
+            : [
                 tint_between2sigma_left,
                 tint_between1sigma,
                 tint_between2sigma_right,
                 ...ref_line_graphics,
+            ];
+
+        chart.setOption({
+            graphic: [
+                ...base_graphics,
                 ...user_graphics,
             ],
         });
