@@ -6,7 +6,12 @@ fn clone_progress(cur_progress: usize, total_progress: usize) {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>, depth: Option<i32>) -> Result<(), String> {
+pub fn try_clone_with_token(
+    url: &str,
+    path: &str,
+    token: Option<&str>,
+    depth: Option<i32>,
+) -> Result<(), String> {
     log::info!("Starting try_clone_with_token: {url} -> {path}");
 
     let mut callbacks = RemoteCallbacks::new();
@@ -40,40 +45,44 @@ pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>, depth: O
     // the default branch. Without this, FetchOptions::depth fetches depth-limited
     // commits from ALL branches, which is undesirable.
     let result = if depth.is_some() {
-        repo_builder.remote_create(|repo, name, url| {
-            // Create a temporary remote to discover the default branch
-            let mut remote = repo.remote(name, url)?;
+        repo_builder
+            .remote_create(|repo, name, url| {
+                // Create a temporary remote to discover the default branch
+                let mut remote = repo.remote(name, url)?;
 
-            // Set up callbacks for authentication during connection
-            let mut connect_callbacks = RemoteCallbacks::new();
-            if let Some(ref access_token) = token_owned {
-                let token_clone = access_token.clone();
-                connect_callbacks.credentials(move |_url, _username_from_url, _allowed_types| {
-                    log::info!("Attempting authentication with token during connect");
-                    git2::Cred::userpass_plaintext("git", &token_clone)
-                });
-            }
+                // Set up callbacks for authentication during connection
+                let mut connect_callbacks = RemoteCallbacks::new();
+                if let Some(ref access_token) = token_owned {
+                    let token_clone = access_token.clone();
+                    connect_callbacks.credentials(
+                        move |_url, _username_from_url, _allowed_types| {
+                            log::info!("Attempting authentication with token during connect");
+                            git2::Cred::userpass_plaintext("git", &token_clone)
+                        },
+                    );
+                }
 
-            // Connect to discover the default branch WITHOUT fetching any data
-            remote.connect_auth(git2::Direction::Fetch, Some(connect_callbacks), None)?;
-            let head_name_buf = remote.default_branch()?;
-            remote.disconnect()?;
+                // Connect to discover the default branch WITHOUT fetching any data
+                remote.connect_auth(git2::Direction::Fetch, Some(connect_callbacks), None)?;
+                let head_name_buf = remote.default_branch()?;
+                remote.disconnect()?;
 
-            // Parse the default branch name
-            let head_ref = std::str::from_utf8(&head_name_buf)
-                .map_err(|e| git2::Error::from_str(&format!("Invalid UTF-8 in branch name: {e}")))?;
-            let head_str = head_ref.strip_prefix("refs/heads/").unwrap_or(head_ref);
+                // Parse the default branch name
+                let head_ref = std::str::from_utf8(&head_name_buf).map_err(|e| {
+                    git2::Error::from_str(&format!("Invalid UTF-8 in branch name: {e}"))
+                })?;
+                let head_str = head_ref.strip_prefix("refs/heads/").unwrap_or(head_ref);
 
-            // Create a refspec that only fetches the default branch
-            let refspec = format!("+refs/heads/{head_str}:refs/remotes/{name}/{head_str}");
+                // Create a refspec that only fetches the default branch
+                let refspec = format!("+refs/heads/{head_str}:refs/remotes/{name}/{head_str}");
 
-            // Delete the temporary remote
-            repo.remote_delete(name)?;
+                // Delete the temporary remote
+                repo.remote_delete(name)?;
 
-            // Create the remote with the restricted refspec
-            repo.remote_with_fetch(name, url, refspec.as_str())
-        })
-        .clone(url, std::path::Path::new(path))
+                // Create the remote with the restricted refspec
+                repo.remote_with_fetch(name, url, refspec.as_str())
+            })
+            .clone(url, std::path::Path::new(path))
     } else {
         // For clones without depth, use the standard approach
         repo_builder.clone(url, std::path::Path::new(path))

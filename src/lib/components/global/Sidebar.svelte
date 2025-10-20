@@ -170,7 +170,7 @@
             await loading_sleep(start_time);
             loading_state.loading = false;
             if (window.location.pathname == "/overview-page") {
-                await goto('/')
+                await goto("/");
             }
             goto('/overview-page')
         } catch (error: any) {
