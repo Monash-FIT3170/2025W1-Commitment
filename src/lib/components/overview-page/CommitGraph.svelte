@@ -42,23 +42,6 @@
 
 <main class="container">
     <div class="header-row">
-        <button
-            type="button"
-            class="graph-toggle-button"
-            class:expanded={is_graph_expanded}
-            onclick={() => graph_component?.toggle_chart_expansion()}
-            disabled={is_graph_transitioning}
-            aria-label={is_graph_expanded ? "Shrink graph" : "Expand graph"}
-            title={is_graph_expanded ? "Shrink graph" : "Expand graph"}
-        >
-            <Icon
-                icon={`tabler:${is_graph_expanded
-                    ? "layout-navbar-collapse"
-                    : "layout-navbar-expand"}`}
-                class="icon-medium"
-                style="color: currentColor"
-            />
-        </button>
         <DropdownTintedMedium
             options={criteria}
             bind:selected={selected_criteria}
@@ -70,6 +53,26 @@
             bind:selected={selected_aggregation}
             disabled={false}
         />
+
+        <button
+            type="button"
+            class="graph-toggle-button"
+            class:expanded={is_graph_expanded}
+            onclick={() => graph_component?.toggle_chart_expansion()}
+            disabled={is_graph_transitioning}
+            aria-label={is_graph_expanded ? "Shrink graph" : "Expand graph"}
+            title={is_graph_expanded ? "Shrink graph" : "Expand graph"}
+        >
+            <Icon
+                icon={`tabler:${
+                    is_graph_expanded
+                        ? "layout-navbar-collapse"
+                        : "layout-navbar-expand"
+                }`}
+                class="icon-medium"
+                style="color: currentColor"
+            />
+        </button>
     </div>
     <Graph
         bind:this={graph_component}
@@ -123,7 +126,9 @@
         padding: 0.5rem 1.2rem;
         border-radius: 8px;
         cursor: pointer;
-        transition: background-color 0.2s ease, color 0.2s ease;
+        transition:
+            background-color 0.2s ease,
+            color 0.2s ease;
         background-color: var(--tint-00);
         color: var(--label-primary);
     }
