@@ -23,6 +23,7 @@ export type Contributor = Readonly<{
     profile_colour: string;
     username_initials: string;
     ai_summary: string;
+    msgs_matching: number;
 }>;
 
 export type UserDisplayData = Readonly<{

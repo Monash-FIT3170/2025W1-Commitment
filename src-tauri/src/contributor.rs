@@ -338,3 +338,26 @@ fn generate_profile_bg_colour(username: &str) -> String {
 
     format!("#{r:02x}{g:02x}{b:02x}")
 }
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn query_for_matches(
+    regex_query: String,
+    contributors: Vec<Contributor>,
+) -> Result<Vec<Contributor>, String> {
+    let canonical_path = std::path::Path::new(path)
+        .canonicalize()
+        .map_err(|e| e.to_string())?;
+
+    let repo = match Repository::open(canonical_path) {
+        Ok(repo) => {
+            log::info!("Successfully opened repository at {path}");
+            repo
+        }
+        Err(e) => {
+            return Err(format!(
+                "Error: {e}. Occurred when attempting to opening repository."
+            ))
+        }
+    };
+    Ok(Vec::new())
+}

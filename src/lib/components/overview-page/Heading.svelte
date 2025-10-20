@@ -43,18 +43,34 @@
     let config_error_msg = $state("");
 
     let show_regex_modal = $state(false);
+    let querying_msgs: boolean = $state(false);
     let regex_input = $state("");
-    let saved_regex = $state("");
+    let regex_query = $state("feat:");
 
     function save_regex() {
-        saved_regex = regex_input.trim();
+        regex_query = regex_input.trim();
         show_regex_modal = false;
-        if (saved_regex.length > 0) {
+        if (regex_query.length > 0) {
             regex_is_active = true;
         } else {
             regex_is_active = false;
         }
     }
+
+    $effect(() => {
+        if (querying_msgs) {
+            (async () => {
+                // apply regex to contributor commits to find matches
+                contributors = await invoke<Contributor[]>(
+                    "query_for_matches",
+                    {
+                        regex_query: regex_query,
+                        contributors: contributors,
+                    }
+                );
+            })();
+        }
+    });
 
     // Add effect to manage body class when modal state changes
     $effect(() => {
@@ -264,7 +280,7 @@
                             icon="x"
                             width="4rem"
                             onclick={() => {
-                                regex_input = saved_regex;
+                                regex_input = regex_query;
                                 show_regex_modal = false;
                             }}
                         />
