@@ -12,6 +12,8 @@
     import { goto } from "$app/navigation";
     import { generate_state_object, save_state } from "$lib/utils/localstorage";
     import { page } from "$app/state";
+    import { loading_state } from "$lib/stores/loading.svelte";
+
 
     interface RepoBookmark {
         repo_name: string;
@@ -75,31 +77,78 @@
     }
 
     async function bookmark_open(repo_url_input: string) {
+        loading_state.loading = true;
         let source_type = get_source_type(repo_url_input);
+        let repository_information: {
+            source_type: 0 | 1 | 2;
+            source: string;
+            owner: string;
+            repo: string;
+        };
 
         try {
-            const repository_information = get_repo_info(repo_url_input);
-
-            let repo_path = await bare_clone(
-                repository_information.source,
-                repository_information.owner,
-                repository_information.repo,
-                source_type
-            );
+            if (source_type === 2) {
+                let remote_url = await invoke<string>(
+                    "get_local_repo_information",
+                    { path: repo_url_input }
+                );
+                repository_information = get_repo_info(
+                    remote_url.replace(".git", "")
+                );
+                repository_information.source_type = 2;
+            } else {
+                repository_information = get_repo_info(repo_url_input);
+            }
 
             // Update the repo store with the new URL
-            set_repo_url(repo_url_input);
+            let repo_path: string;
+            if (source_type === 2) {
+                repo_path = repo_url_input;
+            } else {
+                set_repo_url(repo_url_input);
+                try {
+                    repo_path = await bare_clone(
+                        repository_information.source,
+                        repository_information.owner,
+                        repository_information.repo,
+                        source_type
+                    );
+                } catch (err: any) {
+                    error(err);
+                    const err_check = String(err);
+                    if (err_check.includes("remote authentication required")) {
+                        bookmark_err_desc =
+                            "Repository is private and requires authentication (PAT) or the URL is incorrect.";
+                    } else if (
+                        err_check.includes("failed to resolve address")
+                    ) {
+                        bookmark_err_desc =
+                            "Unable to reach Git repository. Please check Internet connection.";
+                    } else if (err_check.includes("not found")) {
+                        bookmark_err_desc =
+                            "Repository not found. Please check the URL.";
+                    } else {
+                        bookmark_err_desc = "Unknown Error: " + err_check;
+                    }
+                    bookmark_error = true;
+                    loading_state.loading = false;
+                    return;
+                }
+            }
+            // Call loadBranches and loadCommitData and wait for both to complete
 
             let branches = await load_branches(repo_path);
 
             let contributors = await load_commit_data(repo_path);
 
             const url_trimmed =
-                repository_information.source +
-                "/" +
-                repository_information.owner +
-                "/" +
-                repository_information.repo;
+                source_type === 2
+                    ? repo_url_input
+                    : repository_information.source +
+                      "/" +
+                      repository_information.owner +
+                      "/" +
+                      repository_information.repo;
 
             await manifest.update_repository_timestamp(url_trimmed);
             await invoke("save_manifest", { manifest: $manifest });
@@ -114,8 +163,13 @@
                 contributors
             );
             await save_state(storage_obj);
-            await goto("/");
-            await goto(`/overview-page`);
+
+            // Navigate to the overview page
+            if (window.location.pathname == "/overview-page") {
+                await goto('/')
+            }
+            goto('/overview-page')
+            loading_state.loading = false;
         } catch (error: any) {
             const error_message = error.message || "Verification failed";
             info("Failed to open bookmarked repo: " + error_message);
@@ -126,6 +180,7 @@
             bookmark_error = true;
             bookmark_err_desc =
                 "Failed to open bookmarked repository. Please try again.";
+            loading_state.loading = false;
         }
     }
 
