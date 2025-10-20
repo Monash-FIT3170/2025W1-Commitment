@@ -152,15 +152,6 @@
         loading = false;
     }
 
-    function update_progress(progress: string) {
-        info(progress);
-    }
-
-    async function local_verification() {
-        await invoke("get_local_repo_information", { path: repo_url_input });
-        info("Local repo selected, skipping verification.");
-    }
-
     async function handle_verification() {
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
