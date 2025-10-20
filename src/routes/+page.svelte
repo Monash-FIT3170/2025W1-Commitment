@@ -100,12 +100,12 @@
     });
 
     async function handle_token_add(token: string) {
-        loading = true;
         // Validate that token is not empty
         if (!token || token.trim().length === 0) {
             info("No token entered, keeping modal open");
             verification_message = "Please enter a Personal Access Token";
             verification_error = true;
+            loading = false;
             return;
         }
 
@@ -153,6 +153,8 @@
     }
 
     async function handle_verification() {
+        loading = true;
+
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
         );
@@ -161,6 +163,7 @@
         if (!repo_url_input.trim()) {
             verification_error = true;
             verification_message = "Please enter a URL/path.";
+            loading = false;
             return;
         }
 
@@ -231,6 +234,7 @@
                         verification_message = "Unknown Error: " + err_check;
                     }
                     verification_error = true;
+                    loading = false;
                     return;
                 }
             }
@@ -287,7 +291,6 @@
             // Check if this is an authentication error that requires a token
             if (error_message.includes("private and requires authentication")) {
                 info("Authentication required, showing modal");
-                loading = false;
                 waiting_for_auth = true;
                 // The modal will show automatically via the auth store
                 // Don't set verification_error here - we're waiting for user input

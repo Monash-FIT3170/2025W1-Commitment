@@ -249,6 +249,7 @@
     async function refresh_repository() {
         loading_state.loading = true;
         set_refreshing(true);
+
         try {
             info(`Refreshing repository: ${repo_url} at ${repo_path}`);
 
@@ -361,6 +362,7 @@
 <!-- Access Token Modal for private repository refresh -->
 <AccessTokenModal
     bind:show_modal={show_auth_modal}
+    bind:is_loading={loading}
     on_token_add={handle_token_add}
 />
 
