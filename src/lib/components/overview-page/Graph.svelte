@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
     import * as echarts from "echarts";
+    import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import {
         get_average_commits,
         get_average_commit_size,
@@ -38,6 +39,7 @@
     );
     let is_staggered_mode = $state(false);
     let chart_height = $state(380);
+    let is_expanded = $state(false);
     let is_transitioning = $state(false);
     let x_min: number = $state(0);
     let x_max: number = $state(1);
@@ -145,11 +147,12 @@
         }
     });
     $effect(() => {
-        // Update chart height based on mode and number of contributors
+        // Update chart height based on mode, expansion state, and number of contributors
         const old_height = chart_height;
-        const new_height = is_staggered_mode
+        const base_height = is_staggered_mode
             ? 100 + filtered_people.length * 80
             : 380;
+        const new_height = base_height + (is_expanded ? 220 : 0);
         chart_height = new_height;
 
         // Trigger chart resize when height changes
@@ -190,6 +193,14 @@
             });
         }
     });
+    function toggle_chart_expansion() {
+        if (chart) {
+            is_transitioning = true;
+        }
+        const next_expanded_state = !is_expanded;
+        is_expanded = next_expanded_state;
+        is_staggered_mode = next_expanded_state;
+    }
     $effect(() => {
         sd = get_sd(contributors, metric);
         if (aggregation === "median") {
@@ -668,10 +679,24 @@
     class="chart-container"
     style="height: {chart_height}px; transition: height 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);"
 ></div>
+<div class="graph-controls">
+    <ButtonPrimaryMedium
+        label={is_expanded ? "Shrink Graph" : "Expand Graph"}
+        onclick={toggle_chart_expansion}
+        disabled={is_transitioning}
+    />
+</div>
 
 <style>
     .chart-container {
         width: 100%;
         font-family: "DM Sans", sans-serif;
+    }
+
+    .graph-controls {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 </style>
