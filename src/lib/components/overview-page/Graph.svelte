@@ -680,6 +680,7 @@
     class="chart-container"
     style="height: {chart_height}px; transition: height 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);"
 ></div>
+
 <style>
     .chart-container {
         width: 100%;

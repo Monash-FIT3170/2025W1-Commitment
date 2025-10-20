@@ -116,14 +116,19 @@ toggle button.
         <!-- Delete Repo Warning Modal -->
         <Modal bind:show_modal={show_delete_repo_modal}>
             {#snippet icon()}
-                <Icon icon="tabler:trash" class="icon-large" style="color: currentColor" />
+                <Icon
+                    icon="tabler:trash"
+                    class="icon-large"
+                    style="color: currentColor"
+                />
             {/snippet}
 
             {#snippet header()}Delete Repository{/snippet}
 
             {#snippet body()}
                 <p class="label-primary body">
-                    Are you sure you want to delete the repository:  <b>{repo}</b>?
+                    Are you sure you want to delete the repository: <b>{repo}</b
+                    >?
                 </p>
                 <div class="delete-modal-btns">
                     <ButtonTintedMedium

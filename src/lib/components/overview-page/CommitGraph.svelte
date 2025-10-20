@@ -43,7 +43,13 @@
 <main class="container">
     <div class="header-row">
         <ButtonPrimaryMedium
-            label={is_graph_expanded ? "Shrink Graph" : "Expand Graph"}
+            icon={
+                is_graph_expanded
+                    ? "layout-navbar-collapse"
+                    : "layout-navbar-expand"
+            }
+            label=""
+            ariaLabel={is_graph_expanded ? "Shrink graph" : "Expand graph"}
             onclick={() => graph_component?.toggle_chart_expansion()}
             disabled={is_graph_transitioning}
         />

@@ -7,6 +7,7 @@
         disabled?: boolean;
         variant?: "primary" | "secondary";
         onclick?: (event: MouseEvent) => void;
+        ariaLabel?: string | null;
     };
 
     let {
@@ -15,10 +16,16 @@
         disabled = false,
         variant = "primary",
         onclick,
+        ariaLabel = null,
     }: $Props = $props();
 </script>
 
-<button class="medium {variant}" {disabled} {onclick}>
+<button
+    class="medium {variant}"
+    {disabled}
+    {onclick}
+    aria-label={ariaLabel ?? label}
+>
     {#if icon}
         <Icon
             icon={`tabler:${icon}`}
