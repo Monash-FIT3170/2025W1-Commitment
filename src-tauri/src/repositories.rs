@@ -16,11 +16,12 @@ pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>, depth: O
     });
 
     // Set up authentication if token is provided
-    if let Some(access_token) = token {
-        let token_owned = access_token.to_string();
+    let token_owned = token.map(|t| t.to_string());
+    if let Some(ref access_token) = token_owned {
+        let token_clone = access_token.clone();
         callbacks.credentials(move |_url, _username_from_url, _allowed_types| {
             log::info!("Attempting authentication with token");
-            git2::Cred::userpass_plaintext("git", &token_owned)
+            git2::Cred::userpass_plaintext("git", &token_clone)
         });
     }
 
@@ -32,10 +33,51 @@ pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>, depth: O
         fetch_opts.depth(d);
     }
 
-    let result = RepoBuilder::new()
-        .bare(true)
-        .fetch_options(fetch_opts)
-        .clone(url, std::path::Path::new(path));
+    let mut repo_builder = RepoBuilder::new();
+    repo_builder.bare(true).fetch_options(fetch_opts);
+
+    // When depth is specified, we need to manually configure the remote to only fetch
+    // the default branch. Without this, FetchOptions::depth fetches depth-limited
+    // commits from ALL branches, which is undesirable.
+    let result = if depth.is_some() {
+        repo_builder.remote_create(|repo, name, url| {
+            // Create a temporary remote to discover the default branch
+            let mut remote = repo.remote(name, url)?;
+
+            // Set up callbacks for authentication during connection
+            let mut connect_callbacks = RemoteCallbacks::new();
+            if let Some(ref access_token) = token_owned {
+                let token_clone = access_token.clone();
+                connect_callbacks.credentials(move |_url, _username_from_url, _allowed_types| {
+                    log::info!("Attempting authentication with token during connect");
+                    git2::Cred::userpass_plaintext("git", &token_clone)
+                });
+            }
+
+            // Connect to discover the default branch WITHOUT fetching any data
+            remote.connect_auth(git2::Direction::Fetch, Some(connect_callbacks), None)?;
+            let head_name_buf = remote.default_branch()?;
+            remote.disconnect()?;
+
+            // Parse the default branch name
+            let head_ref = std::str::from_utf8(&head_name_buf)
+                .map_err(|e| git2::Error::from_str(&format!("Invalid UTF-8 in branch name: {e}")))?;
+            let head_str = head_ref.strip_prefix("refs/heads/").unwrap_or(head_ref);
+
+            // Create a refspec that only fetches the default branch
+            let refspec = format!("+refs/heads/{head_str}:refs/remotes/{name}/{head_str}");
+
+            // Delete the temporary remote
+            repo.remote_delete(name)?;
+
+            // Create the remote with the restricted refspec
+            repo.remote_with_fetch(name, url, refspec.as_str())
+        })
+        .clone(url, std::path::Path::new(path))
+    } else {
+        // For clones without depth, use the standard approach
+        repo_builder.clone(url, std::path::Path::new(path))
+    };
 
     match result {
         Ok(_repo) => {
@@ -55,7 +97,14 @@ pub fn try_clone_with_token(url: &str, path: &str, token: Option<&str>, depth: O
             log::error!("Code: {:?}", e.code());
             log::error!("Class: {:?}", e.class());
             log::error!("Msg: {}", e.message());
-            Err(e.to_string())
+
+            // Check if this is an authentication error and normalize the message
+            // so the frontend can detect it consistently
+            if e.code() == git2::ErrorCode::Auth {
+                Err("remote authentication required".to_string())
+            } else {
+                Err(e.to_string())
+            }
         }
     }
 }
