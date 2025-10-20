@@ -28,8 +28,7 @@ This is the left menu component that contains the logo and optional content.
             <img
                 src="/submark.svg"
                 alt="gitgauge logo"
-                class="logo-img"
-                color=""
+                class="logo-img clickable"
             />
         </a>
         {@render content()}
@@ -40,7 +39,6 @@ This is the left menu component that contains the logo and optional content.
                 src="/secondary_logo.svg"
                 alt="gitgauge logo"
                 class="logo-img"
-                color=""
             />
         </a>
     {/if}
@@ -62,5 +60,9 @@ This is the left menu component that contains the logo and optional content.
 
     .logo-img {
         height: 0.9375rem;
+    }
+
+    .clickable:hover, .clickable:focus {
+        opacity: 0.7;
     }
 </style>
