@@ -4,6 +4,7 @@ repo_url: "https://github.com/Monash-FIT3170/2025W1-Commitment"
 nav:
 - Home: 'index.md'
 - Guide: 'guide/getting-started.md'
+- Releases: 'releases/'
 theme:
   name: material
   logo: assets/images/logo.png

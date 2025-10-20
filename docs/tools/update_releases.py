@@ -98,6 +98,19 @@ def _latest_release(rels: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
     published.sort(key=lambda r: r.get("published_at") or r.get("created_at") or "", reverse=True)
     return published[0]
 
+def _version_table(r: Dict[str, Any]) -> Dict[str, Any]:
+    tag = r.get("tag_name", "")
+    date = (r.get("published_at") or r.get("updated_at") or r.get("created_at") or "")[:10]
+    is_draft = bool(r.get("draft"))
+    notes_url = f"https://github.com/{REPO}/releases" if is_draft else (r.get("html_url") or f"https://github.com/{REPO}/releases/tag/{tag}")
+    return {
+        "version": tag,
+        "date": date,
+        "notes_url": notes_url,
+        "downloads": _pick_assets(r.get("assets", [])),
+        "draft": is_draft,
+    }
+
 
 def main() -> int:
     rels = _json(API)
@@ -111,57 +124,29 @@ def main() -> int:
     if not latest:
         print("No published release found")
         return 1
+    
+    # Build full list: latest + all others into previous
+    latest = _version_table(latest)
+    previous: List[Dict[str, Any]] = []
+    for r in rels:
+        if r is latest:
+            continue
+        previous.append(_version_table(r))
+    
+    dedup = {}
+    for p in previous:
+        dedup[p["version"]] = p
+    previous = list(dedup.values())
+    previous.sort(key=lambda x: (x.get("date") or "", x.get("version") or ""), reverse=True)
 
-    tag = latest.get("tag_name", "")
-    date = (latest.get("published_at") or latest.get("updated_at") or latest.get("created_at") or "")[:10]
-    is_draft = bool(latest.get("draft"))
-
-    notes_url = f"https://github.com/{REPO}/releases" if is_draft else (latest.get("html_url") or f"https://github.com/{REPO}/releases/tag/{tag}")
-    assets = latest.get("assets", [])
-    downloads = _pick_assets(assets)
 
     os.makedirs(os.path.dirname(YAML_PATH), exist_ok=True)
-    existing = {}
-
-    if os.path.exists(YAML_PATH):
-        with open(YAML_PATH, "r", encoding="utf-8") as f:
-            existing = yaml.safe_load(f) or {}
-
-    prev = existing.get("previous") or []
-    cur_latest = existing.get("latest") or {}
-
-    if cur_latest.get("version") and cur_latest.get("version") != tag:
-        prev_entry = {
-            "version": cur_latest.get("version"),
-            "date": cur_latest.get("date", ""),
-            "downloads": cur_latest.get("downloads") or {},
-            "notes_url": cur_latest.get("notes_url", ""),
-            "draft": bool(cur_latest.get("draft", False)),
-        }
-
-        prev = [p for p in prev if p.get("version") != prev_entry["version"]]
-        prev.insert(0, prev_entry)
-
-    new_doc = {
-        "latest": {
-            "version": tag,
-            "date": date,
-            "notes_url": notes_url,
-            "downloads": downloads,
-            "draft": is_draft,
-        },
-        "previous": prev,
-    }
-
+    doc = {"latest": latest, "previous": previous}
     with open(YAML_PATH, "w", encoding="utf-8") as f:
-        yaml.safe_dump(new_doc, f, sort_keys=False, allow_unicode=True)
+        yaml.safe_dump(doc, f, sort_keys=False, allow_unicode=True)
 
-    print(f"Updated {YAML_PATH} -> {tag} (draft={is_draft})")
-    
-    if is_draft and not GITHUB_TOKEN:
-        print("Warning: Drafts require GITHUB_TOKEN to be visible via API.", flush=True)
+    print(f"Updated {YAML_PATH} with {1+len(previous)} releases; latest={latest['version']} (draft={latest['draft']})")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
