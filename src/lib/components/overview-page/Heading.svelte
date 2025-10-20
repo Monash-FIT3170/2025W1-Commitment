@@ -27,6 +27,8 @@
         start_date = $bindable(),
         end_date = $bindable(),
         contributors = $bindable<Contributor[]>([]),
+        regex_is_active = $bindable<Boolean>(),
+        config_is_active = $bindable<Boolean>(),
     } = $props();
 
     let source_name =
@@ -35,13 +37,31 @@
             : source_type === 1
               ? "gitlab"
               : "folder-code";
-    let show_modal = $state(false);
+
+    let show_config_modal = $state(false);
     let config_error = $state(false);
     let config_error_msg = $state("");
 
+    let show_regex_modal = $state(false);
+    let regex_input = $state("");
+    let saved_regex = $state("");
+
+    function save_regex() {
+        saved_regex = regex_input.trim();
+        show_regex_modal = false;
+        if (saved_regex.length > 0) {
+            regex_is_active = true;
+        } else {
+            regex_is_active = false;
+        }
+    }
+
     // Add effect to manage body class when modal state changes
     $effect(() => {
-        if (show_modal) {
+        const repo_entry = $manifest.repository.find((r) => r.url === repo_url);
+        config_is_active = !!repo_entry?.email_mapping;
+
+        if (show_config_modal || show_regex_modal) {
             document.body.classList.add("modal-open");
         } else {
             document.body.classList.remove("modal-open");
@@ -57,6 +77,7 @@
 
     function trigger_file_input() {
         file_input.click();
+        config_is_active = true;
     }
 
     async function handle_file_change(event: Event) {
@@ -96,7 +117,7 @@
                         contributors = result;
                         manifest.update_email_mapping(json, repo_url);
                         await invoke("save_manifest", { manifest: $manifest });
-                        show_modal = false;
+                        show_config_modal = false;
                     } catch (e) {
                         error("Error applying config: " + e);
                         config_error_msg =
@@ -146,7 +167,8 @@
             // Update contributors without email mapping
             contributors = [...new_contributors];
 
-            show_modal = false;
+            config_is_active = false;
+            show_config_modal = false;
         } catch (e) {
             error("Error removing email mapping: " + e);
         }
@@ -166,24 +188,120 @@
             </div>
         </div>
 
-        <!-- config btn -->
-        <div class="config-btn heading-btn">
-            <ButtonTintedMedium
-                label="Config"
-                icon="settings-2"
-                label_class="body-accent"
-                icon_first={true}
-                width="4rem"
-                onclick={() => {
-                    show_modal = true;
-                    config_error = false;
-                    config_error_msg = "";
-                }}
-            />
+        <!-- regex btn -->
+        <div class="regex-btn heading-btn">
+            {#if regex_is_active}
+                <ButtonPrimaryMedium
+                    label="Regex"
+                    icon="regex"
+                    variant="primary"
+                    onclick={() => {
+                        show_regex_modal = true;
+                    }}
+                />
+            {:else}
+                <ButtonTintedMedium
+                    label="Regex"
+                    icon="regex"
+                    label_class="body-accent"
+                    icon_first={true}
+                    width="4rem"
+                    onclick={() => {
+                        show_regex_modal = true;
+                    }}
+                />
+            {/if}
         </div>
 
-        <!-- Modal -->
-        <Modal bind:show_modal>
+        <!-- Regex Modal -->
+        <Modal bind:show_modal={show_regex_modal}>
+            {#snippet icon()}
+                <Icon
+                    icon="tabler:regex"
+                    class="icon-medium"
+                    style="color: currentColor"
+                />
+            {/snippet}
+
+            {#snippet header()}Exclude Commits Using Regex{/snippet}
+
+            {#snippet body()}
+                <div class="regex-modal-content">
+                    <p class="label-primary body">
+                        Please enter your regex statement to exclude commits
+                        with certain elements found in the commit messages.
+                        <br />
+                    </p>
+
+                    <!-- Multiline input -->
+                    <textarea
+                        class="regex-textarea"
+                        bind:value={regex_input}
+                        placeholder="Enter your regex statement here..."
+                    ></textarea>
+
+                    <!-- Buttons -->
+                    <div class="modal-button">
+                        <ButtonTintedMedium
+                            label="Cancel"
+                            icon="x"
+                            width="4rem"
+                            onclick={() => {
+                                regex_input = saved_regex;
+                                show_regex_modal = false;
+                            }}
+                        />
+                        {#if regex_input.length != 0}
+                            <ButtonTintedMedium
+                                label="Clear Regex Statement"
+                                width="10rem"
+                                icon="trash"
+                                onclick={() => {
+                                    regex_input = "";
+                                }}
+                            />
+                        {/if}
+
+                        <ButtonPrimaryMedium
+                            label="Save"
+                            icon="device-floppy"
+                            onclick={save_regex}
+                        />
+                    </div>
+                </div>
+            {/snippet}
+        </Modal>
+
+        <!-- config btn -->
+        <div class="config-btn heading-btn">
+            {#if config_is_active}
+                <ButtonPrimaryMedium
+                    label="Config"
+                    icon="settings-2"
+                    onclick={() => {
+                        show_config_modal = true;
+                        config_error = false;
+                        config_error_msg = "";
+                    }}
+                />
+            {:else}
+                <ButtonTintedMedium
+                    label="Config"
+                    icon="settings-2"
+                    label_class="body-accent"
+                    icon_first={true}
+                    width="4rem"
+                    onclick={() => {
+                        show_config_modal = true;
+                        config_error = false;
+                        config_error_msg = "";
+                    }}
+                />
+            {/if}
+        </div>
+
+        <!-- Config Modal -->
+        <Modal bind:show_modal={show_config_modal}>
             {#snippet icon()}
                 <Icon
                     icon={`tabler:settings-2`}
@@ -210,15 +328,17 @@
                 <MappingDisplay {repo_url} />
 
                 <div class="modal-button">
-                    <ButtonPrimaryMedium
+                    <ButtonTintedMedium
                         label="Cancel"
-                        variant="secondary"
-                        onclick={() => (show_modal = false)}
+                        icon="x"
+                        icon_first={true}
+                        width="4rem"
+                        onclick={() => (show_config_modal = false)}
                     />
                     {#if $manifest.repository.find((r) => r.url === repo_url)?.email_mapping}
-                        <ButtonPrimaryMedium
+                        <ButtonTintedMedium
                             label="Remove Mapping"
-                            variant="secondary"
+                            width="8rem"
                             icon="trash"
                             onclick={handle_remove_mapping}
                         />
@@ -275,10 +395,10 @@
 
     .top-container {
         display: grid;
-        grid-template-columns: 1fr auto auto auto;
+        grid-template-columns: 1fr auto auto auto auto auto;
         grid-template-areas:
-            "repo-path config branch calendar"
-            "subtitle subtitle subtitle heading-btn-spacer";
+            "repo-path regex config branch calendar"
+            "subtitle subtitle subtitle subtitle heading-btn-spacer";
         align-items: center;
         column-gap: 1rem;
     }
@@ -308,6 +428,14 @@
         padding: 0.6rem 0;
     }
 
+    .subtitle {
+        grid-area: subtitle;
+    }
+
+    .regex-btn {
+        grid-area: regex;
+    }
+
     .config-btn {
         grid-area: config;
     }
@@ -320,10 +448,6 @@
         grid-area: calendar;
     }
 
-    .subtitle {
-        grid-area: subtitle;
-    }
-
     .heading-btn-spacer {
         grid-area: heading-btn-spacer;
         display: flex;
@@ -331,15 +455,20 @@
 
     @media (max-width: 85rem) {
         .top-container {
-            grid-template-columns: auto auto auto 1fr;
+            display: grid;
+            grid-template-columns: auto auto auto auto auto 1fr;
             grid-template-areas:
-                "repo-path repo-path repo-path repo-path"
-                "subtitle subtitle subtitle subtitle"
-                "config branch calendar heading-btn-spacer";
+                "repo-path repo-path repo-path repo-path repo-path"
+                "subtitle subtitle subtitle subtitle subtitle"
+                "regex config branch calendar heading-btn-spacer";
+            align-items: center;
+            column-gap: 1rem;
         }
 
         .heading-btn {
             padding-top: 1rem;
+            min-width: 4rem;
+            flex-shrink: 0;
         }
     }
     /* MODAL */
@@ -353,5 +482,38 @@
     /* Fix: Prevent background scrolling when modal is open */
     :global(body.modal-open) {
         overflow: hidden;
+    }
+
+    .regex-textarea {
+        width: 100%;
+        min-height: 8rem;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--fill-03);
+        background: var(--background-tertiary);
+        color: var(--label-primary);
+        font-size: 0.8rem;
+        resize: vertical;
+        box-sizing: border-box;
+        transition:
+            border 0.15s ease,
+            background 0.15s ease,
+            box-shadow 0.15s ease;
+    }
+    .regex-textarea:hover {
+        border-color: var(--fill-02);
+        background: var(--background-secondary);
+    }
+
+    .regex-textarea:focus {
+        border-color: var(--accent-primary);
+        background: var(--background-secondary);
+        outline: none;
+        box-shadow: 0 0 0 2px var(--accent-primary-10);
+    }
+
+    .regex-textarea::placeholder {
+        color: var(--label-secondary);
+        opacity: 0.7;
     }
 </style>
