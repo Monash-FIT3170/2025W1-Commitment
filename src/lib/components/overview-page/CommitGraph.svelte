@@ -2,6 +2,7 @@
     import Graph from "$lib/components/overview-page/Graph.svelte";
     import ContributorCards from "$lib/components/overview-page/ContributorCards.svelte";
     import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
+    import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import type { Contributor } from "$lib/metrics";
 
     let {
@@ -28,6 +29,11 @@
 
     let sidebar_open = $state(false);
     let bookmarked_repo: { repo_name: string; repo_url: string }[] = [];
+    let graph_component: {
+        toggle_chart_expansion: () => void;
+    } | null = null;
+    let is_graph_expanded = $state(false);
+    let is_graph_transitioning = $state(false);
 
     function toggle_sidebar() {
         sidebar_open = !sidebar_open;
@@ -36,6 +42,11 @@
 
 <main class="container">
     <div class="header-row">
+        <ButtonPrimaryMedium
+            label={is_graph_expanded ? "Shrink Graph" : "Expand Graph"}
+            onclick={() => graph_component?.toggle_chart_expansion()}
+            disabled={is_graph_transitioning}
+        />
         <DropdownTintedMedium
             options={criteria}
             bind:selected={selected_criteria}
@@ -49,6 +60,9 @@
         />
     </div>
     <Graph
+        bind:this={graph_component}
+        bind:is_expanded={is_graph_expanded}
+        bind:is_transitioning={is_graph_transitioning}
         {contributors}
         {selected_branch}
         {start_date}
@@ -82,8 +96,9 @@
         display: flex;
         justify-content: flex-end;
         flex-direction: row;
-        align-items: end;
+        align-items: center;
         margin-bottom: 2rem;
         padding: 1rem;
+        gap: 1rem;
     }
 </style>

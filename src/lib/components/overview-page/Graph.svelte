@@ -1,7 +1,6 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
     import * as echarts from "echarts";
-    import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
     import {
         get_average_commits,
         get_average_commit_size,
@@ -25,10 +24,14 @@
         contributors,
         metric,
         aggregation = "mean",
+        is_expanded = $bindable(false),
+        is_transitioning = $bindable(false),
     }: {
         contributors: Contributor[];
         metric: string;
         aggregation?: string;
+        is_expanded: boolean;
+        is_transitioning: boolean;
     } = $props();
 
     let chart_container: HTMLElement;
@@ -39,8 +42,6 @@
     );
     let is_staggered_mode = $state(false);
     let chart_height = $state(380);
-    let is_expanded = $state(false);
-    let is_transitioning = $state(false);
     let x_min: number = $state(0);
     let x_max: number = $state(1);
     let metric_mean: number = $state(0);
@@ -193,7 +194,7 @@
             });
         }
     });
-    function toggle_chart_expansion() {
+    export function toggle_chart_expansion() {
         if (chart) {
             is_transitioning = true;
         }
@@ -679,24 +680,9 @@
     class="chart-container"
     style="height: {chart_height}px; transition: height 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);"
 ></div>
-<div class="graph-controls">
-    <ButtonPrimaryMedium
-        label={is_expanded ? "Shrink Graph" : "Expand Graph"}
-        onclick={toggle_chart_expansion}
-        disabled={is_transitioning}
-    />
-</div>
-
 <style>
     .chart-container {
         width: 100%;
         font-family: "DM Sans", sans-serif;
-    }
-
-    .graph-controls {
-        margin-top: 1rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
     }
 </style>
