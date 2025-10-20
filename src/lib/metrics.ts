@@ -96,7 +96,8 @@ export async function load_commit_data(
     repo_path: string,
     branch?: string,
     start_date?: string,
-    end_date?: string
+    end_date?: string,
+    regex_query?: string
 ): Promise<Contributor[]> {
     info(`Loading contributor data for ${repo_path}...`);
     try {
@@ -112,10 +113,15 @@ export async function load_commit_data(
 
         const commit_data = await invoke<Contributor[]>(
             "get_contributor_info",
-            { path: repo_path, branch: branch, date_range: date_range }
+            {
+                path: repo_path,
+                branch: branch,
+                date_range: date_range,
+                regex_query: regex_query,
+            }
         );
-        const commit_array = Object.values(commit_data);
-        return commit_array;
+
+        return Object.values(commit_data);
     } catch (err) {
         error(`Failed to get contributor data: ${err}`);
         return [];

@@ -2,8 +2,7 @@
     import Icon from "@iconify/svelte";
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
-    import ErrorMessage from "../global/ErrorMessage.svelte";
-    import Tab from "$lib/components/global/Tab.svelte";
+    import ErrorMessage from "$lib/components/global/ErrorMessage.svelte";
     import Calendar from "$lib/components/global/Calendar.svelte";
     import Modal from "$lib/components/overview-page/Modal.svelte";
     import { validate_config_file } from "$lib/file_validation";
@@ -12,8 +11,8 @@
     import { load_commit_data } from "$lib/metrics";
     import type { Contributor } from "$lib/metrics";
     import { info, error } from "@tauri-apps/plugin-log";
-    import ButtonPrimaryMedium from "../global/ButtonPrimaryMedium.svelte";
-    import MappingDisplay from "./MappingDisplay.svelte";
+    import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
+    import MappingDisplay from "$lib/components/overview-page/MappingDisplay.svelte";
     import { page } from "$app/state";
     import { get } from "svelte/store";
 
@@ -27,7 +26,7 @@
         start_date = $bindable(),
         end_date = $bindable(),
         contributors = $bindable<Contributor[]>([]),
-        regex_is_active = $bindable<Boolean>(),
+        regex_query = $bindable<string | undefined>(undefined),
         config_is_active = $bindable<Boolean>(),
     } = $props();
 
@@ -45,16 +44,10 @@
     let show_regex_modal = $state(false);
     let querying_msgs: boolean = $state(false);
     let regex_input = $state("");
-    let regex_query = $state("feat:");
 
     function save_regex() {
         regex_query = regex_input.trim();
         show_regex_modal = false;
-        if (regex_query.length > 0) {
-            regex_is_active = true;
-        } else {
-            regex_is_active = false;
-        }
     }
 
     $effect(() => {
@@ -194,7 +187,8 @@
                 repo_path,
                 branch_arg,
                 start_date,
-                end_date
+                end_date,
+                regex_query
             );
 
             // Update contributors without email mapping
@@ -223,7 +217,7 @@
 
         <!-- regex btn -->
         <div class="regex-btn heading-btn">
-            {#if regex_is_active}
+            {#if regex_query !== undefined}
                 <ButtonPrimaryMedium
                     label="Regex"
                     icon="regex"

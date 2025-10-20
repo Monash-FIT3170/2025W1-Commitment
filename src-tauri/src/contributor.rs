@@ -1,4 +1,6 @@
 use git2::{BranchType, Oid, Repository, Sort};
+use log::info;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -149,6 +151,7 @@ pub async fn get_contributor_info(
     path: &str,
     branch: Option<&str>,
     date_range: Option<DateRange>,
+    regex_query: Option<&str>,
 ) -> Result<HashMap<String, Contributor>, String> {
     let canonical_path = std::path::Path::new(path)
         .canonicalize()
@@ -198,6 +201,8 @@ pub async fn get_contributor_info(
 
     let mut contributors: HashMap<String, Contributor> = HashMap::new();
 
+    let _re = regex_query.map(Regex::new);
+
     for oid_result in revwalk {
         let oid = oid_result.map_err(|e| e.to_string())?;
         let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
@@ -212,39 +217,12 @@ pub async fn get_contributor_info(
 
         let author_signature = commit.author();
         let email = author_signature.email().unwrap_or("").to_string();
-        //let email_hash = md5::compute(email.clone().trim().to_lowercase());
-        //let login_name = author_signature.name().unwrap_or("Unknown").to_string();
-        //let gravatar_url = format!("https://www.gravatar.com/avatar/{gravatar_hash:x}?d=identicon");
-
         let username = author_signature.name().unwrap_or("unknown");
-
         let initials = generate_initials(username);
-
         let profile_bg_colour = generate_profile_bg_colour(username);
 
-        // Normalize username for grouping
-        //let normalized_username = if email.ends_with("@users.noreply.github.com") {
-        //    // Extract username from GitHub noreply email
-        //    if let Some(pos) = email.find('+') {
-        //        let rest = &email[pos + 1..];
-        //        if let Some(at_pos) = rest.find('@') {
-        //            rest[..at_pos].to_string()
-        //        } else {
-        //            login_name.clone()
-        //        }
-        //    } else {
-        //        login_name.clone()
-        //    }
-        //} else {
-        //    // Use login name or email prefix
-        //    if !login_name.is_empty() && login_name != "Unknown" {
-        //        login_name.clone()
-        //    } else {
-        //        email.split('@').next().unwrap_or("").to_string()
-        //    }
-        //};
-
         let commit_tree = commit.tree().map_err(|e| e.to_string())?;
+
         let parent_tree = if commit.parent_count() > 0 {
             Some(
                 commit
@@ -260,10 +238,15 @@ pub async fn get_contributor_info(
         let diff = repo
             .diff_tree_to_tree(parent_tree.as_ref(), Some(&commit_tree), None)
             .map_err(|e| e.to_string())?;
-        let stats = diff.stats().map_err(|e| e.to_string())?;
 
+        let stats = diff.stats().map_err(|e| e.to_string())?;
         let additions = stats.insertions() as u64;
         let deletions = stats.deletions() as u64;
+
+        if regex_query.is_some() {
+            let commit_msg = commit.message_raw().unwrap_or("");
+            info!("commit msg raw: {commit_msg}");
+        }
 
         let entry = contributors
             .entry(username.to_string())
@@ -337,27 +320,4 @@ fn generate_profile_bg_colour(username: &str) -> String {
     let b: u8 = u8::try_from((hash >> 16) & 0xff).unwrap_or(0);
 
     format!("#{r:02x}{g:02x}{b:02x}")
-}
-
-#[tauri::command(rename_all = "snake_case")]
-pub async fn query_for_matches(
-    regex_query: String,
-    contributors: Vec<Contributor>,
-) -> Result<Vec<Contributor>, String> {
-    let canonical_path = std::path::Path::new(path)
-        .canonicalize()
-        .map_err(|e| e.to_string())?;
-
-    let repo = match Repository::open(canonical_path) {
-        Ok(repo) => {
-            log::info!("Successfully opened repository at {path}");
-            repo
-        }
-        Err(e) => {
-            return Err(format!(
-                "Error: {e}. Occurred when attempting to opening repository."
-            ))
-        }
-    };
-    Ok(Vec::new())
 }

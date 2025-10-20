@@ -32,7 +32,6 @@ pub fn run() {
             branches::get_branch_names,
             contributor::get_contributor_info,
             contributor::group_contributors_by_config,
-            contributor::query_for_matches,
             repositories::bare_clone,
             repositories::try_clone_with_token,
             repositories::is_repo_cloned,
