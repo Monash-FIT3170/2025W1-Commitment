@@ -34,6 +34,7 @@
     } from "$lib/stores/refresh.svelte";
     import { goto } from "$app/navigation";
     import LoadingIndicator from "$lib/components/global/LoadingIndicator.svelte";
+    import { loading_state } from "$lib/stores/loading.svelte";
 
     const s = page.state as any;
     load_state(s);
@@ -84,7 +85,7 @@
 
     let show_modal = $state(false);
     const open_modal = () => (show_modal = true);
-    let loading = $state(false);
+    let loading = $state(loading_state.loading);
 
     let current_upload = $state<UploadedGradingFile | null>(null);
 
@@ -246,7 +247,7 @@
     }
 
     async function refresh_repository() {
-        loading = true;
+        loading_state.loading = true;
         set_refreshing(true);
         try {
             info(`Refreshing repository: ${repo_url} at ${repo_path}`);
@@ -274,7 +275,7 @@
             }
         } finally {
             set_refreshing(false);
-            loading = false;
+            loading_state.loading = false;
         }
     }
 
