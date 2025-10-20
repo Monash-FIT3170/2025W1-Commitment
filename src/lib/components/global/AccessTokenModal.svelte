@@ -6,10 +6,10 @@
     import Icon from "@iconify/svelte";
     import { tick } from "svelte";
 
-    let { 
-        show_modal = $bindable(), 
-        is_loading = $bindable(), 
-        on_token_add 
+    let {
+        show_modal = $bindable(),
+        is_loading = $bindable(),
+        on_token_add,
     } = $props();
 
     let personal_access_token = $state("");
@@ -55,14 +55,13 @@
             <LoadingIndicator displayText="Processing token..." />
         {:else}
             <p>
-                It seems that the repository you are trying to access is<br
-            />
+                It seems that the repository you are trying to access is<br />
                 private. Please provide a Personal Access Token<br />
-            <br />
-            <bold
-                >NOTE: If this repository is not private, please check the URL
-                entered</bold
-            >
+                <br />
+                <bold
+                    >NOTE: If this repository is not private, please check the
+                    URL entered</bold
+                >
             </p>
             <p class="permission-note body">
                 Please ensure "Contents" permissions are granted for your

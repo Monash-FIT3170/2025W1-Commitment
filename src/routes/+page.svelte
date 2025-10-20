@@ -243,6 +243,7 @@
                         verification_message = "Unknown Error: " + err_check;
                     }
                     verification_error = true;
+                    loading = false;
                     return;
                 }
             }
@@ -322,7 +323,6 @@
 
     <main class="main">
         <div class="repo-menu">
-
             <!-- Verification Feedback -->
             <div class="align-with-searchbar">
                 <ErrorMessage
@@ -346,11 +346,7 @@
                 bookmarked_repos={recent_repos}
                 onclick={select_bookmarked_repo}
             />
-
         </div>
-
-
-
     </main>
 </div>
 
