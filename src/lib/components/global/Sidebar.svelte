@@ -428,6 +428,11 @@
         flex: 1;
         max-width: 250px;
     }
+    .bookmark-item:hover {
+        opacity: 1;
+        background-color: #2f2f2f;
+        border-radius: 4px;
+    }
     .delete-button {
         cursor: pointer;
         background: none;
