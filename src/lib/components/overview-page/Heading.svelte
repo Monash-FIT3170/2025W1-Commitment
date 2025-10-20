@@ -46,7 +46,8 @@
     let regex_input = $state("");
 
     function save_regex() {
-        regex_query = regex_input.trim();
+        const trimmed = regex_input.trim();
+        regex_query = trimmed.length > 0 ? trimmed : undefined;
         show_regex_modal = false;
     }
 
