@@ -653,14 +653,7 @@
 
             chart.dispatchAction({ type: "hideTip" });
 
-            is_transitioning = true;
-            chart.clear();
-
-            set_chart_options();
-
-            requestAnimationFrame(() => {
-                is_staggered_mode = !is_staggered_mode;
-            });
+            toggle_chart_expansion();
         });
 
         resize_handler = () => {
