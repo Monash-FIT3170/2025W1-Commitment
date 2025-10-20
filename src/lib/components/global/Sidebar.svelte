@@ -14,7 +14,6 @@
     import { page } from "$app/state";
     import { loading_state } from "$lib/stores/loading.svelte";
 
-
     interface RepoBookmark {
         repo_name: string;
         repo_url: string;
@@ -166,9 +165,9 @@
 
             // Navigate to the overview page
             if (window.location.pathname == "/overview-page") {
-                await goto('/')
+                await goto("/");
             }
-            goto('/overview-page')
+            goto("/overview-page");
             loading_state.loading = false;
         } catch (error: any) {
             const error_message = error.message || "Verification failed";
