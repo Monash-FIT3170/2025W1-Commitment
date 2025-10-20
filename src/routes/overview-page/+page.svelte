@@ -189,17 +189,28 @@
         }
     });
 
-    let auth_error_state = $state({ needs_token: false, message: "" });
+    let show_auth_modal = $state(false);
+    let previous_auth_modal_state = $state(false);
 
-    // Subscribe to auth_error store
+    // Subscribe to auth_error store and update modal state
     $effect(() => {
         const unsubscribe = auth_error.subscribe((value) => {
-            auth_error_state = value;
+            show_auth_modal = value.needs_token;
         });
         return unsubscribe;
     });
 
-    let show_auth_modal = $derived(auth_error_state.needs_token);
+    // Clear auth error when modal is closed by user (clicking X or backdrop)
+    $effect(() => {
+        if (previous_auth_modal_state && !show_auth_modal) {
+            // Modal was open and is now closed, clear the auth error
+            auth_error.set({
+                needs_token: false,
+                message: "",
+            });
+        }
+        previous_auth_modal_state = show_auth_modal;
+    });
 
     async function reload_repository_data() {
         try {
@@ -253,9 +264,16 @@
         try {
             info(`Refreshing repository: ${repo_url} at ${repo_path}`);
 
+            // Get the depth from the manifest
+            const repo_data = manifest_state.repository.find(
+                (r) => r.url === repo_url
+            );
+            const depth = repo_data?.depth || null;
+
             await invoke("refresh_repo", {
                 url: repo_url,
                 path: repo_path,
+                depth: depth,
             });
 
             info("Repository refreshed successfully");
@@ -264,14 +282,22 @@
             const error_message = e.message || String(e);
             error("Failed to refresh repository: " + error_message);
 
-            if (error_message.includes("private and requires authentication")) {
+            // Check for authentication errors - the error can come in different forms
+            if (error_message.includes("remote authentication required")) {
                 info("Authentication required for refresh");
+                // Get depth from manifest for auth retry
+                const repo_data = manifest_state.repository.find(
+                    (r) => r.url === repo_url
+                );
+                const depth = repo_data?.depth || null;
+
                 auth_error.set({
                     needs_token: true,
                     message:
                         "This repository is private. Please provide a Personal Access Token to refresh.",
                     repo_url: repo_url,
                     repo_path: repo_path,
+                    depth: depth,
                 });
             }
         } finally {
