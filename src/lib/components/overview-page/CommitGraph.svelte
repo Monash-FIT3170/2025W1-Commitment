@@ -65,9 +65,7 @@
         >
             <Icon
                 icon={`tabler:${
-                    is_graph_expanded
-                        ? "layout-navbar-collapse"
-                        : "layout-navbar-expand"
+                    is_graph_expanded ? "arrows-minimize" : "arrows-maximize"
                 }`}
                 class="icon-medium"
                 style="color: currentColor"
