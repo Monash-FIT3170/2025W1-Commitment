@@ -178,12 +178,14 @@
     }
 </script>
 
-<div class={`sidebar ${$sidebar_open ? "open" : "closed"}`}>
-    <div class="sidebar-header">
-        <div class="sidebar-title">
-            <Icon
-                icon="tabler:chart-line"
-                class="icon-large"
+<div class={`sidebar-container ${$sidebar_open ? "open" : ""}`}>
+    <div class="sidebar-backdrop" onclick={close_sidebar}></div>
+    <div class={`sidebar ${$sidebar_open ? "open" : "closed"}`}>
+        <div class="sidebar-header">
+            <div class="sidebar-title">
+                <Icon
+                    icon="tabler:chart-line"
+                    class="icon-large"
                 style="color: white"
             />
             <h1 class="title sidebar-title-text white">Settings</h1>
@@ -266,8 +268,31 @@
         {/each}
     </div>
 </div>
+</div>
 
 <style>
+    .sidebar-container {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        pointer-events: none;
+    }
+    .sidebar-container.open {
+        pointer-events: auto;
+    }
+    .sidebar-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+        pointer-events: none;
+        z-index: 205;
+    }
+    .sidebar-container.open .sidebar-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+    }
     .sidebar {
         position: fixed;
         top: 0;
