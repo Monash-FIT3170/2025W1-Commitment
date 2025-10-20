@@ -364,7 +364,7 @@
     on_token_add={handle_token_add}
 />
 
-<div class="page">
+<div class="page {source_type === 0 ? 'github' : source_type === 1 ? 'gitlab' : 'local'}">
     <Heading
         {repo}
         {source_type}
@@ -465,5 +465,53 @@
             padding-top: 0rem;
             padding-bottom: 1rem;
         }
+    }
+
+    .page.github {
+        margin: 0;
+        background: 
+            linear-gradient(135deg, #111, #222 80%),
+            radial-gradient(
+            circle at center bottom,
+            rgba(10, 20, 160, 0.85) 0%,
+            rgba(40, 30, 130, 0.4) 15%,
+            rgba(40, 30, 130, 0) 60%
+            );
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-attachment: fixed;
+        background-blend-mode: screen;
+    }
+    
+    .page.gitlab {
+        margin: 0;
+        background: 
+            linear-gradient(135deg, #111, #222 80%),
+            radial-gradient(
+            circle at center bottom,
+            rgba(160, 65, 10, 0.85) 0%,
+            rgba(130, 63, 30, 0.4) 15%,
+            rgba(130, 58, 30, 0) 60%
+            );
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-attachment: fixed;
+        background-blend-mode: screen;
+    }
+    
+    .page.local {
+        margin: 0;
+        background: 
+            linear-gradient(135deg, #111, #222 80%),
+            radial-gradient(
+            circle at center bottom,
+            rgba(93, 94, 106, 0.85) 0%,
+            rgba(80, 79, 87, 0.4) 15%,
+            rgba(59, 58, 64, 0) 60%
+            );
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-attachment: fixed;
+        background-blend-mode: screen;
     }
 </style>
