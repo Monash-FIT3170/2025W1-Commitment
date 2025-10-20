@@ -186,88 +186,95 @@
                 <Icon
                     icon="tabler:chart-line"
                     class="icon-large"
-                style="color: white"
-            />
-            <h1 class="title sidebar-title-text white">Settings</h1>
-        </div>
-        <button
-            class="close-button btn-icon"
-            onclick={close_sidebar}
-            aria-label="Close sidebar"
-        >
-            <Icon icon="tabler:x" class="icon-medium" style="color: inherit" />
-        </button>
-    </div>
-    <div class="sidebar-item-container">
-        <div class="header">
-            <Icon
-                icon="tabler:sparkles"
-                class="icon-medium"
-                style="color: white"
-            />
-            <h2 class="heading-1 sidebar-item-header white">AI integration</h2>
-        </div>
-        <div class="caption label-secondary">
-            Add your Gemini API key to enable AI-powered features.
-        </div>
-        <ApiKeyField bind:api_input {on_submit} {api_error} />
-        {#if api_error}
-            <div class="caption error" style="margin-top: 0.25rem;">
-                {api_err_desc}
+                    style="color: white"
+                />
+                <h1 class="title sidebar-title-text white">Settings</h1>
             </div>
-        {/if}
-    </div>
-    <div class="sidebar-item-container">
-        <div class="header">
-            <Icon
-                icon="tabler:star-filled"
-                class="icon-medium"
-                style="color: white"
-            />
-            <h2 class="heading-1 sidebar-item-header white">Bookmarks</h2>
+            <button
+                class="close-button btn-icon"
+                onclick={close_sidebar}
+                aria-label="Close sidebar"
+            >
+                <Icon
+                    icon="tabler:x"
+                    class="icon-medium"
+                    style="color: inherit"
+                />
+            </button>
         </div>
-
-        {#if bookmark_error}
-            <div class="caption error" style="margin-top: 0.25rem;">
-                {bookmark_err_desc}
+        <div class="sidebar-item-container">
+            <div class="header">
+                <Icon
+                    icon="tabler:sparkles"
+                    class="icon-medium"
+                    style="color: white"
+                />
+                <h2 class="heading-1 sidebar-item-header white">
+                    AI integration
+                </h2>
             </div>
-        {/if}
-        {#each bookmarked_repos as repo (repo.repo_url)}
-            {#if repo.repo_bookmarked}
-                <div class="bookmark-wrapper">
-                    <button
-                        class="bookmark-item"
-                        type="button"
-                        onclick={() => {
-                            bookmark_open(repo.repo_url);
-                        }}
-                    >
-                        <h6 class="heading-2 repo-name label-secondary">
-                            {repo.repo_name}
-                        </h6>
-                        <h6 class="caption repo-url label-secondary">
-                            {repo.repo_url}
-                        </h6>
-                    </button>
-                    {#if repo.source_type !== 2}
-                        <button
-                            class="delete-button"
-                            type="button"
-                            onclick={(e) => delete_repository(repo.repo_url, e)}
-                            aria-label="Delete repository"
-                        >
-                            <Icon
-                                icon="tabler:trash"
-                                class="icon-medium"
-                                style="color: var(--label-secondary)"
-                            />
-                        </button>
-                    {/if}
+            <div class="caption label-secondary">
+                Add your Gemini API key to enable AI-powered features.
+            </div>
+            <ApiKeyField bind:api_input {on_submit} {api_error} />
+            {#if api_error}
+                <div class="caption error" style="margin-top: 0.25rem;">
+                    {api_err_desc}
                 </div>
             {/if}
-        {/each}
+        </div>
+        <div class="sidebar-item-container">
+            <div class="header">
+                <Icon
+                    icon="tabler:star-filled"
+                    class="icon-medium"
+                    style="color: white"
+                />
+                <h2 class="heading-1 sidebar-item-header white">Bookmarks</h2>
+            </div>
+
+            {#if bookmark_error}
+                <div class="caption error" style="margin-top: 0.25rem;">
+                    {bookmark_err_desc}
+                </div>
+            {/if}
+            {#each bookmarked_repos as repo (repo.repo_url)}
+                {#if repo.repo_bookmarked}
+                    <div class="bookmark-wrapper">
+                        <button
+                            class="bookmark-item"
+                            type="button"
+                            onclick={() => {
+                                bookmark_open(repo.repo_url);
+                            }}
+                        >
+                            <h6 class="heading-2 repo-name label-secondary">
+                                {repo.repo_name}
+                            </h6>
+                            <h6 class="caption repo-url label-secondary">
+                                {repo.repo_url}
+                            </h6>
+                        </button>
+                        {#if repo.source_type !== 2}
+                            <button
+                                class="delete-button"
+                                type="button"
+                                onclick={(e) =>
+                                    delete_repository(repo.repo_url, e)}
+                                aria-label="Delete repository"
+                            >
+                                <Icon
+                                    icon="tabler:trash"
+                                    class="icon-medium"
+                                    style="color: var(--label-secondary)"
+                                />
+                            </button>
+                        {/if}
+                    </div>
+                {/if}
+            {/each}
+        </div>
     </div>
-</div>
 </div>
 
 <style>
