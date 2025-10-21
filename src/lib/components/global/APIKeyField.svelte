@@ -49,6 +49,10 @@
             "api-input-field"
         ) as HTMLInputElement;
         if (editing) {
+            // Remove focus from the button to reset hover state
+            const button = document.activeElement as HTMLElement;
+            if (button) button.blur();
+
             let error = await on_submit();
             if (!error) {
                 api_input = "";
