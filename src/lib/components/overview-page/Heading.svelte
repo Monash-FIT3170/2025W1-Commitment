@@ -371,9 +371,7 @@
                 bind:end={end_date}
                 date_format="d-m-Y"
                 icon="calendar"
-                icon_first={true}
                 label_class="body-accent"
-                label="Select Date Range"
                 disabled={false}
                 width={start_date && end_date ? "14rem" : "7rem"}
                 on:change={handle_date_change}
