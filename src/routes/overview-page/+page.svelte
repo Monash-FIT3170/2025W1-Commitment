@@ -34,6 +34,7 @@
     } from "$lib/stores/refresh.svelte";
     import { goto } from "$app/navigation";
     import LoadingIndicator from "$lib/components/global/LoadingIndicator.svelte";
+    import { loading_state } from "$lib/stores/loading.svelte";
 
     const s = page.state as any;
     load_state(s);
@@ -84,7 +85,7 @@
 
     let show_modal = $state(false);
     const open_modal = () => (show_modal = true);
-    let loading = $state(false);
+    let loading = $state(loading_state.loading);
 
     let current_upload = $state<UploadedGradingFile | null>(null);
 
@@ -188,17 +189,28 @@
         }
     });
 
-    let auth_error_state = $state({ needs_token: false, message: "" });
+    let show_auth_modal = $state(false);
+    let previous_auth_modal_state = $state(false);
 
-    // Subscribe to auth_error store
+    // Subscribe to auth_error store and update modal state
     $effect(() => {
         const unsubscribe = auth_error.subscribe((value) => {
-            auth_error_state = value;
+            show_auth_modal = value.needs_token;
         });
         return unsubscribe;
     });
 
-    let show_auth_modal = $derived(auth_error_state.needs_token);
+    // Clear auth error when modal is closed by user (clicking X or backdrop)
+    $effect(() => {
+        if (previous_auth_modal_state && !show_auth_modal) {
+            // Modal was open and is now closed, clear the auth error
+            auth_error.set({
+                needs_token: false,
+                message: "",
+            });
+        }
+        previous_auth_modal_state = show_auth_modal;
+    });
 
     async function reload_repository_data() {
         try {
@@ -246,14 +258,22 @@
     }
 
     async function refresh_repository() {
-        loading = true;
+        loading_state.loading = true;
         set_refreshing(true);
+
         try {
             info(`Refreshing repository: ${repo_url} at ${repo_path}`);
+
+            // Get the depth from the manifest
+            const repo_data = manifest_state.repository.find(
+                (r) => r.url === repo_url
+            );
+            const depth = repo_data?.depth || null;
 
             await invoke("refresh_repo", {
                 url: repo_url,
                 path: repo_path,
+                depth: depth,
             });
 
             info("Repository refreshed successfully");
@@ -262,19 +282,27 @@
             const error_message = e.message || String(e);
             error("Failed to refresh repository: " + error_message);
 
-            if (error_message.includes("private and requires authentication")) {
+            // Check for authentication errors - the error can come in different forms
+            if (error_message.includes("remote authentication required")) {
                 info("Authentication required for refresh");
+                // Get depth from manifest for auth retry
+                const repo_data = manifest_state.repository.find(
+                    (r) => r.url === repo_url
+                );
+                const depth = repo_data?.depth || null;
+
                 auth_error.set({
                     needs_token: true,
                     message:
                         "This repository is private. Please provide a Personal Access Token to refresh.",
                     repo_url: repo_url,
                     repo_path: repo_path,
+                    depth: depth,
                 });
             }
         } finally {
             set_refreshing(false);
-            loading = false;
+            loading_state.loading = false;
         }
     }
 
@@ -360,10 +388,17 @@
 <!-- Access Token Modal for private repository refresh -->
 <AccessTokenModal
     bind:show_modal={show_auth_modal}
+    bind:is_loading={loading}
     on_token_add={handle_token_add}
 />
 
-<div class="page">
+<div
+    class="page {source_type === 0
+        ? 'github'
+        : source_type === 1
+          ? 'gitlab'
+          : 'local'}"
+>
     <Heading
         {repo}
         {source_type}
@@ -464,5 +499,53 @@
             padding-top: 0rem;
             padding-bottom: 1rem;
         }
+    }
+
+    .page.github {
+        margin: 0;
+        background:
+            linear-gradient(135deg, #111, #222 80%),
+            radial-gradient(
+                circle at center bottom,
+                rgba(10, 20, 160, 0.85) 0%,
+                rgba(40, 30, 130, 0.4) 15%,
+                rgba(40, 30, 130, 0) 60%
+            );
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-attachment: fixed;
+        background-blend-mode: screen;
+    }
+
+    .page.gitlab {
+        margin: 0;
+        background:
+            linear-gradient(135deg, #111, #222 80%),
+            radial-gradient(
+                circle at center bottom,
+                rgba(160, 65, 10, 0.85) 0%,
+                rgba(130, 63, 30, 0.4) 15%,
+                rgba(130, 58, 30, 0) 60%
+            );
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-attachment: fixed;
+        background-blend-mode: screen;
+    }
+
+    .page.local {
+        margin: 0;
+        background:
+            linear-gradient(135deg, #111, #222 80%),
+            radial-gradient(
+                circle at center bottom,
+                rgba(93, 94, 106, 0.85) 0%,
+                rgba(80, 79, 87, 0.4) 15%,
+                rgba(59, 58, 64, 0) 60%
+            );
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-attachment: fixed;
+        background-blend-mode: screen;
     }
 </style>

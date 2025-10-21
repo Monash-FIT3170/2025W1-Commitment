@@ -1,6 +1,6 @@
 /* global.css */
 html {
-    overscroll-behavior-x: none;
+    overscroll-behavior: none;
     scroll-behavior: smooth;
 }
 
