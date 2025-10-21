@@ -144,6 +144,7 @@
 
     async function handle_remove_mapping() {
         try {
+            show_config_modal = false;
             manifest.remove_email_mapping(repo_url);
 
             // Get the current state of the manifest after the update
