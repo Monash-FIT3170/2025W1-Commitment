@@ -366,13 +366,18 @@
 <style>
     .container {
         padding: 2rem 2rem 2rem 2rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        min-height: calc(100vh - 27rem);
+        display: grid;
+        place-items: center;
+        align-self: center;
+        justify-self: center;
+        min-height: calc(100vh - 22rem);
     }
 
+    @media (max-width: 75rem) {
+        .container {
+            min-height: calc(100vh - 26rem);
+        }
+    }
     .contents {
         text-align: start;
     }
