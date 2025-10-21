@@ -423,7 +423,7 @@
             />
         {/each}
     </div>
-    {#if loading}
+    {#if loading_state.loading}
         <LoadingIndicator />
     {/if}
     <!-- commit graph -->

@@ -13,6 +13,7 @@
     import { generate_state_object, save_state } from "$lib/utils/localstorage";
     import { page } from "$app/state";
     import { loading_state } from "$lib/stores/loading.svelte";
+    import { loading_sleep } from "$lib/utils/sleep";
 
     interface RepoBookmark {
         repo_name: string;
@@ -77,6 +78,7 @@
 
     async function bookmark_open(repo_url_input: string) {
         loading_state.loading = true;
+        let start_time = Date.now();
         let source_type = get_source_type(repo_url_input);
         let repository_information: {
             source_type: 0 | 1 | 2;
@@ -130,6 +132,7 @@
                         bookmark_err_desc = "Unknown Error: " + err_check;
                     }
                     bookmark_error = true;
+                    await loading_sleep(start_time);
                     loading_state.loading = false;
                     return;
                 }
@@ -164,11 +167,12 @@
             await save_state(storage_obj);
 
             // Navigate to the overview page
+            await loading_sleep(start_time);
+            loading_state.loading = false;
             if (window.location.pathname == "/overview-page") {
                 await goto("/");
             }
-            goto("/overview-page");
-            loading_state.loading = false;
+            goto('/overview-page')
         } catch (error: any) {
             const error_message = error.message || "Verification failed";
             info("Failed to open bookmarked repo: " + error_message);
@@ -176,6 +180,7 @@
             // Since a private bookmarked repo shouldn't fail from PAT Token errors, we do not need to display the modal.
             // Or check for it even like in other areas.
 
+            await loading_sleep(start_time);
             bookmark_error = true;
             bookmark_err_desc =
                 "Failed to open bookmarked repository. Please try again.";
