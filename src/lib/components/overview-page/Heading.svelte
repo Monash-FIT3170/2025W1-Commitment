@@ -81,7 +81,8 @@
     }
 
     async function handle_file_change(event: Event) {
-        const selected_files = (event.target as HTMLInputElement).files;
+        const input = event.target as HTMLInputElement;
+        const selected_files = input.files;
         if (selected_files && selected_files.length > 0) {
             if (!selected_files[0].name.toLowerCase().endsWith(".json")) {
                 config_error_msg = "Please upload a .json file";
@@ -143,6 +144,9 @@
             } catch {
                 config_error_msg = "Not valid JSON";
                 config_error = true;
+            } finally {
+                // Resets file input so reupload with same file doesn't get ignored
+                input.value = "";
             }
         }
     }
