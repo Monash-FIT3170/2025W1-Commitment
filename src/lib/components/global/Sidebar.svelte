@@ -286,46 +286,47 @@
                 />
                 <h2 class="heading-1 sidebar-item-header white">Bookmarks</h2>
             </div>
-
-        {#if bookmark_error}
-            <div class="caption error" style="margin-top: 0.25rem;">
-                {bookmark_err_desc}
-            </div>
-        {/if}
-        {#each bookmarked_repos as repo (repo.repo_url)}
-            {#if repo.repo_bookmarked}
-                <div class="bookmark-wrapper">
-                    <button
-                        class="bookmark-item"
-                        type="button"
-                        onclick={() => {
-                            bookmark_open(repo.repo_url);
-                        }}
-                    >
-                        <h6 class="heading-2 repo-name label-secondary">
-                            {repo.repo_name}
-                        </h6>
-                        <h6 class="caption repo-url label-secondary">
-                            {repo.repo_url}
-                        </h6>
-                    </button>
-                    {#if repo.source_type !== 2}
-                        <button
-                            class="delete-button btn-icon"
-                            type="button"
-                            onclick={(e) => delete_repository(repo.repo_url, e)}
-                            aria-label="Delete repository"
-                        >
-                            <Icon
-                                icon="tabler:trash"
-                                class="icon-medium"
-                                style="color: var(--label-secondary)"
-                            />
-                        </button>
-                    {/if}
+            {#if bookmark_error}
+                <div class="caption error" style="margin-top: 0.25rem;">
+                    {bookmark_err_desc}
                 </div>
             {/if}
-        {/each}
+            {#each bookmarked_repos as repo (repo.repo_url)}
+                {#if repo.repo_bookmarked}
+                    <div class="bookmark-wrapper">
+                        <button
+                            class="bookmark-item"
+                            type="button"
+                            onclick={() => {
+                                bookmark_open(repo.repo_url);
+                            }}
+                        >
+                            <h6 class="heading-2 repo-name label-secondary">
+                                {repo.repo_name}
+                            </h6>
+                            <h6 class="caption repo-url label-secondary">
+                                {repo.repo_url}
+                            </h6>
+                        </button>
+                        {#if repo.source_type !== 2}
+                            <button
+                                class="delete-button btn-icon"
+                                type="button"
+                                onclick={(e) =>
+                                    delete_repository(repo.repo_url, e)}
+                                aria-label="Delete repository"
+                            >
+                                <Icon
+                                    icon="tabler:trash"
+                                    class="icon-medium"
+                                    style="color: var(--label-secondary)"
+                                />
+                            </button>
+                        {/if}
+                    </div>
+                {/if}
+            {/each}
+        </div>
     </div>
 </div>
 
