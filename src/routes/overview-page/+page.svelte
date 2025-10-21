@@ -366,19 +366,6 @@
             let err = typeof e === "string" ? e : (e?.message ?? String(e));
             error("read_manifest failed: " + err);
         }
-        if (email_mapping) {
-            try {
-                contributors = await invoke<Contributor[]>(
-                    "group_contributors_by_config",
-                    {
-                        config_json: email_mapping,
-                        contributors: contributors,
-                    }
-                );
-            } catch (e) {
-                error("Error applying config: " + e);
-            }
-        }
         if (branches.length === 0 || contributors.length === 0) {
             await load_graph();
         }
