@@ -291,7 +291,6 @@
                 />
                 <h2 class="heading-1 sidebar-item-header white">Bookmarks</h2>
             </div>
-
             {#if bookmark_error}
                 <div class="caption error" style="margin-top: 0.25rem;">
                     {bookmark_err_desc}
@@ -316,7 +315,7 @@
                         </button>
                         {#if repo.source_type !== 2}
                             <button
-                                class="delete-button"
+                                class="delete-button btn-icon"
                                 type="button"
                                 onclick={(e) =>
                                     delete_repository(repo.repo_url, e)}
@@ -433,6 +432,12 @@
         border: none;
         padding: 0rem;
         flex: 1;
+        max-width: 250px;
+    }
+    .bookmark-item:hover {
+        opacity: 1;
+        background-color: #2f2f2f;
+        border-radius: 4px;
     }
     .delete-button {
         cursor: pointer;
@@ -451,6 +456,7 @@
     .repo-name,
     .repo-url {
         margin: 0;
+        max-width: 250px;
     }
     .label-secondary {
         color: var(--label-secondary);
