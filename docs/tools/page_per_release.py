@@ -54,7 +54,7 @@ def _page_for_version(v: Dict[str, Any]) -> str:
     notes = _s(v.get("notes_url","#"))
     dl = v.get("downloads", {}) or {}
     parts = [
-        f"# {ver}",
+        f"# Version: {ver}",
         "",
         f"**Release date:** {date}{' _(draft)_' if draft else ''}",
         "",
