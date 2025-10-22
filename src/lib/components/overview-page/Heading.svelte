@@ -258,20 +258,20 @@
                 />
             {/snippet}
 
-            {#snippet header()}Exclude Commits Using Regex{/snippet}
+            {#snippet header()}<div class="regex-title">Exclude Commits Using Regex</div>{/snippet}
 
             {#snippet body()}
                 <div class="regex-modal-content">
-                    <p class="label-primary body">
+                    <p class="label-primary regex-instructions">
                         Please enter your regex statement to exclude commits
                         with certain elements found in the commit messages.
-                        <br />
                         <br />
                     </p>
 
                     <!-- Multiline input -->
                     <textarea
                         class="regex-textarea"
+                        style="margin-top: 1rem;"
                         bind:value={regex_input}
                         placeholder="Enter your regex statement here..."
                     ></textarea>
@@ -523,6 +523,14 @@
         overflow: hidden;
     }
 
+    .regex-title {
+        font-size: 1.25rem;
+    }
+    .regex-instructions {
+        font-size: 0.9rem; 
+        font-weight: 300;
+    }
+
     .regex-textarea {
         width: 100%;
         min-height: 8rem;
@@ -532,6 +540,7 @@
         background: var(--background-tertiary);
         color: var(--label-primary);
         font-size: 1.2rem;
+        font-family: DM Mono, monospace;
         resize: vertical;
         box-sizing: border-box;
         transition:
