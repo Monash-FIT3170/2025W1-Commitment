@@ -52,7 +52,7 @@
 
     let manifest_state = $state<ManifestSchema>({ repository: [] });
 
-    let regex_query = $state<string | undefined>("feat:");
+    let regex_query = $state<string | undefined>(undefined);
 
     // Subscribe to manifest store
     $effect(() => {
