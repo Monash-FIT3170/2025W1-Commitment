@@ -5,6 +5,7 @@ mod manifest;
 mod repositories;
 mod summary;
 mod url_verifier;
+mod tools;
 
 // use tauri_plugin_fs;
 
@@ -27,6 +28,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .manage(summary::CancellationState::default())
         .invoke_handler(tauri::generate_handler![
+            tools::get_app_version,
             branches::get_branch_names,
             contributor::get_contributor_info,
             contributor::group_contributors_by_config,

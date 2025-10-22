@@ -14,6 +14,7 @@
     import { page } from "$app/state";
     import { loading_state } from "$lib/stores/loading.svelte";
     import { loading_sleep } from "$lib/utils/sleep";
+    import { get_app_version } from "$lib/utils/version";
 
     interface RepoBookmark {
         repo_name: string;
@@ -21,6 +22,9 @@
         repo_bookmarked: boolean;
         source_type: 0 | 1 | 2; // 0 = GitHub, 1 = GitLab, 2 = Local
     }
+
+    let app_version = $state("");
+
     onMount(async () => {
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
@@ -30,7 +34,9 @@
             let err = typeof e === "string" ? e : (e?.message ?? String(e));
             info("read_manifest failed", e);
         }
+        app_version = await get_app_version();
     });
+
     let bookmarked_repos: RepoBookmark[] = $derived(
         $manifest["repository"].map((item) => {
             return {
@@ -332,10 +338,20 @@
                 {/if}
             {/each}
         </div>
+        <div class="caption version-label">
+            Version: {app_version}
+        </div>
     </div>
 </div>
 
 <style>
+    .version-label {
+        padding: 2rem 0.375rem;
+        color: var(--label-tertiary) !important;
+        position: absolute;
+        bottom: 0;
+        right: 2rem;
+    }
     .sidebar-container {
         position: fixed;
         inset: 0;
