@@ -22,9 +22,9 @@ export type Contributor = Readonly<{
     deletions: number;
     profile_colour: string;
     username_initials: string;
-    ai_summary: string;
     total_regex_matches: number;
     commits_matching_regex: number;
+    ai_summary: string;
 }>;
 
 export type UserDisplayData = Readonly<{

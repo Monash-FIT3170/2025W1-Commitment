@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
+use crate::utils::to_string;
+
 fn generate_initials(name: &str) -> String {
     name.split_whitespace()
         .map(|s| s.chars().next().unwrap_or('?').to_ascii_uppercase())
@@ -164,7 +166,7 @@ pub async fn get_contributor_info(
 ) -> Result<HashMap<String, Contributor>, String> {
     let canonical_path = std::path::Path::new(path)
         .canonicalize()
-        .map_err(|e| e.to_string())?;
+        .map_err(to_string)?;
 
     let repo = match Repository::open(canonical_path) {
         Ok(repo) => {
@@ -179,15 +181,15 @@ pub async fn get_contributor_info(
     };
 
     let mut branches: Vec<String> = Vec::new();
-    for branch in repo.branches(None).map_err(|e| e.to_string())? {
-        let (branch, _branch_type) = branch.map_err(|e| e.to_string())?;
-        if let Some(name) = branch.name().map_err(|e| e.to_string())? {
+    for branch in repo.branches(None).map_err(to_string)? {
+        let (branch, _branch_type) = branch.map_err(to_string)?;
+        if let Some(name) = branch.name().map_err(to_string)? {
             branches.push(name.to_string());
         }
     }
 
     // Resolve branch reference
-    let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
+    let mut revwalk = repo.revwalk().map_err(to_string)?;
     let head = match branch {
         Some(target) => {
             // Ensure the branch exists before proceeding
@@ -199,22 +201,22 @@ pub async fn get_contributor_info(
         }
         None => repo
             .head()
-            .map_err(|e| e.to_string())?
+            .map_err(to_string)?
             .target()
             .ok_or(git2::Error::from_str("Invalid HEAD"))
-            .map_err(|e| e.to_string())?,
+            .map_err(to_string)?,
     };
 
-    revwalk.push(head).map_err(|e| e.to_string())?;
-    revwalk.set_sorting(Sort::TIME).map_err(|e| e.to_string())?;
+    revwalk.push(head).map_err(to_string)?;
+    revwalk.set_sorting(Sort::TIME).map_err(to_string)?;
 
     let mut contributors: HashMap<String, Contributor> = HashMap::new();
 
-    let rgx = regex_query.map(|rgx_str| Regex::new(rgx_str).map_err(|e| e.to_string()));
+    let rgx = regex_query.map(|rgx_str| Regex::new(rgx_str).map_err(to_string));
 
     for oid_result in revwalk {
-        let oid = oid_result.map_err(|e| e.to_string())?;
-        let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
+        let oid = oid_result.map_err(to_string)?;
+        let commit = repo.find_commit(oid).map_err(to_string)?;
         let time = commit.time().seconds();
 
         if let Some(ref date_range) = date_range {
@@ -230,15 +232,15 @@ pub async fn get_contributor_info(
         let initials = generate_initials(username);
         let profile_bg_colour = generate_profile_bg_colour(username);
 
-        let commit_tree = commit.tree().map_err(|e| e.to_string())?;
+        let commit_tree = commit.tree().map_err(to_string)?;
 
         let parent_tree = if commit.parent_count() > 0 {
             Some(
                 commit
                     .parent(0)
-                    .map_err(|e| e.to_string())?
+                    .map_err(to_string)?
                     .tree()
-                    .map_err(|e| e.to_string())?,
+                    .map_err(to_string)?,
             )
         } else {
             None
@@ -246,9 +248,9 @@ pub async fn get_contributor_info(
 
         let diff = repo
             .diff_tree_to_tree(parent_tree.as_ref(), Some(&commit_tree), None)
-            .map_err(|e| e.to_string())?;
+            .map_err(to_string)?;
 
-        let stats = diff.stats().map_err(|e| e.to_string())?;
+        let stats = diff.stats().map_err(to_string)?;
         let additions = stats.insertions() as u64;
         let deletions = stats.deletions() as u64;
 
@@ -256,6 +258,7 @@ pub async fn get_contributor_info(
             let commit_msg = commit.message_raw().unwrap_or("");
             let id = commit.id().to_string().chars().take(6).collect::<String>();
             let re = rgx.clone().unwrap()?;
+
             re.find_iter(commit_msg)
                 .inspect(|m| {
                     info!("{id} :: {}", m.as_str());
@@ -346,4 +349,12 @@ fn generate_profile_bg_colour(username: &str) -> String {
     let b: u8 = u8::try_from((hash >> 16) & 0xff).unwrap_or(0);
 
     format!("#{r:02x}{g:02x}{b:02x}")
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub fn check_regex(regex_query: &str) -> Result<(), String> {
+    match Regex::new(regex_query) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e.to_string()),
+    }
 }

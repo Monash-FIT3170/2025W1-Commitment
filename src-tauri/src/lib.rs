@@ -1,11 +1,11 @@
 mod branches;
-mod config;
 mod contributor;
 mod manifest;
 mod repositories;
 mod summary;
-mod url_verifier;
 mod tools;
+mod url_verifier;
+mod utils;
 
 // use tauri_plugin_fs;
 
@@ -30,6 +30,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             tools::get_app_version,
             branches::get_branch_names,
+            contributor::check_regex,
             contributor::get_contributor_info,
             contributor::group_contributors_by_config,
             repositories::bare_clone,

@@ -42,13 +42,31 @@
     let config_error_msg = $state("");
 
     let show_regex_modal = $state(false);
+    let regex_error = $state(false);
+    let regex_error_msg = $state("");
     let regex_input = $state("");
 
-    function save_regex() {
-        info($state.snapshot(regex_input));
-        const trimmed = regex_input.trim();
-        regex_query = trimmed.length > 0 ? trimmed : undefined;
-        show_regex_modal = false;
+    async function save_regex() {
+        // Do we really want this as trailing spaces
+        // might be part of the search query
+        // const trimmed = regex_input.trim();
+        // regex_query = trimmed.length > 0 ? trimmed : undefined;
+
+        if (regex_input.length > 0) {
+            try {
+                await invoke<string>("check_regex", {
+                    regex_query: regex_input,
+                });
+                show_regex_modal = false;
+                regex_query = regex_input.length > 0 ? regex_input : undefined;
+
+                regex_error = false;
+                regex_error_msg = "";
+            } catch (err: any) {
+                regex_error = true;
+                regex_error_msg = err;
+            }
+        }
     }
 
     // Add effect to manage body class when modal state changes
@@ -170,7 +188,9 @@
             // Refresh contributors to show ungrouped data
             const branch_arg =
                 branch_selection === "" ? undefined : branch_selection;
+
             const repo_path = page.state.repo_path;
+
             const new_contributors = await load_commit_data(
                 repo_path,
                 branch_arg,
@@ -282,6 +302,11 @@
                             label="Save"
                             icon="device-floppy"
                             onclick={save_regex}
+                        />
+
+                        <ErrorMessage
+                            verification_message={regex_error_msg}
+                            error={regex_error}
                         />
                     </div>
                 </div>

@@ -1,5 +1,4 @@
 use git2::{build::RepoBuilder, RemoteCallbacks};
-// use std::time::Duration;
 
 fn clone_progress(cur_progress: usize, total_progress: usize) {
     print!("\rProgress: {cur_progress}/{total_progress}");
