@@ -55,7 +55,6 @@
         visible = false;
     }
 
-    
     function handle_date_select() {
         if (date_range.start && date_range.end) {
             start = flatpickr.formatDate(date_range.start, date_format);
@@ -102,9 +101,9 @@
         {/if}
     </div>
     {#if visible}
-        <div class="date-picker-container">
+        <div class="date-picker-container dark">
             <Datepicker
-                color="dark"
+                color="gray"
                 range
                 inline
                 bind:rangeFrom={date_range.start}
