@@ -233,7 +233,7 @@
             {#snippet icon()}
                 <Icon
                     icon="tabler:regex"
-                    class="icon-medium"
+                    class="icon-large"
                     style="color: currentColor"
                 />
             {/snippet}
@@ -245,6 +245,7 @@
                     <p class="label-primary body">
                         Please enter your regex statement to exclude commits
                         with certain elements found in the commit messages.
+                        <br />
                         <br />
                     </p>
 
@@ -505,7 +506,7 @@
         border: 1px solid var(--fill-03);
         background: var(--background-tertiary);
         color: var(--label-primary);
-        font-size: 0.8rem;
+        font-size: 1.2rem;
         resize: vertical;
         box-sizing: border-box;
         transition:
