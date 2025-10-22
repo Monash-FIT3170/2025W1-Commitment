@@ -12,6 +12,7 @@
     import { set_repo_url } from "$lib/stores/repo";
     import ErrorMessage from "$lib/components/global/ErrorMessage.svelte";
     import RepoSearchbar from "$lib/components/global/RepoSearchbar.svelte";
+    import DepthInput from "$lib/components/global/DepthInput.svelte";
     import Banner from "$lib/components/overview-page/Banner.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
     import RepoBookmarkList from "$lib/components/global/RepoBookmarkList.svelte";
@@ -22,12 +23,20 @@
     import { onMount } from "svelte";
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
     import { info, error } from "@tauri-apps/plugin-log";
+    import LoadingIndicator from "$lib/components/global/LoadingIndicator.svelte";
+    import { loading_sleep } from "$lib/utils/sleep";
 
     let search_history_array = $state<{ repo_name: string; repo_url: string; repo_visited: boolean }[]>([]);
 
 
     // only run on the browser
     onMount(async () => {
+        // Clear AI summaries from localStorage on app startup
+        if (typeof window !== "undefined") {
+            localStorage.removeItem("contributor_summaries");
+            info("Cleared AI summaries from localStorage on app startup");
+        }
+
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
@@ -76,10 +85,8 @@
             }))
             .slice(0, 10);
     });
+    let loading: boolean = $state(false);
 
-    let profile_image_url = "/mock_profile_img.png";
-    let username = "Baaset Moslih";
-  
     interface RepoBookmark {
         repo_name: string;
         repo_url: string;
@@ -121,6 +128,7 @@
         }
     });
     let repo_url_input: string = $state("");
+    let depth_input: string = $state("");
 
     let verification_message: string = $state("");
     let verification_error: boolean = $state(false);
@@ -142,17 +150,30 @@
     }
 
     // Subscribe to auth errors to show modal when needed
-    let show_modal = $derived($auth_error.needs_token);
-
-    // Track previous modal state to detect when modal closes
+    let show_modal = $state(false);
     let previous_show_modal = $state(false);
 
-    // Clear verification message when modal closes without using Add button
+    // Subscribe to auth_error store
     $effect(() => {
-        if (previous_show_modal && !show_modal && !verification_error) {
-            // Modal was open and is now closed, and we don't have an error
-            // This means the user closed the modal by clicking outside
-            verification_message = "";
+        const unsubscribe = auth_error.subscribe((value) => {
+            show_modal = value.needs_token;
+        });
+        return unsubscribe;
+    });
+
+    // Clear verification message and auth error when modal closes
+    $effect(() => {
+        if (previous_show_modal && !show_modal) {
+            // Modal was open and is now closed
+            if (!verification_error) {
+                // User closed the modal without adding a token
+                verification_message = "";
+            }
+            // Clear the auth error store to prevent modal from showing on other pages
+            auth_error.set({
+                needs_token: false,
+                message: "",
+            });
         }
         previous_show_modal = show_modal;
     });
@@ -163,26 +184,42 @@
             info("No token entered, keeping modal open");
             verification_message = "Please enter a Personal Access Token";
             verification_error = true;
+            // Keep modal open by not clearing auth_error
             return;
         }
 
         info("Authenticating with Personal Access Token...");
 
-        // Attempt to clone with the provided token
-        const success = await retry_clone_with_token(token);
+        try {
+            // Attempt to clone with the provided token
+            const success = await retry_clone_with_token(token);
 
-        if (success) {
-            info("Authentication successful, continuing repository loading...");
-            waiting_for_auth = false;
-            // The modal will be hidden automatically by the auth store
-            // The repository should now be accessible, so we can continue with the normal flow
-            // Re-trigger the verification process to load the now-accessible repository
-            await handle_verification();
-        } else {
-            info("Authentication failed, please check your token");
-            // Show user-friendly error message above search bar and close modal
+            if (success) {
+                info(
+                    "Authentication successful, continuing repository loading..."
+                );
+                waiting_for_auth = false;
+                // The modal will be hidden automatically by the auth store
+                // The repository should now be accessible, so we can continue with the normal flow
+                // Re-trigger the verification process to load the now-accessible repository
+                await handle_verification();
+            } else {
+                info("Authentication failed, please check your token");
+                // Show user-friendly error message above search bar and close modal
+                verification_message =
+                    "Access token/URL is invalid. Please check your token/URL and try again.";
+                verification_error = true;
+                waiting_for_auth = false;
+                // Hide the modal since we're showing the error above the search bar
+                auth_error.set({
+                    needs_token: false,
+                    message: "",
+                });
+            }
+        } catch (err) {
+            error("Error during token validation: " + err);
             verification_message =
-                "Access token is invalid. Please check your token and try again.";
+                "An error occurred during authentication. Please try again.";
             verification_error = true;
             waiting_for_auth = false;
             // Hide the modal since we're showing the error above the search bar
@@ -191,18 +228,12 @@
                 message: "",
             });
         }
-    }
-
-    function update_progress(progress: string) {
-        info(progress);
-    }
-
-    async function local_verification() {
-        await invoke("get_local_repo_information", { path: repo_url_input });
-        info("Local repo selected, skipping verification.");
+        loading = false;
     }
 
     async function handle_verification() {
+        loading = true;
+        let start_time = Date.now();
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
         );
@@ -211,6 +242,7 @@
         if (!repo_url_input.trim()) {
             verification_error = true;
             verification_message = "Please enter a URL/path.";
+            loading = false;
             return;
         }
 
@@ -223,6 +255,19 @@
             repo: string;
         };
         try {
+            if (
+                !repo_url_input.startsWith("/") &&
+                !repo_url_input.startsWith("C:\\") &&
+                !repo_url_input.startsWith("https://")
+            ) {
+                verification_error = true;
+                verification_message =
+                    "Please enter a valid URL/path. (Prefix with https:// or /)";
+                await loading_sleep(start_time);
+                loading = false;
+                return;
+            }
+
             if (source_type === 2) {
                 let remote_url = await invoke<string>(
                     "get_local_repo_information",
@@ -236,18 +281,50 @@
                 repository_information = get_repo_info(repo_url_input);
             }
 
+            // Parse depth input
+            const parsed_depth =
+                depth_input.trim() !== "" ? parseInt(depth_input.trim()) : null;
+            const depth_value =
+                parsed_depth && !isNaN(parsed_depth) && parsed_depth > 0
+                    ? parsed_depth
+                    : null;
+
             // Update the repo store with the new URL
             let repo_path: string;
             if (source_type === 2) {
                 repo_path = repo_url_input;
             } else {
                 set_repo_url(repo_url_input);
-                repo_path = await bare_clone(
-                    repository_information.source,
-                    repository_information.owner,
-                    repository_information.repo,
-                    source_type
-                );
+                try {
+                    repo_path = await bare_clone(
+                        repository_information.source,
+                        repository_information.owner,
+                        repository_information.repo,
+                        source_type,
+                        depth_value
+                    );
+                } catch (err: any) {
+                    error(err);
+                    const err_check = String(err);
+                    if (err_check.includes("remote authentication required")) {
+                        verification_message =
+                            "Repository is private and requires authentication (PAT) or the URL is incorrect.";
+                    } else if (
+                        err_check.includes("failed to resolve address")
+                    ) {
+                        verification_message =
+                            "Unable to reach Git repository. Please check Internet connection.";
+                    } else if (err_check.includes("not found")) {
+                        verification_message =
+                            "Repository not found. Please check the URL.";
+                    } else {
+                        verification_message = "Unknown Error: " + err_check;
+                    }
+                    verification_error = true;
+                    await loading_sleep(start_time);
+                    loading = false;
+                    return;
+                }
             }
             // Call loadBranches and loadCommitData and wait for both to complete
 
@@ -274,7 +351,8 @@
                     repository_information,
                     url_trimmed,
                     source_type,
-                    repo_path
+                    repo_path,
+                    depth_value
                 );
             }
 
@@ -294,8 +372,11 @@
             await save_state(storage_obj);
 
             // Navigate to the overview page
+            await loading_sleep(start_time);
+            loading = false;
             goto(`/overview-page`);
         } catch (error: any) {
+            loading = false;
             const error_message = error.message || "Verification failed.";
             error("Verification failed: " + error);
 
@@ -335,14 +416,15 @@
 </script>
 
 <div class="page">
+    {#if loading}
+        <LoadingIndicator />
+    {/if}
     <header class="header">
-        <Banner {username} {profile_image_url} />
+        <Banner />
     </header>
 
     <main class="main">
         <div class="repo-menu">
-            <div></div>
-
             <!-- Verification Feedback -->
             <div class="align-with-searchbar">
                 <ErrorMessage
@@ -355,14 +437,19 @@
             <RepoDropdown bind:selected action={reset_verification_result} />
 
             <!-- Repo link -->
-            <RepoSearchbar
-                on_submit={handle_verification}
-                bind:repo_url_input
-                error={verification_error}
-            />
-
-            
-            <div></div>
+            <div class="searchbar-row">
+                <RepoSearchbar
+                    on_submit={handle_verification}
+                    bind:repo_url_input
+                    error={verification_error}
+                />
+                <DepthInput
+                    bind:value={depth_input}
+                    placeholder="depth"
+                    error={verification_error}
+                />
+            </div>
+          
             <!-- Repo Search history list -->
             <RepoSearchHistory
                 stored_repo_url_input={search_history_array}
@@ -400,9 +487,15 @@
 
     .repo-menu {
         display: grid;
-        grid-template-columns: 13rem 35.5rem; /* 2 columns */
         grid-template-rows: auto auto auto; /* 3 rows for dropdown, input, feedback */
-        column-gap: 1rem;
+        justify-content: center;
+        align-items: center;
         row-gap: 10px;
+    }
+
+    .searchbar-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
     }
 </style>

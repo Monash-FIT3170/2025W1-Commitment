@@ -1,10 +1,11 @@
 mod branches;
-mod config;
 mod contributor;
 mod manifest;
 mod repositories;
 mod summary;
+mod tools;
 mod url_verifier;
+mod utils;
 
 // use tauri_plugin_fs;
 
@@ -25,19 +26,25 @@ pub fn run() {
         .plugin(tauri_plugin_log::Builder::new().build())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+        .manage(summary::CancellationState::default())
         .invoke_handler(tauri::generate_handler![
+            tools::get_app_version,
             branches::get_branch_names,
+            contributor::check_regex,
             contributor::get_contributor_info,
             contributor::group_contributors_by_config,
             repositories::bare_clone,
             repositories::try_clone_with_token,
             repositories::is_repo_cloned,
+            repositories::delete_repo,
             repositories::get_local_repo_information,
+            repositories::refresh_repo,
             url_verifier::verify_and_extract_source_info,
             manifest::read_manifest,
             manifest::save_manifest,
             summary::get_ai_summary,
             summary::get_ai_summary_with_config,
+            summary::cancel_summary_generation,
             summary::gemini_key_validation,
             summary::check_key_set,
             manifest::get_working_directory,

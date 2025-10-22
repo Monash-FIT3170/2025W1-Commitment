@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { info } from "@tauri-apps/plugin-log";
+import { info, error } from "@tauri-apps/plugin-log";
 import { show_token_modal } from "./stores/auth";
 
 export type Contacts =
@@ -22,6 +22,8 @@ export type Contributor = Readonly<{
     deletions: number;
     profile_colour: string;
     username_initials: string;
+    total_regex_matches: number;
+    commits_matching_regex: number;
     ai_summary: string;
 }>;
 
@@ -42,7 +44,7 @@ export async function load_branches(repo_path: string): Promise<string[]> {
         info("REAL BRANCHES " + real_branches);
         return ["All", ...real_branches];
     } catch (err) {
-        info("Failed to load branches: " + err);
+        error("Failed to load branches: " + err);
         return ["All"];
     }
 }
@@ -56,27 +58,38 @@ export async function bare_clone(
     source: string,
     owner: string,
     repo: string,
-    source_type: 0 | 1 | 2
+    source_type: 0 | 1 | 2,
+    depth?: number | null
 ): Promise<string> {
     const repo_url = `${source}/${owner}/${repo}`;
     const working_dir = await invoke<string>("get_working_directory");
     const repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
+
+    const depth_value = depth && depth > 0 ? depth : null;
+
     try {
+        const working_dir = await invoke<string>("get_working_directory");
+        const repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
         await invoke("bare_clone", {
             url: repo_url,
             path: repo_path,
+            depth: depth_value,
         });
         return repo_path;
     } catch (err) {
         const error_message = String(err);
-        info(`Failed to clone the repository: ${error_message}`);
+        error(`Failed to clone the repository: ${error_message}`);
+        let repo_path: string;
 
         // Check if this is an authentication error that requires a token
-        if (error_message.includes("private and requires authentication")) {
-            show_token_modal(error_message, repo_url, repo_path);
+        if (error_message.includes("remote authentication required")) {
+            const working_dir = await invoke<string>("get_working_directory");
+            repo_path = `${working_dir}/repositories/${source_type}-${owner}-${repo}`;
+            show_token_modal(error_message, repo_url, repo_path, depth_value);
+            return repo_path;
         }
 
-        return repo_path;
+        throw new Error(error_message);
     }
 }
 
@@ -84,7 +97,8 @@ export async function load_commit_data(
     repo_path: string,
     branch?: string,
     start_date?: string,
-    end_date?: string
+    end_date?: string,
+    regex_query?: string
 ): Promise<Contributor[]> {
     info(`Loading contributor data for ${repo_path}...`);
     try {
@@ -100,12 +114,17 @@ export async function load_commit_data(
 
         const commit_data = await invoke<Contributor[]>(
             "get_contributor_info",
-            { path: repo_path, branch: branch, date_range: date_range }
+            {
+                path: repo_path,
+                branch: branch,
+                date_range: date_range,
+                regex_query: regex_query,
+            }
         );
-        const commit_array = Object.values(commit_data);
-        return commit_array;
+
+        return Object.values(commit_data);
     } catch (err) {
-        info(`Failed to get contributor data: ${err}`);
+        error(`Failed to get contributor data: ${err}`);
         return [];
     }
 }
@@ -172,6 +191,7 @@ export function get_average_commits(users: Contributor[]): number {
 // Calculate average size of commits
 export function get_average_commit_size(users: Contributor[]): number {
     if (users.length === 0) return 0;
+
     const size_mean: number =
         users.reduce((acc, curr) => {
             return (
@@ -185,6 +205,7 @@ export function get_average_commit_size(users: Contributor[]): number {
 // Calculate average absolute diff
 export function get_average_absolute_diff(users: Contributor[]): number {
     if (users.length === 0) return 0;
+
     const abs_diff_mean: number =
         users.reduce((acc, curr) => {
             return acc + get_user_absolute_diff(curr);
@@ -205,7 +226,9 @@ function calculate_quartiles(values: number[]): {
 
     const find_median = (arr: number[]): number => {
         if (arr.length === 0) return 0;
+
         const mid_index = Math.floor(arr.length / 2);
+
         if (arr.length % 2 === 0) {
             return (arr[mid_index - 1] + arr[mid_index]) / 2;
         } else {
@@ -239,7 +262,9 @@ export function get_commit_quartiles(users: Contributor[]): {
     q3: number;
 } {
     if (users.length === 0) return { q1: 0, median: 0, q3: 0 };
+
     const commit_values = users.map((user) => user.total_commits);
+
     return calculate_quartiles(commit_values);
 }
 
@@ -249,9 +274,11 @@ export function get_commit_size_quartiles(users: Contributor[]): {
     q3: number;
 } {
     if (users.length === 0) return { q1: 0, median: 0, q3: 0 };
+
     const commit_size_values = users.map((user) =>
         get_user_lines_per_commit(user)
     );
+
     return calculate_quartiles(commit_size_values);
 }
 
@@ -261,15 +288,18 @@ export function get_absolute_diff_quartiles(users: Contributor[]): {
     q3: number;
 } {
     if (users.length === 0) return { q1: 0, median: 0, q3: 0 };
+
     const absolute_diff_values = users.map((user) =>
         get_user_absolute_diff(user)
     );
+
     return calculate_quartiles(absolute_diff_values);
 }
 
 // Calculate standard deviation
 export function get_sd(users: Contributor[], metric: string): number {
     if (users.length === 0) return 0;
+
     let commits: number[] = [];
 
     // Get the list of total commits for each user
@@ -466,7 +496,9 @@ export function get_users_total_commits(
     users: Contributor[]
 ): UserDisplayData[] {
     if (users.length === 0) return [];
+
     let userTotalCommits: UserDisplayData[] = [];
+
     users.forEach((user) => {
         userTotalCommits.push({
             username: user.username,
@@ -475,17 +507,22 @@ export function get_users_total_commits(
             data_to_display: user.total_commits,
         });
     });
+
     const sortedCommits = userTotalCommits.sort(
         (a, b) => a.data_to_display - b.data_to_display
     );
+
     const groups = new Map<number, any[]>();
+
     sortedCommits.forEach((user) => {
         if (!groups.has(user.data_to_display)) {
             groups.set(user.data_to_display, []);
         }
         groups.get(user.data_to_display)!.push(user);
     });
+
     const result: any[] = [];
+
     groups.forEach((users, _) => {
         if (users.length === 1) {
             result.push(users[0]);
@@ -498,6 +535,7 @@ export function get_users_total_commits(
             });
         }
     });
+
     return result;
 }
 
@@ -505,7 +543,9 @@ export function get_users_avg_commit_size(
     users: Contributor[]
 ): UserDisplayData[] {
     if (users.length === 0) return [];
+
     let userAvgCommitSize: UserDisplayData[] = [];
+
     users.forEach((user) => {
         userAvgCommitSize.push({
             username: user.username,
@@ -522,13 +562,16 @@ export function get_users_avg_commit_size(
     const sortedCommits = userAvgCommitSize.sort(
         (a, b) => a.data_to_display - b.data_to_display
     );
+
     const groups = new Map<number, any[]>();
+
     sortedCommits.forEach((user) => {
         if (!groups.has(user.data_to_display)) {
             groups.set(user.data_to_display, []);
         }
         groups.get(user.data_to_display)!.push(user);
     });
+
     const result: UserDisplayData[] = [];
 
     groups.forEach((users, _) => {
@@ -543,6 +586,7 @@ export function get_users_avg_commit_size(
             });
         }
     });
+
     return result;
 }
 
@@ -551,7 +595,9 @@ export function get_users_absolute_diff(
     users: Contributor[]
 ): UserDisplayData[] {
     if (users.length === 0) return [];
+
     let userAbsoluteDiff: UserDisplayData[] = [];
+
     users.forEach((user) => {
         userAbsoluteDiff.push({
             username: user.username,
@@ -564,13 +610,16 @@ export function get_users_absolute_diff(
     const sortedDiffs = userAbsoluteDiff.sort(
         (a, b) => a.data_to_display - b.data_to_display
     );
+
     const groups = new Map<number, any[]>();
+
     sortedDiffs.forEach((user) => {
         if (!groups.has(user.data_to_display)) {
             groups.set(user.data_to_display, []);
         }
         groups.get(user.data_to_display)!.push(user);
     });
+
     const result: UserDisplayData[] = [];
 
     groups.forEach((users, _) => {
@@ -585,5 +634,6 @@ export function get_users_absolute_diff(
             });
         }
     });
+
     return result;
 }

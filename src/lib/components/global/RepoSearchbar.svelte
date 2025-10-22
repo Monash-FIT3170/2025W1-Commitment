@@ -46,11 +46,11 @@ repository URL.
         bind:value={repo_url_input}
         onkeydown={handle_input_keydown}
     />
-    <button class="repo-button" onclick={() => { on_submit(); }}>
+    <button class="repo-button btn-icon" onclick={() => on_submit()}>
         <Icon
             icon={"tabler:circle-arrow-right"}
             class="icon-medium"
-            style="color: white"
+            style="color: inherit"
         />
     </button>
 

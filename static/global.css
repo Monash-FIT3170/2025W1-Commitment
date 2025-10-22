@@ -38,35 +38,35 @@ html, body, #app {
     font-size: 2.625rem;
     font-family: DM Mono, monospace;
     font-weight: 500;
-    word-wrap: break-word
+    word-wrap: break-word;
 }
 
 .display-subtitle {
     font-size: 1.625rem;
     font-family: DM Mono, monospace;
     font-weight: 500;
-    word-wrap: break-word
+    word-wrap: break-word;
 }
 
 .display-heading {
     font-size: 1.0625rem;
     font-family: DM Mono, monospace;
     font-weight: 500;
-    word-wrap: break-word
+    word-wrap: break-word;
 }
 
 .display-body {
     font-size: 1.0625rem;
     font-family: DM Sans, sans-serif;
     font-weight: 400;
-    word-wrap: break-word
+    word-wrap: break-word;
 }
 
 .display-body-accent {
     font-size: 1.0625rem;
     font-family: DM Sans, sans-serif;
     font-weight: 600;
-    word-wrap: break-word
+    word-wrap: break-word;
 }
 
 /* Body text */
@@ -74,42 +74,42 @@ html, body, #app {
     font-size: 1.375rem;
     font-family: DM Mono, monospace;
     font-weight: 500;
-    word-wrap: break-word
+    word-wrap: break-word;
 }
 
 .heading-1 {
     font-size: 1.0625rem;
     font-family: DM Sans, sans-serif;
     font-weight: 700;
-    word-wrap: break-word
+    word-wrap: break-word;
 }
 
 .heading-2{
     font-size: 0.9375rem;
     font-family: DM Sans, sans-serif;
     font-weight: 400;
-    word-wrap: break-word
+    word-wrap: break-word;
 }
 
 .body {
     font-size: 0.8125rem;
     font-family: DM Sans, sans-serif;
     font-weight: 400;
-    word-wrap: break-word
+    word-wrap: break-word;
 }
 
 .body-accent {
     font-size: 0.8125rem;
     font-family: DM Sans, sans-serif;
     font-weight: 600;
-    word-wrap: break-word
+    word-wrap: break-word;
 }
 
 .caption {
     font-size: 0.6875rem;
     font-family: DM Sans, sans-serif;
     font-weight: 600;
-    word-wrap: break-word
+    word-wrap: break-word;
 }
 
 /* Colours */
@@ -200,4 +200,16 @@ html, body, #app {
 .icon-xlarge {
     width: 2.625rem;
     height: 2.625rem;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn-icon {
+    color: var(--label-primary) !important;
+}
+.btn-icon:hover, .btn-icon:focus {
+    color: var(--label-secondary) !important;
 }

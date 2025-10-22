@@ -3,7 +3,12 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use std::collections::{HashMap, HashSet};
 use std::env;
-use tauri::Emitter;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use std::time::Duration;
+use tauri::{Emitter, State};
+
+use crate::utils::to_string;
 
 #[derive(Clone, serde::Serialize)]
 struct SummaryProgress {
@@ -11,8 +16,28 @@ struct SummaryProgress {
     summary: String,
 }
 
+// Global state for cancellation
+pub struct CancellationState {
+    pub cancelled: Arc<AtomicBool>,
+}
+
+impl Default for CancellationState {
+    fn default() -> Self {
+        Self {
+            cancelled: Arc::new(AtomicBool::new(false)),
+        }
+    }
+}
+
 #[tauri::command]
-pub async fn get_ai_summary(window: tauri::Window, path: &str) -> Result<(), String> {
+pub async fn get_ai_summary(
+    window: tauri::Window,
+    path: &str,
+    cancellation_state: State<'_, CancellationState>,
+) -> Result<(), String> {
+    // Reset cancellation flag at the start
+    cancellation_state.cancelled.store(false, Ordering::SeqCst);
+
     match get_all_contributors(path) {
         Ok(contributors) => {
             let total = contributors.len();
@@ -26,6 +51,12 @@ pub async fn get_ai_summary(window: tauri::Window, path: &str) -> Result<(), Str
             window.emit("summary-total", total).unwrap();
 
             for (contributor_name, contributor_email) in contributors {
+                // Check if cancelled
+                if cancellation_state.cancelled.load(Ordering::SeqCst) {
+                    log::info!("Summary generation cancelled by user");
+                    return Err("Summary generation cancelled".to_string());
+                }
+
                 if let Ok(commits) = get_contributor_commits(path, &contributor_name) {
                     if !commits.is_empty() {
                         match summarize_commits(&commits).await {
@@ -38,9 +69,8 @@ pub async fn get_ai_summary(window: tauri::Window, path: &str) -> Result<(), Str
                                 window.emit("summary-progress", progress).unwrap();
                             }
                             Err(e) => {
-                                eprintln!(
-                                    "Failed to summarize commits for {contributor_name}: {e}"
-                                );
+                                let err_msg = e.to_string();
+                                Err(err_msg)?
                             }
                         }
                     }
@@ -61,7 +91,11 @@ pub async fn get_ai_summary_with_config(
     window: tauri::Window,
     path: &str,
     config_json: Value,
+    cancellation_state: State<'_, CancellationState>,
 ) -> Result<(), String> {
+    // Reset cancellation flag at the start
+    cancellation_state.cancelled.store(false, Ordering::SeqCst);
+
     match get_squashed_commits_by_config(path, config_json.clone()).await {
         Ok(squashed_commits) => {
             let total = squashed_commits.len();
@@ -89,6 +123,12 @@ pub async fn get_ai_summary_with_config(
             }
 
             for (user_name, commit_data) in squashed_commits {
+                // Check if cancelled
+                if cancellation_state.cancelled.load(Ordering::SeqCst) {
+                    log::info!("Summary generation cancelled by user");
+                    return Err("Summary generation cancelled".to_string());
+                }
+
                 if !commit_data.is_empty() {
                     match summarize_commits(&commit_data).await {
                         Ok(summary) => {
@@ -104,7 +144,8 @@ pub async fn get_ai_summary_with_config(
                             }
                         }
                         Err(e) => {
-                            eprintln!("Failed to summarize commits for {user_name}: {e}");
+                            let err_msg = e.to_string();
+                            Err(err_msg)?
                         }
                     }
                 }
@@ -120,6 +161,12 @@ pub async fn get_ai_summary_with_config(
 }
 
 #[tauri::command]
+pub fn cancel_summary_generation(cancellation_state: State<'_, CancellationState>) {
+    cancellation_state.cancelled.store(true, Ordering::SeqCst);
+    log::info!("Cancellation requested for summary generation");
+}
+
+#[tauri::command]
 pub fn check_key_set() -> bool {
     dotenvy::dotenv().ok();
     env::var("GEMINI_API_KEY").is_ok()
@@ -127,31 +174,32 @@ pub fn check_key_set() -> bool {
 
 #[tauri::command]
 pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
-    println!("Validating Gemini API key...");
+    log::info!("Validating Gemini API key...");
     let url: &str = "https://generativelanguage.googleapis.com/v1/models";
 
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(30)) //Set a timeout of 30 seconds
+        .connect_timeout(Duration::from_secs(10)) // Set a connection timeout of 10 seconds
+        .build()
+        .map_err(to_string)?;
 
     let response = client
         .get(url)
         .query(&[("key", &api_key)])
         .send()
         .await
-        .map_err(|e| e.to_string())?;
-
-    // Debugging: Check response status
-    println!("Response Status: {}", response.status());
+        .map_err(to_string)?;
 
     match response.status() {
         reqwest::StatusCode::OK => {
-            println!("VALID API KEY");
+            log::info!("VALID API KEY");
             env::set_var("GEMINI_API_KEY", &api_key);
             Ok(true)
         }
         reqwest::StatusCode::UNAUTHORIZED
         | reqwest::StatusCode::FORBIDDEN
         | reqwest::StatusCode::BAD_REQUEST => {
-            println!("INVALID API KEY");
+            log::info!("INVALID API KEY");
 
             if env::var("GEMINI_API_KEY").is_ok() {
                 // Removes the previously inputted valid key in case invalid key is entered.
@@ -163,7 +211,7 @@ pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
         status => {
             let body = response.text().await.unwrap_or_default();
             log::error!("Unexpected validation status {body}: {status}");
-            Ok(false)
+            Err(format!("Unexpected status: {status}"))
         }
     }
 }
@@ -190,7 +238,7 @@ struct Part {
 
 const COMMIT_SUMMARY_PROMPT: &str = include_str!("AI-summary-prompt.md");
 
-pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> {
+pub async fn summarize_commits(commits: &str) -> Result<String, String> {
     dotenvy::dotenv().ok();
     let api_key = env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY must be set");
 
@@ -201,7 +249,13 @@ pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> 
     ];
 
     let prompt = COMMIT_SUMMARY_PROMPT.replace("{commits}", commits);
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(30)) //Set a timeout of 30 seconds
+        .connect_timeout(Duration::from_secs(10)) // Set a connection timeout of 10 seconds
+        .build()
+        .map_err(|e| format!("Failed to build client: {e}"))?;
+
+    let mut last_error: Option<String> = None;
 
     for model in &models {
         let url = format!(
@@ -218,20 +272,45 @@ pub async fn summarize_commits(commits: &str) -> Result<String, reqwest::Error> 
             .send()
             .await;
 
-        if let Ok(res) = res {
-            if let Ok(response_json) = res.json::<GeminiResponse>().await {
-                if let Some(candidate) = response_json.candidates.first() {
-                    if let Some(part) = candidate.content.parts.first() {
-                        return Ok(part.text.clone());
+        match res {
+            Ok(response) => match response.json::<GeminiResponse>().await {
+                Ok(response_json) => {
+                    if let Some(candidate) = response_json.candidates.first() {
+                        if let Some(part) = candidate.content.parts.first() {
+                            return Ok(part.text.clone());
+                        }
                     }
+                    last_error = Some(format!("Empty response from model {model}"));
+                    log::error!("{last_error:?}");
                 }
+                Err(e) => {
+                    last_error = Some(format!("Failed to parse response from model {model}: {e}"));
+                    log::error!("{last_error:?}");
+                }
+            },
+            Err(e) => {
+                let error_msg = if e.is_timeout() {
+                    format!("Request to model {model} timed out")
+                } else if e.is_connect() {
+                    "Network connection error. Please check internet connection.".to_string()
+                } else if e.is_request() {
+                    format!("Request error to model {model}. Please try again.")
+                } else {
+                    format!("Request to model {model} failed. Unknown Error: {e}")
+                };
+                log::error!("{error_msg}");
+                last_error = Some(error_msg);
             }
         }
     }
 
-    Ok(String::from(
-        "Could not generate a summary after trying all models.",
-    ))
+    // Err(String::from(
+    //     "Failed to generate summary. Check internet connection or API key validity.",
+    // ))
+
+    Err(last_error.unwrap_or_else(|| {
+        String::from("Failed to generate summary. Check internet connection or API key validity.")
+    }))
 }
 
 pub fn get_contributor_commits(

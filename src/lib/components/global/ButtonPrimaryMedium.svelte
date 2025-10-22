@@ -5,13 +5,27 @@
         icon?: string | null;
         label: string;
         disabled?: boolean;
+        variant?: "primary" | "secondary";
         onclick?: (event: MouseEvent) => void;
+        ariaLabel?: string | null;
     };
 
-    let { icon = null, label, disabled = false, onclick }: $Props = $props();
+    let {
+        icon = null,
+        label,
+        disabled = false,
+        variant = "primary",
+        onclick,
+        ariaLabel = null,
+    }: $Props = $props();
 </script>
 
-<button class="medium" {disabled} {onclick}>
+<button
+    class="medium {variant}"
+    {disabled}
+    {onclick}
+    aria-label={ariaLabel ?? label}
+>
     {#if icon}
         <Icon
             icon={`tabler:${icon}`}
@@ -45,10 +59,6 @@
         border-radius: 8px;
     }
 
-    button:hover {
-        background-color: var(--fill-02);
-    }
-
     button:active {
         background-color: var(--fill-00);
     }
@@ -56,5 +66,21 @@
     button:disabled {
         background-color: var(--fill-04);
         cursor: not-allowed;
+    }
+
+    button:hover,
+    button:focus {
+        background-color: var(--fill-03);
+        color: var(--background-tertiary) !important;
+    }
+
+    button.secondary {
+        background-color: var(--background-secondary);
+        color: var(--label-primary);
+    }
+
+    button.secondary:hover,
+    button.secondary:focus {
+        color: var(--label-secondary) !important;
     }
 </style>

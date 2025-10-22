@@ -2,11 +2,12 @@
     import Icon from "@iconify/svelte";
     import { invoke } from "@tauri-apps/api/core";
     import { onMount } from "svelte";
+    import { info, error } from "@tauri-apps/plugin-log";
 
     let {
         on_submit = () => {},
         api_input = $bindable<string>(),
-        error = false,
+        api_error = false,
     } = $props();
 
     onMount(async () => {
@@ -16,15 +17,20 @@
     let editing = $state(false);
 
     async function check_key_set(): Promise<void> {
-        const input_field = document.getElementById(
-            "api-input-field"
-        ) as HTMLInputElement;
-        let check_key = await invoke<Boolean>("check_key_set");
+        info("Checking for already existing API key...");
+        try {
+            const input_field = document.getElementById(
+                "api-input-field"
+            ) as HTMLInputElement;
+            let check_key = await invoke<Boolean>("check_key_set");
 
-        if (check_key) {
-            api_input = "****************************************";
-            input_field.disabled = true;
-            editing = false;
+            if (check_key) {
+                api_input = "****************************************";
+                input_field.disabled = true;
+                editing = false;
+            }
+        } catch (err) {
+            error("Failed to check if key is set: " + err);
         }
     }
 
@@ -34,14 +40,23 @@
         }
     }
 
+    function handle_input_focus() {
+        editing = true;
+    }
+
     async function toggle_edit() {
         const input_field = document.getElementById(
             "api-input-field"
         ) as HTMLInputElement;
         if (editing) {
+            // Remove focus from the button to reset hover state
+            const button = document.activeElement as HTMLElement;
+            if (button) button.blur();
+
             let error = await on_submit();
             if (!error) {
                 api_input = "";
+                editing = false; // Set to false after successful submit to show edit icon
                 return;
             } else {
                 input_field.disabled = true;
@@ -75,7 +90,7 @@ repository URL.
                 If true, the input will be styled to indicate an error.
 -->
 
-<div class={["api-field", { error }]}>
+<div class={["api-field", { api_error }]}>
     <input
         id="api-input-field"
         class="api-textbox body"
@@ -83,19 +98,20 @@ repository URL.
         placeholder="enter your gemini API key..."
         bind:value={api_input}
         onkeydown={handle_input_keydown}
+        onfocus={handle_input_focus}
     />
-    <button class="api-button" onclick={toggle_edit}>
+    <button class="api-button btn-icon" onclick={toggle_edit}>
         {#if !editing}
             <Icon
                 icon={"tabler:pencil"}
                 class="icon-medium"
-                style="color: white"
+                style="color: inherit"
             />
         {:else}
             <Icon
-                icon={"tabler:circle-arrow-right"}
+                icon={"tabler:device-floppy"}
                 class="icon-medium"
-                style="color: white"
+                style="color: inherit"
             />
         {/if}
     </button>
@@ -115,7 +131,7 @@ repository URL.
         border-color: transparent;
     }
 
-    .api-field.error {
+    .api-field.api_error {
         border-color: var(--wonderland--ff748b);
         border-style: ridge;
         border-width: 0.125rem;

@@ -16,6 +16,7 @@
     } = $props();
 
     let open = $state(false);
+    let dropdownRef: HTMLDivElement;
 
     function toggle_dropdown() {
         if (!disabled) open = !open;
@@ -28,8 +29,9 @@
 
     function handle_click_outside(event: MouseEvent) {
         if (
-            !event.target ||
-            !(event.target as HTMLElement).closest(".dropdown-wrapper")
+            dropdownRef &&
+            event.target &&
+            !dropdownRef.contains(event.target as Node)
         ) {
             open = false;
         }
@@ -44,7 +46,7 @@
     });
 </script>
 
-<div class="dropdown-wrapper">
+<div class="dropdown-wrapper" bind:this={dropdownRef}>
     <button
         type="button"
         class="dropdown-toggle"
@@ -131,7 +133,7 @@
         left: 0;
         width: 100%;
         margin: 0;
-        padding: 0.5rem 0;
+        padding: 0rem 0rem 0.5rem 0;
         list-style: none;
         background: var(--background-primary);
         border-radius: 0 0 8px 8px;
@@ -153,5 +155,32 @@
     .dropdown-item.selected {
         background-color: var(--tint-02);
         font-weight: 600;
+    }
+
+    .dropdown-list {
+        max-height: calc(6 * 40px);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .dropdown-list::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .dropdown-list::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .dropdown-list::-webkit-scrollbar-thumb {
+        background: color-mix(
+            in srgb,
+            var(--tint-02) 75%,
+            transparent
+        ) !important;
+        border-radius: 4px;
+    }
+
+    .dropdown-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.3);
     }
 </style>

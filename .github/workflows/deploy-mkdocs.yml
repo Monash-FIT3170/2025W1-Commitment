@@ -1,9 +1,17 @@
     name: Deploy MkDocs Site
 
     on:
+      workflow_dispatch:
+        inputs:
+          publish:
+            description: "Commit & deploy"
+            type: boolean
+            default: false
       push:
         branches:
           - main
+      release:
+        types: [ created, edited, published ]
 
     permissions:
       contents: write
@@ -13,6 +21,8 @@
         runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v4
+            with:
+              ref: ${{ github.ref }}
 
           - name: Set up Python
             uses: actions/setup-python@v5
@@ -26,5 +36,22 @@
 
           - name: Install MkDocs and Theme
             run: pip install -r docs/requirements.txt
+
+          - name: Sync docs/data/releases.yml from latest GitHub Release
+            env:
+              GH_REPO: Monash-FIT3170/2025W1-Commitment
+              GG_YAML_PATH: docs/data/releases.yml
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            run: python docs/tools/update_releases.py
+
+          - name: Commit releases.yml if changed
+            run: |
+              if git diff --quiet -- docs/data/releases.yml; then
+                echo "No changes to releases.yml"
+              else
+                git add docs/data/releases.yml
+                git commit -m "chore: sync releases.yml from latest GitHub Release"
+              fi
+
           - name: Deploy MkDocs Site
             run: cd docs;mkdocs gh-deploy --force

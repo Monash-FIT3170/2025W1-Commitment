@@ -19,16 +19,19 @@
         type Contributor,
         type UserDisplayData,
     } from "$lib/metrics";
-    import { info } from "@tauri-apps/plugin-log";
 
     let {
         contributors,
         metric,
         aggregation = "mean",
+        is_expanded = $bindable(false),
+        is_transitioning = $bindable(false),
     }: {
         contributors: Contributor[];
         metric: string;
         aggregation?: string;
+        is_expanded: boolean;
+        is_transitioning: boolean;
     } = $props();
 
     let chart_container: HTMLElement;
@@ -39,7 +42,6 @@
     );
     let is_staggered_mode = $state(false);
     let chart_height = $state(380);
-    let is_transitioning = $state(false);
     let x_min: number = $state(0);
     let x_max: number = $state(1);
     let metric_mean: number = $state(0);
@@ -142,15 +144,16 @@
         aggregation;
         contributors;
         if (chart) {
-            set_chart_options();
+            set_chart_options({ includeGraphics: !is_transitioning });
         }
     });
     $effect(() => {
-        // Update chart height based on mode and number of contributors
+        // Update chart height based on mode, expansion state, and number of contributors
         const old_height = chart_height;
-        const new_height = is_staggered_mode
+        const base_height = is_staggered_mode
             ? 100 + filtered_people.length * 80
             : 380;
+        const new_height = base_height + (is_expanded ? 220 : 0);
         chart_height = new_height;
 
         // Trigger chart resize when height changes
@@ -179,11 +182,9 @@
                             // Only clear and reset options on the final update
                             if (index === updateIntervals.length - 1) {
                                 chart.clear();
-                                set_chart_options();
                                 // Re-enable contributor icons after transition completes
                                 is_transitioning = false;
-                                // Call updateGraphics to render icons now that transition is complete
-                                update_graphics();
+                                set_chart_options();
                             }
                         }, delay);
                     });
@@ -191,6 +192,15 @@
             });
         }
     });
+    export function toggle_chart_expansion() {
+        if (chart) {
+            is_transitioning = true;
+            set_chart_options({ includeGraphics: false });
+        }
+        const next_expanded_state = !is_expanded;
+        is_expanded = next_expanded_state;
+        is_staggered_mode = next_expanded_state;
+    }
     $effect(() => {
         sd = get_sd(contributors, metric);
         if (aggregation === "median") {
@@ -417,12 +427,7 @@
                     );
                 }
 
-                info(`${person.username}: ${person.profile_colour}`);
                 const z: number = idx * 4;
-                info(
-                    `idx: ${idx}, z: ${z}, +1: ${z + 1}, +2: ${z + 2}, +3: ${z + 3}`
-                );
-
                 const between_mid_max =
                     person.data_to_display >= ref_point_values[2];
 
@@ -508,7 +513,14 @@
         });
     }
 
-    function set_chart_options() {
+    $effect(() => {
+        if (!chart || !is_transitioning) return;
+        set_chart_options({ includeGraphics: false });
+    });
+
+    function set_chart_options({
+        includeGraphics = true,
+    }: { includeGraphics?: boolean } = {}) {
         const option = {
             backgroundColor: "transparent", //#222',
             animation: true,
@@ -565,49 +577,51 @@
                       )
                     : 2.5,
             },
-            series: [
-                {
-                    type: "scatter",
-                    data: processed_people.map((p: any) => [
-                        p.data_to_display,
-                        p.y_value,
-                    ]),
-                    symbolSize: 0,
-                    // displays data points above stacked custom graphics
-                    z: processed_people.length * 4,
-                    animation: true,
-                    animationDuration: 800,
-                    animationEasing: "cubicInOut" as const,
-                },
-                {
-                    name: "hoverPoints",
-                    type: "scatter",
-                    data: processed_people.map((p: any) => [
-                        p.data_to_display,
-                        p.y_value,
-                        p.username,
-                    ]),
-                    symbolSize: 40,
-                    // displays data points above stacked custom graphics
-                    z: (processed_people.length + 1) * 4,
-                    animation: true,
-                    animationDuration: 800,
-                    animationEasing: "cubicInOut" as const,
-                    itemStyle: {
-                        color: "transparent",
-                    },
-                    emphasis: {
-                        focus: "series",
-                        itemStyle: {
-                            color: "transparent",
-                            borderColor: "#fff",
-                            borderWidth: 2,
-                            shadowBlur: 10,
-                            shadowColor: "rgba(255, 255, 255, 0.7)",
-                        },
-                    },
-                },
-            ],
+            series: includeGraphics
+                ? [
+                      {
+                          type: "scatter",
+                          data: processed_people.map((p: any) => [
+                              p.data_to_display,
+                              p.y_value,
+                          ]),
+                          symbolSize: 0,
+                          // displays data points above stacked custom graphics
+                          z: processed_people.length * 4,
+                          animation: true,
+                          animationDuration: 800,
+                          animationEasing: "cubicInOut" as const,
+                      },
+                      {
+                          name: "hoverPoints",
+                          type: "scatter",
+                          data: processed_people.map((p: any) => [
+                              p.data_to_display,
+                              p.y_value,
+                              p.username,
+                          ]),
+                          symbolSize: 40,
+                          // displays data points above stacked custom graphics
+                          z: (processed_people.length + 1) * 4,
+                          animation: true,
+                          animationDuration: 800,
+                          animationEasing: "cubicInOut" as const,
+                          itemStyle: {
+                              color: "transparent",
+                          },
+                          emphasis: {
+                              focus: "series",
+                              itemStyle: {
+                                  color: "transparent",
+                                  borderColor: "#fff",
+                                  borderWidth: 2,
+                                  shadowBlur: 10,
+                                  shadowColor: "rgba(255, 255, 255, 0.7)",
+                              },
+                          },
+                      },
+                  ]
+                : [],
             tooltip: {
                 trigger: "item",
                 formatter: function (params: any) {
@@ -630,7 +644,9 @@
             graphic: [],
         };
         chart.setOption(option, true);
-        update_graphics();
+        if (includeGraphics) {
+            update_graphics();
+        }
     }
 
     onMount(() => {
@@ -647,14 +663,7 @@
 
             chart.dispatchAction({ type: "hideTip" });
 
-            is_transitioning = true;
-            chart.clear();
-
-            set_chart_options();
-
-            requestAnimationFrame(() => {
-                is_staggered_mode = !is_staggered_mode;
-            });
+            toggle_chart_expansion();
         });
 
         resize_handler = () => {

@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { writable, get } from "svelte/store";
+import { info } from "@tauri-apps/plugin-log";
 
 export interface Config {
     [group: string]: string[];
@@ -9,6 +10,7 @@ export interface RepoSchema {
     bookmarked: boolean;
     visited: boolean;
     cloned: boolean;
+    depth?: number | null;
     email_mapping: Config | null;
     grading_sheet: string | null;
     last_accessed: string;
@@ -151,31 +153,40 @@ function create_manifest_store() {
             repo_info: RepositoryInformation,
             repo_url: string,
             source_type: 0 | 1 | 2,
-            repo_local_path: string
+            repo_local_path: string,
+            depth?: number | null
         ) {
-            const working_dir = await invoke<string>("get_working_directory");
-            const repo_path =
-                source_type === 2
-                    ? repo_local_path
-                    : `${working_dir}/repositories/${repo_info.source_type}-${repo_info.owner}-${repo_info.repo}`;
-            repo_url = source_type === 2 ? repo_local_path : repo_url;
+            try {
+                const working_dir = await invoke<string>(
+                    "get_working_directory"
+                );
+                const repo_path =
+                    source_type === 2
+                        ? repo_local_path
+                        : `${working_dir}/repositories/${repo_info.source_type}-${repo_info.owner}-${repo_info.repo}`;
+                repo_url = source_type === 2 ? repo_local_path : repo_url;
 
-            const new_repo: RepoSchema = {
-                name: repo_info.repo,
-                owner: repo_info.owner,
-                source_type: repo_info.source_type,
-                url: repo_url,
-                path: repo_path,
-                bookmarked: false,
-                visited: false,
-                cloned: source_type !== 2,
-                email_mapping: null,
-                grading_sheet: null,
-                last_accessed: new Date().toISOString(),
-            };
-            update((m) => ({
-                repository: [...m.repository, new_repo],
-            }));
+                const new_repo: RepoSchema = {
+                    name: repo_info.repo,
+                    owner: repo_info.owner,
+                    source_type: repo_info.source_type,
+                    url: repo_url,
+                    path: repo_path,
+                    bookmarked: false,
+                    visited: false,
+                    cloned: source_type !== 2,
+                    depth: depth && depth > 0 ? depth : null,
+                    email_mapping: null,
+                    grading_sheet: null,
+                    last_accessed: new Date().toISOString(),
+                };
+                update((m) => ({
+                    repository: [...m.repository, new_repo],
+                }));
+            } catch (e) {
+                info(`Failed to get working directory: ${e}`);
+                return;
+            }
         },
 
         /** Update the last accessed timestamp of a repository. */
@@ -197,6 +208,22 @@ function create_manifest_store() {
                         return {
                             ...repo,
                             email_mapping: config,
+                        };
+                    }
+                    return repo;
+                });
+                return { repository: next };
+            });
+        },
+
+        /** Remove email_mapping for a repository. */
+        remove_email_mapping(repo_url: string) {
+            update((m) => {
+                const next = m.repository.map((repo) => {
+                    if (repo.url === repo_url) {
+                        return {
+                            ...repo,
+                            email_mapping: null,
                         };
                     }
                     return repo;
