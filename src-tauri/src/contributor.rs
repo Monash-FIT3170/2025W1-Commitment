@@ -1,5 +1,4 @@
 use git2::{BranchType, Oid, Repository, Sort};
-use log::info;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -27,6 +26,8 @@ pub struct Contributor {
     pub profile_colour: String,
     pub username_initials: String,
     pub ai_summary: String,
+    pub total_regex_matches: usize,
+    pub commits_matching_regex: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -51,6 +52,9 @@ pub async fn group_contributors_by_config(
             let mut deletions = 0;
             let mut contacts = Vec::new();
             let ai_summary = String::new();
+            let total_regex_matches = 0;
+            let commits_matching_regex = 0;
+
             let mut processed_contributors = std::collections::HashSet::new();
 
             if let Value::Array(email_list) = emails_value {
@@ -116,6 +120,8 @@ pub async fn group_contributors_by_config(
                     profile_colour: profile_bg_colour,
                     username_initials,
                     ai_summary,
+                    total_regex_matches,
+                    commits_matching_regex,
                 });
             }
         }
@@ -201,7 +207,7 @@ pub async fn get_contributor_info(
 
     let mut contributors: HashMap<String, Contributor> = HashMap::new();
 
-    let _re = regex_query.map(Regex::new);
+    let rgx = regex_query.map(|rgx_str| Regex::new(rgx_str).map_err(|e| e.to_string()));
 
     for oid_result in revwalk {
         let oid = oid_result.map_err(|e| e.to_string())?;
@@ -243,10 +249,13 @@ pub async fn get_contributor_info(
         let additions = stats.insertions() as u64;
         let deletions = stats.deletions() as u64;
 
-        if regex_query.is_some() {
+        let total_matches = if regex_query.is_some() {
             let commit_msg = commit.message_raw().unwrap_or("");
-            info!("commit msg raw: {commit_msg}");
-        }
+            let re = rgx.clone().unwrap()?;
+            re.find_iter(commit_msg).count()
+        } else {
+            0
+        };
 
         let entry = contributors
             .entry(username.to_string())
@@ -259,6 +268,8 @@ pub async fn get_contributor_info(
                 profile_colour: profile_bg_colour,
                 username_initials: initials,
                 ai_summary: String::from(""),
+                total_regex_matches: 0,
+                commits_matching_regex: 0,
             });
 
         // Add email to contacts if not already present
@@ -279,6 +290,8 @@ pub async fn get_contributor_info(
                         profile_colour: entry.profile_colour.clone(),
                         username_initials: entry.username_initials.clone(),
                         ai_summary: String::from(""),
+                        total_regex_matches: entry.total_regex_matches,
+                        commits_matching_regex: entry.commits_matching_regex,
                     };
                 }
             }
@@ -287,6 +300,11 @@ pub async fn get_contributor_info(
         entry.total_commits += 1;
         entry.additions += additions;
         entry.deletions += deletions;
+        entry.total_regex_matches += total_matches;
+
+        if total_matches > 0 {
+            entry.commits_matching_regex += 1;
+        }
     }
 
     Ok(contributors)
