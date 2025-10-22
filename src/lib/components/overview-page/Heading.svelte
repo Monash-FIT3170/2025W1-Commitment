@@ -104,11 +104,23 @@
                 const { valid, errors } = validate_config_file(json);
                 if (valid) {
                     try {
+                        // Load fresh contributor data to avoid duplicating grouped stats
+                        const branch_arg =
+                            branch_selection === ""
+                                ? undefined
+                                : branch_selection;
+                        const fresh_contributors = await load_commit_data(
+                            repo_path,
+                            branch_arg,
+                            start_date,
+                            end_date
+                        );
+
                         const result = await invoke<Contributor[]>(
                             "group_contributors_by_config",
                             {
                                 config_json: json,
-                                contributors: contributors,
+                                contributors: fresh_contributors,
                             }
                         );
 
@@ -144,6 +156,7 @@
 
     async function handle_remove_mapping() {
         try {
+            show_config_modal = false;
             manifest.remove_email_mapping(repo_url);
 
             // Get the current state of the manifest after the update

@@ -219,7 +219,15 @@
             const new_branches = await load_branches(repo_path);
             branches = new_branches.filter((branch) => branch !== "All");
 
-            const new_contributors = await load_commit_data(repo_path);
+            // Use current branch and date filters to match load_graph behavior
+            const branch_arg =
+                branch_selection === "" ? undefined : branch_selection;
+            const new_contributors = await load_commit_data(
+                repo_path,
+                branch_arg,
+                start_date,
+                end_date
+            );
 
             if (email_mapping) {
                 try {
@@ -362,25 +370,28 @@
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
             info("page " + data);
+
+            // Check if there's an email mapping for this repository
+            const repo_entry = data.repository.find((r) => r.url === repo_url);
+            const has_email_mapping = !!repo_entry?.email_mapping;
+
+            // Always reload if we have an email mapping (to ensure config is applied to fresh data)
+            // or if we have no branches/contributors
+            if (
+                branches.length === 0 ||
+                contributors.length === 0 ||
+                has_email_mapping
+            ) {
+                await load_graph();
+            }
         } catch (e: any) {
             let err = typeof e === "string" ? e : (e?.message ?? String(e));
             error("read_manifest failed: " + err);
-        }
-        if (email_mapping) {
-            try {
-                contributors = await invoke<Contributor[]>(
-                    "group_contributors_by_config",
-                    {
-                        config_json: email_mapping,
-                        contributors: contributors,
-                    }
-                );
-            } catch (e) {
-                error("Error applying config: " + e);
+
+            // Fallback: always reload if manifest reading fails
+            if (branches.length === 0 || contributors.length === 0) {
+                await load_graph();
             }
-        }
-        if (branches.length === 0 || contributors.length === 0) {
-            await load_graph();
         }
     });
 </script>
