@@ -4,7 +4,11 @@ repo_url: "https://github.com/Monash-FIT3170/2025W1-Commitment"
 nav:
 - Home: 'index.md'
 - Guide: 'guide/getting-started.md'
-- Releases: 'releases/'
+- Releases: 
+    # BEGIN AUTO-RELEASES
+    - All releases: 'releases/index.md'
+    # END AUTO-RELEASES
+    
 theme:
   name: material
   logo: assets/images/logo.png
@@ -19,11 +23,12 @@ theme:
 
 plugins:
   - search
+  - awesome-pages
   - macros:
       module_name: tools/main
 
 watch:
-  - data
+  - docs/data
 
 markdown_extensions:
   - attr_list

@@ -4,7 +4,7 @@ import yaml
 
 def define_env(env):
     root = pathlib.Path(env.project_dir)
-    data_path = root / "data" / "releases.yml"
+    data_path = root / "docs" / "data" / "releases.yml"
     data = {}
 
     if data_path.exists():
