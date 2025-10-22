@@ -178,7 +178,7 @@
             if (window.location.pathname == "/overview-page") {
                 await goto("/");
             }
-            goto('/overview-page')
+            goto("/overview-page");
         } catch (error: any) {
             const error_message = error.message || "Verification failed";
             info("Failed to open bookmarked repo: " + error_message);

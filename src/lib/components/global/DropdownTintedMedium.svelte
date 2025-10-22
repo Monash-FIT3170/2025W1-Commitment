@@ -44,7 +44,6 @@
     onDestroy(() => {
         document.removeEventListener("click", handle_click_outside);
     });
-
 </script>
 
 <div class="dropdown-wrapper" bind:this={dropdownRef}>
