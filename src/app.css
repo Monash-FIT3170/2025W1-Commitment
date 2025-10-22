@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
 
 @plugin 'flowbite/plugin';
 
@@ -22,7 +24,6 @@
 @source "../node_modules/flowbite-svelte-icons/dist";
 
 @layer base {
-    /* disable chrome cancel button */
     input[type="search"]::-webkit-search-cancel-button {
         display: none;
     }
