@@ -105,11 +105,13 @@
                             branch_selection === ""
                                 ? undefined
                                 : branch_selection;
+
                         const fresh_contributors = await load_commit_data(
                             repo_path,
                             branch_arg,
                             start_date,
-                            end_date
+                            end_date,
+                            regex_query
                         );
 
                         const result = await invoke<Contributor[]>(
