@@ -42,29 +42,14 @@
     let config_error_msg = $state("");
 
     let show_regex_modal = $state(false);
-    let querying_msgs: boolean = $state(false);
     let regex_input = $state("");
 
     function save_regex() {
+        info($state.snapshot(regex_input));
         const trimmed = regex_input.trim();
         regex_query = trimmed.length > 0 ? trimmed : undefined;
         show_regex_modal = false;
     }
-
-    $effect(() => {
-        if (querying_msgs) {
-            (async () => {
-                // apply regex to contributor commits to find matches
-                contributors = await invoke<Contributor[]>(
-                    "query_for_matches",
-                    {
-                        regex_query: regex_query,
-                        contributors: contributors,
-                    }
-                );
-            })();
-        }
-    });
 
     // Add effect to manage body class when modal state changes
     $effect(() => {

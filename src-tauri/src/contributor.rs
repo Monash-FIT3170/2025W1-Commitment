@@ -1,4 +1,5 @@
 use git2::{BranchType, Oid, Repository, Sort};
+use log::info;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -25,9 +26,9 @@ pub struct Contributor {
     pub deletions: u64,
     pub profile_colour: String,
     pub username_initials: String,
-    pub ai_summary: String,
     pub total_regex_matches: usize,
     pub commits_matching_regex: u64,
+    pub ai_summary: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -51,9 +52,9 @@ pub async fn group_contributors_by_config(
             let mut additions = 0;
             let mut deletions = 0;
             let mut contacts = Vec::new();
+            let mut total_regex_matches = 0;
+            let mut commits_matching_regex = 0;
             let ai_summary = String::new();
-            let total_regex_matches = 0;
-            let commits_matching_regex = 0;
 
             let mut processed_contributors = std::collections::HashSet::new();
 
@@ -94,6 +95,8 @@ pub async fn group_contributors_by_config(
                             total_commits += contrib.total_commits;
                             additions += contrib.additions;
                             deletions += contrib.deletions;
+                            total_regex_matches += contrib.total_regex_matches;
+                            commits_matching_regex += contrib.commits_matching_regex;
 
                             // Add all matching emails from this contributor to contacts
                             for email in contributor_emails.iter() {
@@ -119,9 +122,9 @@ pub async fn group_contributors_by_config(
                     deletions,
                     profile_colour: profile_bg_colour,
                     username_initials,
-                    ai_summary,
                     total_regex_matches,
                     commits_matching_regex,
+                    ai_summary,
                 });
             }
         }
@@ -251,8 +254,13 @@ pub async fn get_contributor_info(
 
         let total_matches = if regex_query.is_some() {
             let commit_msg = commit.message_raw().unwrap_or("");
+            let id = commit.id().to_string().chars().take(6).collect::<String>();
             let re = rgx.clone().unwrap()?;
-            re.find_iter(commit_msg).count()
+            re.find_iter(commit_msg)
+                .inspect(|m| {
+                    info!("{id} :: {}", m.as_str());
+                })
+                .count()
         } else {
             0
         };
@@ -267,9 +275,9 @@ pub async fn get_contributor_info(
                 deletions: 0,
                 profile_colour: profile_bg_colour,
                 username_initials: initials,
-                ai_summary: String::from(""),
                 total_regex_matches: 0,
                 commits_matching_regex: 0,
+                ai_summary: String::from(""),
             });
 
         // Add email to contacts if not already present
@@ -289,9 +297,9 @@ pub async fn get_contributor_info(
                         deletions: entry.deletions,
                         profile_colour: entry.profile_colour.clone(),
                         username_initials: entry.username_initials.clone(),
-                        ai_summary: String::from(""),
                         total_regex_matches: entry.total_regex_matches,
                         commits_matching_regex: entry.commits_matching_regex,
+                        ai_summary: String::from(""),
                     };
                 }
             }
