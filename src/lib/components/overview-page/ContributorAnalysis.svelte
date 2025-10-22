@@ -294,7 +294,7 @@
     );
 </script>
 
-<main class="container">
+<main class="analysis-container">
     {#if loading}
         <div class="background-blur">
             <div class="loading-content">
@@ -364,7 +364,7 @@
 </main>
 
 <style>
-    .container {
+    .analysis-container {
         padding: 2rem 2rem 2rem 2rem;
         display: grid;
         place-items: center;
@@ -374,7 +374,7 @@
     }
 
     @media (max-width: 75rem) {
-        .container {
+        .analysis-container {
             min-height: calc(100vh - 26rem);
         }
     }
