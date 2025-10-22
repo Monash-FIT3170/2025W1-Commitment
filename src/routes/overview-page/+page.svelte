@@ -52,6 +52,8 @@
 
     let manifest_state = $state<ManifestSchema>({ repository: [] });
 
+    let regex_query = $state<string | undefined>(undefined);
+
     // Subscribe to manifest store
     $effect(() => {
         const unsubscribe = manifest.subscribe((value) => {
@@ -143,11 +145,13 @@
                     end_date,
                 })
         );
+
         let new_contributors = await load_commit_data(
             repo_path,
             branch_arg,
             start_date,
-            end_date
+            end_date,
+            regex_query
         );
 
         // Apply config grouping if email_mapping is present
@@ -420,6 +424,7 @@
         bind:start_date
         bind:end_date
         bind:contributors
+        bind:regex_query
     />
 
     <div class="page-select-btns">
@@ -450,6 +455,7 @@
                 bind:selected_criteria
                 {aggregation_options}
                 bind:selected_aggregation
+                querying_msgs={regex_query !== undefined}
             />
         {/key}
     {:else if selected_view === "analysis"}

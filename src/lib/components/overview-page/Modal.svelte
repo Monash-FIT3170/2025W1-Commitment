@@ -16,9 +16,9 @@
         show_modal = false;
     }
 
-    // Backdrop keyboard handler (Enter/Space triggers close)
+    // Backdrop keyboard handler (Enter triggers close)
     function on_backdrop_key(e: KeyboardEvent) {
-        if (e.key === "Enter" || e.key === " ") {
+        if (e.key === "Enter") {
             e.preventDefault();
             close();
         }

@@ -15,6 +15,7 @@
         selected_criteria = $bindable(),
         aggregation_options,
         selected_aggregation = $bindable(),
+        querying_msgs = false,
     }: {
         contributors: Contributor[];
         branches: String[];
@@ -25,6 +26,7 @@
         selected_criteria: string;
         aggregation_options: string[];
         selected_aggregation: string;
+        querying_msgs: boolean;
     } = $props();
 
     let sidebar_open = $state(false);
@@ -91,6 +93,7 @@
         end_date={end_date ?? ""}
         metric={selected_criteria}
         aggregation={selected_aggregation}
+        {querying_msgs}
     />
 </main>
 
