@@ -379,7 +379,10 @@
         top: 0;
         right: 0;
         width: 18.4375rem;
-        min-height: 93vh;
+        height: 100vh;
+        max-height: 100vh;
+        overflow-y: auto;
+        box-sizing: border-box;
         padding: 2rem;
         border-radius: 8px 0 0 8px;
         border-top: solid var(--Label-Tertiary, #747474);
