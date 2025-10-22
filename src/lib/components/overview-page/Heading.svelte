@@ -258,7 +258,9 @@
                 />
             {/snippet}
 
-            {#snippet header()}<div class="regex-title">Exclude Commits Using Regex</div>{/snippet}
+            {#snippet header()}<div class="regex-title">
+                    Exclude Commits Using Regex
+                </div>{/snippet}
 
             {#snippet body()}
                 <div class="regex-modal-content">
@@ -527,7 +529,7 @@
         font-size: 1.25rem;
     }
     .regex-instructions {
-        font-size: 0.9rem; 
+        font-size: 0.9rem;
         font-weight: 300;
     }
 
@@ -540,7 +542,9 @@
         background: var(--background-tertiary);
         color: var(--label-primary);
         font-size: 1.2rem;
-        font-family: DM Mono, monospace;
+        font-family:
+            DM Mono,
+            monospace;
         resize: vertical;
         box-sizing: border-box;
         transition:
