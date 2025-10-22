@@ -219,7 +219,15 @@
             const new_branches = await load_branches(repo_path);
             branches = new_branches.filter((branch) => branch !== "All");
 
-            const new_contributors = await load_commit_data(repo_path);
+            // Use current branch and date filters to match load_graph behavior
+            const branch_arg =
+                branch_selection === "" ? undefined : branch_selection;
+            const new_contributors = await load_commit_data(
+                repo_path,
+                branch_arg,
+                start_date,
+                end_date
+            );
 
             if (email_mapping) {
                 try {
@@ -362,25 +370,28 @@
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
             info("page " + data);
+
+            // Check if there's an email mapping for this repository
+            const repo_entry = data.repository.find((r) => r.url === repo_url);
+            const has_email_mapping = !!repo_entry?.email_mapping;
+
+            // Always reload if we have an email mapping (to ensure config is applied to fresh data)
+            // or if we have no branches/contributors
+            if (
+                branches.length === 0 ||
+                contributors.length === 0 ||
+                has_email_mapping
+            ) {
+                await load_graph();
+            }
         } catch (e: any) {
             let err = typeof e === "string" ? e : (e?.message ?? String(e));
             error("read_manifest failed: " + err);
-        }
-        if (email_mapping) {
-            try {
-                contributors = await invoke<Contributor[]>(
-                    "group_contributors_by_config",
-                    {
-                        config_json: email_mapping,
-                        contributors: contributors,
-                    }
-                );
-            } catch (e) {
-                error("Error applying config: " + e);
+
+            // Fallback: always reload if manifest reading fails
+            if (branches.length === 0 || contributors.length === 0) {
+                await load_graph();
             }
-        }
-        if (branches.length === 0 || contributors.length === 0) {
-            await load_graph();
         }
     });
 </script>
@@ -392,7 +403,13 @@
     on_token_add={handle_token_add}
 />
 
-<div class="page {source_type === 0 ? 'github' : source_type === 1 ? 'gitlab' : 'local'}">
+<div
+    class="page {source_type === 0
+        ? 'github'
+        : source_type === 1
+          ? 'gitlab'
+          : 'local'}"
+>
     <Heading
         {repo}
         {source_type}
@@ -417,7 +434,7 @@
             />
         {/each}
     </div>
-    {#if loading}
+    {#if loading_state.loading}
         <LoadingIndicator />
     {/if}
     <!-- commit graph -->
@@ -497,45 +514,45 @@
 
     .page.github {
         margin: 0;
-        background: 
+        background:
             linear-gradient(135deg, #111, #222 80%),
             radial-gradient(
-            circle at center bottom,
-            rgba(10, 20, 160, 0.85) 0%,
-            rgba(40, 30, 130, 0.4) 15%,
-            rgba(40, 30, 130, 0) 60%
+                circle at center bottom,
+                rgba(10, 20, 160, 0.85) 0%,
+                rgba(40, 30, 130, 0.4) 15%,
+                rgba(40, 30, 130, 0) 60%
             );
         background-repeat: no-repeat;
         background-size: cover;
         background-attachment: fixed;
         background-blend-mode: screen;
     }
-    
+
     .page.gitlab {
         margin: 0;
-        background: 
+        background:
             linear-gradient(135deg, #111, #222 80%),
             radial-gradient(
-            circle at center bottom,
-            rgba(160, 65, 10, 0.85) 0%,
-            rgba(130, 63, 30, 0.4) 15%,
-            rgba(130, 58, 30, 0) 60%
+                circle at center bottom,
+                rgba(160, 65, 10, 0.85) 0%,
+                rgba(130, 63, 30, 0.4) 15%,
+                rgba(130, 58, 30, 0) 60%
             );
         background-repeat: no-repeat;
         background-size: cover;
         background-attachment: fixed;
         background-blend-mode: screen;
     }
-    
+
     .page.local {
         margin: 0;
-        background: 
+        background:
             linear-gradient(135deg, #111, #222 80%),
             radial-gradient(
-            circle at center bottom,
-            rgba(93, 94, 106, 0.85) 0%,
-            rgba(80, 79, 87, 0.4) 15%,
-            rgba(59, 58, 64, 0) 60%
+                circle at center bottom,
+                rgba(93, 94, 106, 0.85) 0%,
+                rgba(80, 79, 87, 0.4) 15%,
+                rgba(59, 58, 64, 0) 60%
             );
         background-repeat: no-repeat;
         background-size: cover;

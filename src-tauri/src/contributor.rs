@@ -49,20 +49,52 @@ pub async fn group_contributors_by_config(
             let mut deletions = 0;
             let mut contacts = Vec::new();
             let ai_summary = String::new();
+            let mut processed_contributors = std::collections::HashSet::new();
 
             if let Value::Array(email_list) = emails_value {
-                for email_val in email_list {
-                    if let Some(email) = email_val.as_str() {
-                        grouped_emails.insert(email.to_string());
+                // First pass: collect all emails in this group
+                let group_emails: std::collections::HashSet<String> = email_list
+                    .iter()
+                    .filter_map(|email_val| email_val.as_str())
+                    .map(|email| email.to_string())
+                    .collect();
 
-                        if let Some(contrib) = contributors.iter().find(|c| match &c.contacts {
-                            Contacts::Email(e) => e == email,
-                            Contacts::EmailList(list) => list.contains(&email.to_string()),
-                        }) {
+                // Add all group emails to the global grouped_emails set
+                for email in &group_emails {
+                    grouped_emails.insert(email.clone());
+                }
+
+                // Second pass: find contributors that have ANY email in this group
+                // but ensure each contributor is only processed ONCE per group
+                for contrib in contributors.iter() {
+                    let contributor_emails = match &contrib.contacts {
+                        Contacts::Email(e) => vec![e.clone()],
+                        Contacts::EmailList(list) => list.clone(),
+                    };
+
+                    // Check if this contributor has any email that matches this group
+                    let has_matching_email = contributor_emails
+                        .iter()
+                        .any(|email| group_emails.contains(email));
+
+                    if has_matching_email {
+                        // Use contributor's username as unique identifier to prevent duplicates
+                        let contributor_id =
+                            format!("{}|{}", contrib.username, contributor_emails.join(","));
+
+                        if !processed_contributors.contains(&contributor_id) {
+                            processed_contributors.insert(contributor_id);
+
                             total_commits += contrib.total_commits;
                             additions += contrib.additions;
                             deletions += contrib.deletions;
-                            contacts.push(email.to_string());
+
+                            // Add all matching emails from this contributor to contacts
+                            for email in contributor_emails.iter() {
+                                if group_emails.contains(email) && !contacts.contains(email) {
+                                    contacts.push(email.clone());
+                                }
+                            }
                         }
                     }
                 }

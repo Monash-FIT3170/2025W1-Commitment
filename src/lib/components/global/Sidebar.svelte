@@ -13,7 +13,7 @@
     import { generate_state_object, save_state } from "$lib/utils/localstorage";
     import { page } from "$app/state";
     import { loading_state } from "$lib/stores/loading.svelte";
-
+    import { loading_sleep } from "$lib/utils/sleep";
     import { get_app_version } from "$lib/utils/version";
 
     interface RepoBookmark {
@@ -84,6 +84,7 @@
 
     async function bookmark_open(repo_url_input: string) {
         loading_state.loading = true;
+        let start_time = Date.now();
         let source_type = get_source_type(repo_url_input);
         let repository_information: {
             source_type: 0 | 1 | 2;
@@ -137,6 +138,7 @@
                         bookmark_err_desc = "Unknown Error: " + err_check;
                     }
                     bookmark_error = true;
+                    await loading_sleep(start_time);
                     loading_state.loading = false;
                     return;
                 }
@@ -171,11 +173,12 @@
             await save_state(storage_obj);
 
             // Navigate to the overview page
+            await loading_sleep(start_time);
+            loading_state.loading = false;
             if (window.location.pathname == "/overview-page") {
                 await goto("/");
             }
-            goto("/overview-page");
-            loading_state.loading = false;
+            goto('/overview-page')
         } catch (error: any) {
             const error_message = error.message || "Verification failed";
             info("Failed to open bookmarked repo: " + error_message);
@@ -183,6 +186,7 @@
             // Since a private bookmarked repo shouldn't fail from PAT Token errors, we do not need to display the modal.
             // Or check for it even like in other areas.
 
+            await loading_sleep(start_time);
             bookmark_error = true;
             bookmark_err_desc =
                 "Failed to open bookmarked repository. Please try again.";
@@ -293,7 +297,6 @@
                 />
                 <h2 class="heading-1 sidebar-item-header white">Bookmarks</h2>
             </div>
-
             {#if bookmark_error}
                 <div class="caption error" style="margin-top: 0.25rem;">
                     {bookmark_err_desc}
@@ -318,7 +321,7 @@
                         </button>
                         {#if repo.source_type !== 2}
                             <button
-                                class="delete-button"
+                                class="delete-button btn-icon"
                                 type="button"
                                 onclick={(e) =>
                                     delete_repository(repo.repo_url, e)}
@@ -445,6 +448,12 @@
         border: none;
         padding: 0rem;
         flex: 1;
+        max-width: 250px;
+    }
+    .bookmark-item:hover {
+        opacity: 1;
+        background-color: #2f2f2f;
+        border-radius: 4px;
     }
     .delete-button {
         cursor: pointer;
@@ -463,6 +472,7 @@
     .repo-name,
     .repo-url {
         margin: 0;
+        max-width: 250px;
     }
     .label-secondary {
         color: var(--label-secondary);

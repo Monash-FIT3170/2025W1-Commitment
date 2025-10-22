@@ -81,7 +81,8 @@
     }
 
     async function handle_file_change(event: Event) {
-        const selected_files = (event.target as HTMLInputElement).files;
+        const input = event.target as HTMLInputElement;
+        const selected_files = input.files;
         if (selected_files && selected_files.length > 0) {
             if (!selected_files[0].name.toLowerCase().endsWith(".json")) {
                 config_error_msg = "Please upload a .json file";
@@ -104,11 +105,23 @@
                 const { valid, errors } = validate_config_file(json);
                 if (valid) {
                     try {
+                        // Load fresh contributor data to avoid duplicating grouped stats
+                        const branch_arg =
+                            branch_selection === ""
+                                ? undefined
+                                : branch_selection;
+                        const fresh_contributors = await load_commit_data(
+                            repo_path,
+                            branch_arg,
+                            start_date,
+                            end_date
+                        );
+
                         const result = await invoke<Contributor[]>(
                             "group_contributors_by_config",
                             {
                                 config_json: json,
-                                contributors: contributors,
+                                contributors: fresh_contributors,
                             }
                         );
 
@@ -131,6 +144,9 @@
             } catch {
                 config_error_msg = "Not valid JSON";
                 config_error = true;
+            } finally {
+                // Resets file input so reupload with same file doesn't get ignored
+                input.value = "";
             }
         }
     }
@@ -144,6 +160,7 @@
 
     async function handle_remove_mapping() {
         try {
+            show_config_modal = false;
             manifest.remove_email_mapping(repo_url);
 
             // Get the current state of the manifest after the update
@@ -371,9 +388,7 @@
                 bind:end={end_date}
                 date_format="d-m-Y"
                 icon="calendar"
-                icon_first={true}
                 label_class="body-accent"
-                label="Select Date Range"
                 disabled={false}
                 width={start_date && end_date ? "14rem" : "7rem"}
                 on:change={handle_date_change}
