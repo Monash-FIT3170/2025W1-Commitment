@@ -129,9 +129,14 @@ Students often commit using different emails. To group them correctly:
     - Contribution weighting by metric
 
 <p align="center">
-  <img src="../../assets/screenshots/4_contributor_overview.png" alt="Per-contributor breakdown view" width="600">
+  <img src="../../assets/screenshots/4a_cont_overview.png" alt="Per-contributor breakdown view" width="700">
 </p>
-<p align="center"><em>Fig. 4 – Per-contributor breakdown with scoring</em></p>
+<p align="center"><em>Fig. 4a – Per-contributor breakdown overview</em></p>
+
+<p align="center">
+  <img src="../../assets/screenshots/4b_cont_card.png" alt="Specific contributor card view" width="600">
+</p>
+<p align="center"><em>Fig. 4b – Specific contributor breakdown with scoring</em></p>
 
 ---
 
