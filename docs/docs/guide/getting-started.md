@@ -75,7 +75,7 @@ Start the app from your desktop.
 
 ---
 
-### **2. import a Repository**
+### **2. Import a Repository**
 
 - Enter a Git URL into the text box
 - If importing a private repository, enter your Personal Access Token (PAT) when prompted
