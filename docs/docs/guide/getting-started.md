@@ -23,7 +23,7 @@ All data stays on your machine. No setup headaches, no cloud sync.
 - Use regex filters to refine commit analysis  
 - Upload a config file to map multiple contributor emails to one student  
 - Generate AI summaries using Gemini  
-- Export grading data to CSV for upload to Moodle or your LMS
+- Export scaled grading data to CSV for upload to Monash Moodle
 
 ---
 
@@ -31,7 +31,6 @@ All data stays on your machine. No setup headaches, no cloud sync.
 
 ### **Generate a Gemini API Key (Optional)**
 
-> Note: AI summaries are optional. gitgauge works fully without Gemini.
 
 If you want AI-generated commit summaries:
 
@@ -41,7 +40,9 @@ If you want AI-generated commit summaries:
 4. Assign the key to a Cloud Project  
 5. Copy the key and paste it into gitgauge when prompted
 
-> Warning: Gemini API tokens are not stored and only used for the current session.
+> **NOTE:** AI summaries are optional. gitgauge works fully without Gemini.
+>
+> **WARNING:** Gemini API tokens are not stored and only used for the current session.
 
 ---
 
@@ -74,8 +75,7 @@ Students often commit using different emails. To group them correctly:
 Empty Config Modal  
 *Fig. 2 – Email mapping configuration modal*
 
-> Only contributors listed in the config file will be included in the analysis and export.  
-Unmapped commit emails are ignored entirely.
+> **WARNING:** Only contributors listed in the config file will be included in the analysis and export. Unmapped commit emails are ignored entirely.
 
 ---
 
@@ -92,8 +92,8 @@ Unmapped commit emails are ignored entirely.
 Regex Modal  
 *Fig. 3 – Filtering commit messages using regex*
 
-> Tip: Try `^(?!.*(fix|format)).*$` to exclude small or irrelevant commits.
-
+> **TIP:** Try `^(?!.*(fix|format)).*$` to exclude small or irrelevant commits.
+**
 ---
 
 ### **5\. Review Contributor Overview**
@@ -152,7 +152,7 @@ If you have the repo locally:
 
 ```git log \--format='%ae' | sort | uniq```
 
-This prints all unique emails used in commits.
+This prints all unique emails used in commits. Then ask students to identiify their personal emails.
 
 ---
 
@@ -198,8 +198,7 @@ The table below describes how GitGauge behaves when contributor email data is in
 | Yes | No | Yes | Contributor is not listed in the grading sheet and is assumed to be outside the analysed cohort. Their data is **ignored** in the export. |
 | Yes | Yes | No | Contributor’s commits are found, but their email is not mapped in the config file. These commits are **ignored** and not shown as separate contributors. |
 
-> **Note:** gitgauge only includes contributors who appear in the config file.  
-> Unmapped contributors are not displayed or counted in grading calculations.
+> **NOTE:** gitgauge only includes contributors who appear in the config file. Unmapped contributors are not displayed or counted in grading calculations.
 
 ---
 
@@ -210,7 +209,7 @@ The table below describes how GitGauge behaves when contributor email data is in
 - Repositories are auto-deleted after 30 days  
 - PATs and Gemini tokens are never stored
 
-> Reminder: Always obtain student consent before analysis.
+> **REMINDER:** Always obtain student consent before analysis.
 
 ---
 
