@@ -22,3 +22,24 @@ def define_env(env):
         "win": downloads.get("win") or [],
         "linux": downloads.get("linux") or [],
     }
+
+    def render_platform(title, version, date, notes_url, items):
+        rows = []
+        if items:
+            for it in items:
+                dl = f'<a href="{it.get("url","#")}">{it.get("label","Download")}</a>'
+                ch = it.get("checksum","")
+                if ch:
+                    dl += f"<br><code>{ch}</code>"
+                note = f'<a href="{notes_url}">Notes</a>' if notes_url else ""
+                rows.append(f"<tr><td>{version}</td><td>{date}</td><td>{dl}</td><td>{note}</td></tr>")
+        else:
+            rows.append('<tr><td colspan="4"></td></tr>')
+        return (
+            f'### {title}\n\n'
+            '<div class="md-typeset__table">\n<table>\n<thead>'
+            '<tr><th>Version</th><th>Date</th><th>Download</th><th>Notes</th></tr>'
+            '</thead>\n<tbody>\n' + "\n".join(rows) + '\n</tbody>\n</table>\n</div>\n'
+        )
+
+    env.macro(render_platform)
