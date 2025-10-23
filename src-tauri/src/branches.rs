@@ -1,6 +1,8 @@
 use git2::Repository;
 use log::info;
 
+use crate::utils::to_string;
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn get_branch_names(path: &str) -> Result<Vec<String>, String> {
     let canonical_path = match std::path::Path::new(path).canonicalize() {
@@ -11,8 +13,8 @@ pub async fn get_branch_names(path: &str) -> Result<Vec<String>, String> {
         Err(e) => return Err(e.to_string()),
     };
 
-    let repo = Repository::open(canonical_path).map_err(|e| e.to_string())?;
-    let head = repo.head().map_err(|e| e.to_string())?;
+    let repo = Repository::open(canonical_path).map_err(to_string)?;
+    let head = repo.head().map_err(to_string)?;
     let head_str = head.shorthand().unwrap_or("");
     let origin_head = format!("origin/{head_str}");
 
@@ -21,12 +23,12 @@ pub async fn get_branch_names(path: &str) -> Result<Vec<String>, String> {
 
     let mut branches = repo
         .branches(None)
-        .map_err(|e| e.to_string())?
+        .map_err(to_string)?
         .map(|b| {
-            let (branch, _) = b.map_err(|e| e.to_string()).unwrap();
+            let (branch, _) = b.map_err(to_string).unwrap();
             branch
                 .name()
-                .map_err(|e| e.to_string())
+                .map_err(to_string)
                 .unwrap()
                 .unwrap()
                 .to_string()

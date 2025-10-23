@@ -27,6 +27,7 @@
         end_date: end_date,
         metric,
         aggregation = "mean",
+        querying_msgs = false,
     }: {
         users: Contributor[];
         selected_branch: string;
@@ -34,6 +35,7 @@
         end_date: string;
         metric: string;
         aggregation?: string;
+        querying_msgs: boolean;
     } = $props();
 
     // Calculate metrics based on selected metric - WITH EXPLICIT TYPES
@@ -131,6 +133,8 @@
                 scaling_factor: scaling_factor.toFixed(1),
                 metric_value: data_value,
                 metric_name: metric,
+                total_regex_matches: user.total_regex_matches,
+                commits_matching_regex: user.commits_matching_regex,
             };
         })
     );
@@ -179,7 +183,7 @@
 
 <div class="cards-container">
     {#each people_with_metrics_sorted() as person}
-        <ContributorStatsCard {...person} />
+        <ContributorStatsCard {...person} {querying_msgs} />
     {/each}
 </div>
 
