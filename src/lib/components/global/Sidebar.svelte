@@ -18,6 +18,7 @@
     import { get_app_version } from "$lib/utils/version";
 
     const dispatch = createEventDispatcher();
+    let loading: boolean = $state(false);
 
     interface RepoBookmark {
         repo_name: string;
@@ -98,6 +99,7 @@
         };
 
         try {
+            loading_state.loading = true;
             if (source_type === 2) {
                 let remote_url = await invoke<string>(
                     "get_local_repo_information",
@@ -251,7 +253,6 @@
 </script>
 
 <div class={`sidebar-container ${$sidebar_open ? "open" : ""}`}>
-    <div class="sidebar-backdrop" onclick={close_sidebar}></div>
     <div class={`sidebar ${$sidebar_open ? "open" : "closed"}`}>
         <div class="sidebar-header">
             <div class="sidebar-title">
@@ -444,13 +445,13 @@
         padding: 0;
     }
     .clear-history-button {
-        padding: 0rem 0.375rem 1.5rem 0.375rem;
+        padding: 0.2rem 0.375rem 0.2rem 0.375rem;
         display: flex;
         align-items: center;
         justify-content: left;
         background: var(--tint-00);
         border-radius: 12px;
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         font: inherit;
     }
     .clear-history-button > button {
@@ -458,9 +459,9 @@
         border: none;
         color: var(--white);
         cursor: pointer;
-        padding: 0.5rem;
+        padding: 0.2rem;
         margin: 0;
-        font-size: 0.95rem;
+        font-size: 0.85rem;
     }
     .sidebar-item-container {
         display: grid;

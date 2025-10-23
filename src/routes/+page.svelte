@@ -135,11 +135,13 @@
     let waiting_for_auth: boolean = $state(false);
 
     async function select_bookmarked_repo(repo_url: string) {
+        loading = true;
         repo_url_input = repo_url;
         await handle_verification();
     }
 
     async function select_history_repo(repo_url: string) {
+        loading = true;
         repo_url_input = repo_url;
         await handle_verification();
     }
@@ -418,7 +420,9 @@
 
 <div class="page">
     {#if loading}
-        <LoadingIndicator />
+        <div class="loading-overlay" aria-hidden="true">
+            <LoadingIndicator />
+        </div>
     {/if}
     <header class="header">
         <Banner />
@@ -484,6 +488,13 @@
         justify-content: center;
         align-items: center;
         z-index: 500;
+    }
+    
+    .page {
+        display: grid;
+        grid-template-rows: auto 1fr; /* header and main */
+        height: 100vh;
+        width: 100vw;
     }
 
     .repo-menu {
