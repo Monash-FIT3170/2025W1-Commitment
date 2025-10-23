@@ -10,36 +10,11 @@ Contribution analytics for modern classrooms & teams. Visualise commits, additio
 [Open User Guide](guide/getting-started.md){ .md-button }
 [See Latest Release]({{ R.notes_url | default('#') }}){ .md-button .md-button--primary }
 
-
 ## Downloads
 
-=== "macOS"
 
-{% if D.mac and D.mac | length > 0 %}
-{% for item in D.mac %}
-- **{{ item.label }}** — [Download]({{ item.url }}){% if item.checksum %} — `{{ item.checksum }}`{% endif %}
-{% endfor %}
-{% else %}
-See assets on the latest release: {{ R.notes_url | default('#') }}
-{% endif %}
+{{ render_platform('macOS', R.version, R.date, R.notes_url, D.mac) }}
 
-=== "Windows"
+{{ render_platform('Windows', R.version, R.date, R.notes_url, D.win) }}
 
-{% if D.win and D.win | length > 0 %}
-{% for item in D.win %}
-- **{{ item.label }}** — [Download]({{ item.url }}){% if item.checksum %} — `{{ item.checksum }}`{% endif %}
-{% endfor %}
-{% else %}
-See assets on the latest release: {{ R.notes_url | default('#') }}
-{% endif %}
-
-=== "Linux"
-
-{% if D.linux and D.linux | length > 0 %}
-{% for item in D.linux %}
-- **{{ item.label }}** — [Download]({{ item.url }}){% if item.checksum %} — `{{ item.checksum }}`{% endif %}
-{% endfor %}
-{% else %}
-See assets on the latest release: {{ R.notes_url | default('#') }}
-{% endif %}
-
+{{ render_platform('Linux', R.version, R.date, R.notes_url, D.linux) }}
