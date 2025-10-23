@@ -36,8 +36,7 @@
             : source_type === 1
               ? "gitlab"
               : "folder-code";
-
-    let show_config_modal = $state(false);
+    let show_modal = $state(false);
     let config_error = $state(false);
     let config_error_msg = $state("");
 
@@ -71,10 +70,7 @@
 
     // Add effect to manage body class when modal state changes
     $effect(() => {
-        const repo_entry = $manifest.repository.find((r) => r.url === repo_url);
-        config_is_active = !!repo_entry?.email_mapping;
-
-        if (show_config_modal || show_regex_modal) {
+        if (show_modal) {
             document.body.classList.add("modal-open");
         } else {
             document.body.classList.remove("modal-open");
@@ -90,7 +86,6 @@
 
     function trigger_file_input() {
         file_input.click();
-        config_is_active = true;
     }
 
     async function handle_file_change(event: Event) {
@@ -145,7 +140,7 @@
                         contributors = result;
                         manifest.update_email_mapping(json, repo_url);
                         await invoke("save_manifest", { manifest: $manifest });
-                        show_config_modal = false;
+                        show_modal = false;
                     } catch (e) {
                         error("Error applying config: " + e);
                         config_error_msg =
@@ -202,8 +197,7 @@
             // Update contributors without email mapping
             contributors = [...new_contributors];
 
-            config_is_active = false;
-            show_config_modal = false;
+            show_modal = false;
         } catch (e) {
             error("Error removing email mapping: " + e);
         }
@@ -317,34 +311,22 @@
 
         <!-- config btn -->
         <div class="config-btn heading-btn">
-            {#if config_is_active}
-                <ButtonPrimaryMedium
-                    label="Config"
-                    icon="settings-2"
-                    onclick={() => {
-                        show_config_modal = true;
-                        config_error = false;
-                        config_error_msg = "";
-                    }}
-                />
-            {:else}
-                <ButtonTintedMedium
-                    label="Config"
-                    icon="settings-2"
-                    label_class="body-accent"
-                    icon_first={true}
-                    width="4rem"
-                    onclick={() => {
-                        show_config_modal = true;
-                        config_error = false;
-                        config_error_msg = "";
-                    }}
-                />
-            {/if}
+            <ButtonTintedMedium
+                label="Config"
+                icon="settings-2"
+                label_class="body-accent"
+                icon_first={true}
+                width="4rem"
+                onclick={() => {
+                    show_modal = true;
+                    config_error = false;
+                    config_error_msg = "";
+                }}
+            />
         </div>
 
-        <!-- Config Modal -->
-        <Modal bind:show_modal={show_config_modal}>
+        <!-- Modal -->
+        <Modal bind:show_modal>
             {#snippet icon()}
                 <Icon
                     icon={`tabler:settings-2`}
@@ -371,17 +353,15 @@
                 <MappingDisplay {repo_url} />
 
                 <div class="modal-button">
-                    <ButtonTintedMedium
+                    <ButtonPrimaryMedium
                         label="Cancel"
-                        icon="x"
-                        icon_first={true}
-                        width="4rem"
-                        onclick={() => (show_config_modal = false)}
+                        variant="secondary"
+                        onclick={() => (show_modal = false)}
                     />
                     {#if $manifest.repository.find((r) => r.url === repo_url)?.email_mapping}
-                        <ButtonTintedMedium
+                        <ButtonPrimaryMedium
                             label="Remove Mapping"
-                            width="8rem"
+                            variant="secondary"
                             icon="trash"
                             onclick={handle_remove_mapping}
                         />
@@ -436,10 +416,10 @@
 
     .top-container {
         display: grid;
-        grid-template-columns: 1fr auto auto auto auto auto;
+        grid-template-columns: 1fr auto auto auto;
         grid-template-areas:
-            "repo-path regex config branch calendar"
-            "subtitle subtitle subtitle subtitle heading-btn-spacer";
+            "repo-path config branch calendar"
+            "subtitle subtitle subtitle heading-btn-spacer";
         align-items: center;
         column-gap: 1rem;
     }
@@ -469,14 +449,6 @@
         padding: 0.6rem 0;
     }
 
-    .subtitle {
-        grid-area: subtitle;
-    }
-
-    .regex-btn {
-        grid-area: regex;
-    }
-
     .config-btn {
         grid-area: config;
     }
@@ -489,6 +461,10 @@
         grid-area: calendar;
     }
 
+    .subtitle {
+        grid-area: subtitle;
+    }
+
     .heading-btn-spacer {
         grid-area: heading-btn-spacer;
         display: flex;
@@ -496,20 +472,15 @@
 
     @media (max-width: 85rem) {
         .top-container {
-            display: grid;
-            grid-template-columns: auto auto auto auto auto 1fr;
+            grid-template-columns: auto auto auto 1fr;
             grid-template-areas:
-                "repo-path repo-path repo-path repo-path repo-path"
-                "subtitle subtitle subtitle subtitle subtitle"
-                "regex config branch calendar heading-btn-spacer";
-            align-items: center;
-            column-gap: 1rem;
+                "repo-path repo-path repo-path repo-path"
+                "subtitle subtitle subtitle subtitle"
+                "config branch calendar heading-btn-spacer";
         }
 
         .heading-btn {
             padding-top: 1rem;
-            min-width: 4rem;
-            flex-shrink: 0;
         }
     }
     /* MODAL */
