@@ -17,7 +17,6 @@ nav:
       - v0.4.0: releases/v0.4.0.md
       - v0.3.1: releases/v0.3.1.md
       - v0.3.0: releases/v0.3.0.md
-      - gitgauge-v0.6.0: releases/gitgauge-v0.6.0.md
     # END AUTO-RELEASES
     
 theme:
@@ -42,10 +41,12 @@ watch:
   - docs/data
 
 markdown_extensions:
+  - tables
   - attr_list
   - admonition
   - toc:
       permalink: true
+  - pymdownx.details
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.superfences

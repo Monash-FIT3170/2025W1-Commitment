@@ -61,7 +61,7 @@ def main() -> int:
         if not ver:
             continue
         body: List[str] = [
-            f"# {ver}", "",
+            f"# Version: {ver}", "",
             f"**Release date:** {_s(v.get('date',''))}{' _(draft)_' if v.get('draft') else ''}", ""
         ]
         for key, title in PLAT_TITLES:
