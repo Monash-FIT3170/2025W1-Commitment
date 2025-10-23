@@ -1,5 +1,4 @@
 <script lang="ts">
-    import "../../../app.css";
     import { onMount, createEventDispatcher } from "svelte";
     import flatpickr from "flatpickr";
     import "flatpickr/dist/flatpickr.css";
@@ -79,7 +78,7 @@
     });
 </script>
 
-<div class="calendar-container" style="position: relative;">
+<div class="calendar-container body" style="position: relative;">
     <div class="buttons">
         <button
             class="calendar-button"
@@ -115,6 +114,53 @@
 </div>
 
 <style>
+    .date-picker-container :global(button[aria-label="Previous month"]),
+    .date-picker-container :global(button[aria-label="Next month"]),
+    .date-picker-container :global(button[aria-label="Previous year"]),
+    .date-picker-container :global(button[aria-label="Next year"]),
+    .date-picker-container :global(button:not(.day)) {
+        font-family: inherit;
+        font-feature-settings: inherit;
+        font-variation-settings: inherit;
+        font-size: 100%;
+        font-weight: inherit;
+        line-height: inherit;
+        letter-spacing: inherit;
+        color: inherit;
+        background-color: transparent;
+        background-image: none;
+        cursor: pointer;
+        text-transform: none;
+        appearance: button;
+        border: none;
+        padding: 0.5rem 0.6rem;
+        min-width: 33px;
+    }
+
+   .date-picker-container :global(.grid-cols-4) {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(64px, 1fr)) !important;
+    gap: 0.25rem !important;
+}
+
+.date-picker-container :global(h3) {
+    margin: 0 !important;
+}
+    /* .date-picker-container :global(button:not(.day)) {
+        padding-left: 0.6rem;
+        padding-right: 0.6rem;
+    } */
+
+    /* .date-picker-container > flex > button:not(button[aria-label="Next year"]) {
+        min-width: 30px;
+        padding-top: 0rem;
+        padding-bottom: 0rem;
+    } */
+
+    .date-picker-container :global(button:not(.day)):hover {
+        background-color: var(--tint-01);
+    }
+
     .calendar-container {
         align-items: center;
         gap: 0.5rem;
