@@ -61,9 +61,14 @@ Start the app from your desktop.
 - If importing a private repository, enter your Personal Access Token (PAT) when prompted  
 
 <p align="center">
-  <img src="../../assets/screenshots/1_import_repo.png" alt="Importing a local or remote Git repository" width="700">
+  <img src="../../assets/screenshots/1a_import_public_repo.png" alt="Importing a public Git repository" width="700">
 </p>
-<p align="center"><em>Fig. 1 – Importing a local or remote Git repository</em></p>
+<p align="center"><em>Fig. 1a – Importing a public Git repository</em></p>
+
+<p align="center">
+  <img src="../../assets/screenshots/1b_import_private_repo.png" alt="Importing a private Git repository" width="700">
+</p>
+<p align="center"><em>Fig. 1b – Importing a private Git repository</em></p>
 
 ---
 
@@ -150,9 +155,21 @@ Students often commit using different emails. To group them correctly:
     - Highlights or red flags  
 
 <p align="center">
-  <img src="../../assets/screenshots/5_ai_summary_view.png" alt="AI summary view showing Gemini-powered analysis" width="700">
+  <img src="../../assets/screenshots/5a_enter_API_key.png" alt="Sidebar view showing text area to enter API key" width="400">
+  <p align="center"><em>Fig. 5a – Enter Gemini API key</em></p>
 </p>
-<p align="center"><em>Fig. 5 – Commit summary powered by Gemini</em></p>
+
+<p align="center">
+  <img src="../../assets/screenshots/5b_progress_AI_summary_generation.png" alt="Progress screen showing status of number of AI summaries generated" width="700">
+  <p align="center"><em>Fig. 5b – Generating AI summaries</em></p>
+</p>
+
+<p align="center">
+  <img src="../../assets/screenshots/5c_completed_AI_summary_generation.png" alt="AI summary view showing Gemini-powered analysis" width="700">
+  <p align="center"><em>Fig. 5c – Completed AI Summary per contributor</em></p>
+</p>
+
+
 
 ---
 
@@ -162,16 +179,20 @@ Students often commit using different emails. To group them correctly:
 - gitgauge matches contributors to the grading sheet  
 - Export final results as a CSV file  
 
-# **SAMPLE** input and output
 
 <p align="center">
   <img src="../../assets/screenshots/6a_empty_grading_modal.png" alt="Uploading a CSV grading sheet modal" width="600">
-  <img src="../../assets/screenshots/6b_active_grading_modal.png" alt="Uploading a CSV grading sheet modal" width="600">
-  <img src="../../assets/screenshots/6c_output_grading_modal.png" alt="Uploading a CSV grading sheet modal" width="600">
-
-
+  <p align="center"><em>Fig. 6a – Empty Grading Sheet Upload</em></p>
 </p>
-<p align="center"><em>Fig. 6 – Uploading and exporting a CSV grading sheet</em></p>
+<p align="center">
+  <img src="../../assets/screenshots/6b_active_grading_modal.png" alt="Uploading a CSV grading sheet modal" width="600">
+  <p align="center"><em>Fig. 6b – Active Grading Sheet</em></p>
+</p>
+<p align="center">
+  <img src="../../assets/screenshots/6c_output_grading_modal.png" alt="Exporting a scaled CSV grading sheet modal" width="600">
+  <p align="center"><em>Fig. 6c – Export the Scaled Grading Sheet</em></p>
+</p>
+
 
 ---
 
@@ -179,7 +200,7 @@ Students often commit using different emails. To group them correctly:
 
 Use a .json file to group all known emails under a single student identity.
 
-#### Example Format
+#### Example Config Format
 
 ```
 
