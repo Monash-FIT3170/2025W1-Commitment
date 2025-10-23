@@ -58,12 +58,14 @@ Start the app from your desktop.
 
 ### **2\. Import a Repository**
 
-- Click "Import Repository"  
-- Enter a Git URL or choose a local folder  
+- Enter a Git URL into the text box
 - If importing a private repository, enter your Personal Access Token (PAT) when prompted
 
-Import View  
-*Fig. 1 – Importing a local or remote Git repo*
+  <p align="center">
+    <img src="../../assets/gifs/clone_repo.gif" alt="Importing a local or remote Git repository" width="700">
+  </p>
+
+  <p align="center"><em>Fig. 1 – Importing a local or remote Git repository</em></p>
 
 ---
 
@@ -74,12 +76,14 @@ Students often commit using different emails. To group them correctly:
 - Click "Upload Config File"  
 - Upload a `.json` file mapping alternate emails to the student’s main email
 
-Empty Config Modal  
-*Fig. 2 – Email mapping configuration modal*
+  <p align="center">
+    <img src="../../assets/gifs/upload_config.gif" alt="Importing a local or remote Git repository" width="700">
+  </p>
 
-!!! warning
+  <p align="center"><em>Fig. 2 – Uploading an email configuration file to map emaisl to contributors</em></p>
+
+  !!! warning
     Only contributors listed in the config file will be included in the analysis and export. Unmapped commit emails are ignored entirely.
-
 
 ---
 
@@ -93,8 +97,15 @@ Empty Config Modal
 
 - Apply regex filters to ignore noise (e.g. `"typo"`, `"test commit"`)
 
+
 Regex Modal  
 *Fig. 3 – Filtering commit messages using regex*
+
+  <p align="center">
+    <img src="../../assets/gifs/upload_config.gif" alt="Importing a local or remote Git repository" width="700">
+  </p>
+
+  <p align="center"><em>Fig. 3 – Uploading an email configuration file to map emaisl to contributors</em></p>
 
 !!! tip
     Try `^(?!.*(fix|format)).*$` to exclude small or irrelevant commits.
