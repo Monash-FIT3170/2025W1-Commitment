@@ -13,6 +13,8 @@
     import { generate_state_object, save_state } from "$lib/utils/localstorage";
     import { page } from "$app/state";
     import { loading_state } from "$lib/stores/loading.svelte";
+    import { loading_sleep } from "$lib/utils/sleep";
+    import { get_app_version } from "$lib/utils/version";
 
     interface RepoBookmark {
         repo_name: string;
@@ -20,6 +22,9 @@
         repo_bookmarked: boolean;
         source_type: 0 | 1 | 2; // 0 = GitHub, 1 = GitLab, 2 = Local
     }
+
+    let app_version = $state("");
+
     onMount(async () => {
         try {
             let data = await invoke<ManifestSchema>("read_manifest");
@@ -29,7 +34,9 @@
             let err = typeof e === "string" ? e : (e?.message ?? String(e));
             info("read_manifest failed", e);
         }
+        app_version = await get_app_version();
     });
+
     let bookmarked_repos: RepoBookmark[] = $derived(
         $manifest["repository"].map((item) => {
             return {
@@ -77,6 +84,7 @@
 
     async function bookmark_open(repo_url_input: string) {
         loading_state.loading = true;
+        let start_time = Date.now();
         let source_type = get_source_type(repo_url_input);
         let repository_information: {
             source_type: 0 | 1 | 2;
@@ -130,6 +138,7 @@
                         bookmark_err_desc = "Unknown Error: " + err_check;
                     }
                     bookmark_error = true;
+                    await loading_sleep(start_time);
                     loading_state.loading = false;
                     return;
                 }
@@ -149,7 +158,7 @@
                       "/" +
                       repository_information.repo;
 
-            await manifest.update_repository_timestamp(url_trimmed);
+            manifest.update_repository_timestamp(url_trimmed);
             await invoke("save_manifest", { manifest: $manifest });
 
             const working_dir = await invoke<string>("get_working_directory");
@@ -164,11 +173,12 @@
             await save_state(storage_obj);
 
             // Navigate to the overview page
+            await loading_sleep(start_time);
+            loading_state.loading = false;
             if (window.location.pathname == "/overview-page") {
                 await goto("/");
             }
             goto("/overview-page");
-            loading_state.loading = false;
         } catch (error: any) {
             const error_message = error.message || "Verification failed";
             info("Failed to open bookmarked repo: " + error_message);
@@ -176,6 +186,7 @@
             // Since a private bookmarked repo shouldn't fail from PAT Token errors, we do not need to display the modal.
             // Or check for it even like in other areas.
 
+            await loading_sleep(start_time);
             bookmark_error = true;
             bookmark_err_desc =
                 "Failed to open bookmarked repository. Please try again.";
@@ -286,7 +297,6 @@
                 />
                 <h2 class="heading-1 sidebar-item-header white">Bookmarks</h2>
             </div>
-
             {#if bookmark_error}
                 <div class="caption error" style="margin-top: 0.25rem;">
                     {bookmark_err_desc}
@@ -311,7 +321,7 @@
                         </button>
                         {#if repo.source_type !== 2}
                             <button
-                                class="delete-button"
+                                class="delete-button btn-icon"
                                 type="button"
                                 onclick={(e) =>
                                     delete_repository(repo.repo_url, e)}
@@ -328,10 +338,20 @@
                 {/if}
             {/each}
         </div>
+        <div class="caption version-label">
+            Version: {app_version}
+        </div>
     </div>
 </div>
 
 <style>
+    .version-label {
+        padding: 2rem 0.375rem;
+        color: var(--label-tertiary) !important;
+        position: absolute;
+        bottom: 0;
+        right: 2rem;
+    }
     .sidebar-container {
         position: fixed;
         inset: 0;
@@ -359,7 +379,10 @@
         top: 0;
         right: 0;
         width: 18.4375rem;
-        min-height: 93vh;
+        height: 100vh;
+        max-height: 100vh;
+        overflow-y: auto;
+        box-sizing: border-box;
         padding: 2rem;
         border-radius: 8px 0 0 8px;
         border-top: solid var(--Label-Tertiary, #747474);
@@ -428,6 +451,12 @@
         border: none;
         padding: 0rem;
         flex: 1;
+        max-width: 250px;
+    }
+    .bookmark-item:hover {
+        opacity: 1;
+        background-color: #2f2f2f;
+        border-radius: 4px;
     }
     .delete-button {
         cursor: pointer;
@@ -446,6 +475,7 @@
     .repo-name,
     .repo-url {
         margin: 0;
+        max-width: 250px;
     }
     .label-secondary {
         color: var(--label-secondary);

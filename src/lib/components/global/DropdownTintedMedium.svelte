@@ -16,6 +16,7 @@
     } = $props();
 
     let open = $state(false);
+    let dropdownRef: HTMLDivElement;
 
     function toggle_dropdown() {
         if (!disabled) open = !open;
@@ -28,8 +29,9 @@
 
     function handle_click_outside(event: MouseEvent) {
         if (
-            !event.target ||
-            !(event.target as HTMLElement).closest(".dropdown-wrapper")
+            dropdownRef &&
+            event.target &&
+            !dropdownRef.contains(event.target as Node)
         ) {
             open = false;
         }
@@ -44,7 +46,7 @@
     });
 </script>
 
-<div class="dropdown-wrapper">
+<div class="dropdown-wrapper" bind:this={dropdownRef}>
     <button
         type="button"
         class="dropdown-toggle"

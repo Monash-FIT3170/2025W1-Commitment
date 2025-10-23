@@ -1,4 +1,5 @@
 <script lang="ts">
+    import "../app.css";
     import { invoke } from "@tauri-apps/api/core";
     import {
         get_source_type,
@@ -23,6 +24,7 @@
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
     import { info, error } from "@tauri-apps/plugin-log";
     import LoadingIndicator from "$lib/components/global/LoadingIndicator.svelte";
+    import { loading_sleep } from "$lib/utils/sleep";
 
     // only run on the browser
     onMount(async () => {
@@ -168,7 +170,7 @@
 
     async function handle_verification() {
         loading = true;
-
+        let start_time = Date.now();
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
         );
@@ -180,8 +182,6 @@
             loading = false;
             return;
         }
-
-        loading = true;
 
         let source_type = get_source_type(repo_url_input);
 
@@ -200,6 +200,7 @@
                 verification_error = true;
                 verification_message =
                     "Please enter a valid URL/path. (Prefix with https:// or /)";
+                await loading_sleep(start_time);
                 loading = false;
                 return;
             }
@@ -257,6 +258,7 @@
                         verification_message = "Unknown Error: " + err_check;
                     }
                     verification_error = true;
+                    await loading_sleep(start_time);
                     loading = false;
                     return;
                 }
@@ -306,6 +308,8 @@
             await save_state(storage_obj);
 
             // Navigate to the overview page
+            await loading_sleep(start_time);
+            loading = false;
             goto(`/overview-page`);
         } catch (error: any) {
             loading = false;

@@ -2,8 +2,7 @@
     import Icon from "@iconify/svelte";
     import ButtonTintedMedium from "$lib/components/global/ButtonTintedMedium.svelte";
     import DropdownTintedMedium from "$lib/components/global/DropdownTintedMedium.svelte";
-    import ErrorMessage from "../global/ErrorMessage.svelte";
-    import Tab from "$lib/components/global/Tab.svelte";
+    import ErrorMessage from "$lib/components/global/ErrorMessage.svelte";
     import Calendar from "$lib/components/global/Calendar.svelte";
     import Modal from "$lib/components/overview-page/Modal.svelte";
     import { validate_config_file } from "$lib/file_validation";
@@ -12,8 +11,8 @@
     import { load_commit_data } from "$lib/metrics";
     import type { Contributor } from "$lib/metrics";
     import { info, error } from "@tauri-apps/plugin-log";
-    import ButtonPrimaryMedium from "../global/ButtonPrimaryMedium.svelte";
-    import MappingDisplay from "./MappingDisplay.svelte";
+    import ButtonPrimaryMedium from "$lib/components/global/ButtonPrimaryMedium.svelte";
+    import MappingDisplay from "$lib/components/overview-page/MappingDisplay.svelte";
     import { page } from "$app/state";
     import { get } from "svelte/store";
 
@@ -27,7 +26,7 @@
         start_date = $bindable(),
         end_date = $bindable(),
         contributors = $bindable<Contributor[]>([]),
-        regex_is_active = $bindable<Boolean>(),
+        regex_query = $bindable<string | undefined>(undefined),
         config_is_active = $bindable<Boolean>(),
     } = $props();
 
@@ -43,16 +42,30 @@
     let config_error_msg = $state("");
 
     let show_regex_modal = $state(false);
+    let regex_error = $state(false);
+    let regex_error_msg = $state("");
     let regex_input = $state("");
-    let saved_regex = $state("");
 
-    function save_regex() {
-        saved_regex = regex_input.trim();
-        show_regex_modal = false;
-        if (saved_regex.length > 0) {
-            regex_is_active = true;
-        } else {
-            regex_is_active = false;
+    async function save_regex() {
+        // Do we really want this as trailing spaces
+        // might be part of the search query
+        // const trimmed = regex_input.trim();
+        // regex_query = trimmed.length > 0 ? trimmed : undefined;
+
+        if (regex_input.length > 0) {
+            try {
+                await invoke<string>("check_regex", {
+                    regex_query: regex_input,
+                });
+                show_regex_modal = false;
+                regex_query = regex_input.length > 0 ? regex_input : undefined;
+
+                regex_error = false;
+                regex_error_msg = "";
+            } catch (err: any) {
+                regex_error = true;
+                regex_error_msg = err;
+            }
         }
     }
 
@@ -81,7 +94,8 @@
     }
 
     async function handle_file_change(event: Event) {
-        const selected_files = (event.target as HTMLInputElement).files;
+        const input = event.target as HTMLInputElement;
+        const selected_files = input.files;
         if (selected_files && selected_files.length > 0) {
             if (!selected_files[0].name.toLowerCase().endsWith(".json")) {
                 config_error_msg = "Please upload a .json file";
@@ -104,11 +118,25 @@
                 const { valid, errors } = validate_config_file(json);
                 if (valid) {
                     try {
+                        // Load fresh contributor data to avoid duplicating grouped stats
+                        const branch_arg =
+                            branch_selection === ""
+                                ? undefined
+                                : branch_selection;
+
+                        const fresh_contributors = await load_commit_data(
+                            repo_path,
+                            branch_arg,
+                            start_date,
+                            end_date,
+                            regex_query
+                        );
+
                         const result = await invoke<Contributor[]>(
                             "group_contributors_by_config",
                             {
                                 config_json: json,
-                                contributors: contributors,
+                                contributors: fresh_contributors,
                             }
                         );
 
@@ -131,6 +159,9 @@
             } catch {
                 config_error_msg = "Not valid JSON";
                 config_error = true;
+            } finally {
+                // Resets file input so reupload with same file doesn't get ignored
+                input.value = "";
             }
         }
     }
@@ -144,6 +175,7 @@
 
     async function handle_remove_mapping() {
         try {
+            show_config_modal = false;
             manifest.remove_email_mapping(repo_url);
 
             // Get the current state of the manifest after the update
@@ -156,12 +188,15 @@
             // Refresh contributors to show ungrouped data
             const branch_arg =
                 branch_selection === "" ? undefined : branch_selection;
+
             const repo_path = page.state.repo_path;
+
             const new_contributors = await load_commit_data(
                 repo_path,
                 branch_arg,
                 start_date,
-                end_date
+                end_date,
+                regex_query
             );
 
             // Update contributors without email mapping
@@ -190,7 +225,7 @@
 
         <!-- regex btn -->
         <div class="regex-btn heading-btn">
-            {#if regex_is_active}
+            {#if regex_query !== undefined}
                 <ButtonPrimaryMedium
                     label="Regex"
                     icon="regex"
@@ -218,16 +253,18 @@
             {#snippet icon()}
                 <Icon
                     icon="tabler:regex"
-                    class="icon-medium"
+                    class="icon-large"
                     style="color: currentColor"
                 />
             {/snippet}
 
-            {#snippet header()}Exclude Commits Using Regex{/snippet}
+            {#snippet header()}<div class="regex-title">
+                    Exclude Commits Using Regex
+                </div>{/snippet}
 
             {#snippet body()}
                 <div class="regex-modal-content">
-                    <p class="label-primary body">
+                    <p class="label-primary regex-instructions">
                         Please enter your regex statement to exclude commits
                         with certain elements found in the commit messages.
                         <br />
@@ -236,6 +273,7 @@
                     <!-- Multiline input -->
                     <textarea
                         class="regex-textarea"
+                        style="margin-top: 1rem;"
                         bind:value={regex_input}
                         placeholder="Enter your regex statement here..."
                     ></textarea>
@@ -247,7 +285,7 @@
                             icon="x"
                             width="4rem"
                             onclick={() => {
-                                regex_input = saved_regex;
+                                regex_input = regex_query;
                                 show_regex_modal = false;
                             }}
                         />
@@ -266,6 +304,11 @@
                             label="Save"
                             icon="device-floppy"
                             onclick={save_regex}
+                        />
+
+                        <ErrorMessage
+                            verification_message={regex_error_msg}
+                            error={regex_error}
                         />
                     </div>
                 </div>
@@ -371,9 +414,7 @@
                 bind:end={end_date}
                 date_format="d-m-Y"
                 icon="calendar"
-                icon_first={true}
                 label_class="body-accent"
-                label="Select Date Range"
                 disabled={false}
                 width={start_date && end_date ? "14rem" : "7rem"}
                 on:change={handle_date_change}
@@ -484,6 +525,14 @@
         overflow: hidden;
     }
 
+    .regex-title {
+        font-size: 1.25rem;
+    }
+    .regex-instructions {
+        font-size: 0.9rem;
+        font-weight: 300;
+    }
+
     .regex-textarea {
         width: 100%;
         min-height: 8rem;
@@ -492,7 +541,10 @@
         border: 1px solid var(--fill-03);
         background: var(--background-tertiary);
         color: var(--label-primary);
-        font-size: 0.8rem;
+        font-size: 1.2rem;
+        font-family:
+            DM Mono,
+            monospace;
         resize: vertical;
         box-sizing: border-box;
         transition:

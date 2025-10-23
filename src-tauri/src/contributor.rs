@@ -1,7 +1,11 @@
 use git2::{BranchType, Oid, Repository, Sort};
+use log::info;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
+
+use crate::utils::to_string;
 
 fn generate_initials(name: &str) -> String {
     name.split_whitespace()
@@ -24,6 +28,8 @@ pub struct Contributor {
     pub deletions: u64,
     pub profile_colour: String,
     pub username_initials: String,
+    pub total_regex_matches: usize,
+    pub commits_matching_regex: u64,
     pub ai_summary: String,
 }
 
@@ -48,21 +54,58 @@ pub async fn group_contributors_by_config(
             let mut additions = 0;
             let mut deletions = 0;
             let mut contacts = Vec::new();
+            let mut total_regex_matches = 0;
+            let mut commits_matching_regex = 0;
             let ai_summary = String::new();
 
-            if let Value::Array(email_list) = emails_value {
-                for email_val in email_list {
-                    if let Some(email) = email_val.as_str() {
-                        grouped_emails.insert(email.to_string());
+            let mut processed_contributors = std::collections::HashSet::new();
 
-                        if let Some(contrib) = contributors.iter().find(|c| match &c.contacts {
-                            Contacts::Email(e) => e == email,
-                            Contacts::EmailList(list) => list.contains(&email.to_string()),
-                        }) {
+            if let Value::Array(email_list) = emails_value {
+                // First pass: collect all emails in this group
+                let group_emails: std::collections::HashSet<String> = email_list
+                    .iter()
+                    .filter_map(|email_val| email_val.as_str())
+                    .map(|email| email.to_string())
+                    .collect();
+
+                // Add all group emails to the global grouped_emails set
+                for email in &group_emails {
+                    grouped_emails.insert(email.clone());
+                }
+
+                // Second pass: find contributors that have ANY email in this group
+                // but ensure each contributor is only processed ONCE per group
+                for contrib in contributors.iter() {
+                    let contributor_emails = match &contrib.contacts {
+                        Contacts::Email(e) => vec![e.clone()],
+                        Contacts::EmailList(list) => list.clone(),
+                    };
+
+                    // Check if this contributor has any email that matches this group
+                    let has_matching_email = contributor_emails
+                        .iter()
+                        .any(|email| group_emails.contains(email));
+
+                    if has_matching_email {
+                        // Use contributor's username as unique identifier to prevent duplicates
+                        let contributor_id =
+                            format!("{}|{}", contrib.username, contributor_emails.join(","));
+
+                        if !processed_contributors.contains(&contributor_id) {
+                            processed_contributors.insert(contributor_id);
+
                             total_commits += contrib.total_commits;
                             additions += contrib.additions;
                             deletions += contrib.deletions;
-                            contacts.push(email.to_string());
+                            total_regex_matches += contrib.total_regex_matches;
+                            commits_matching_regex += contrib.commits_matching_regex;
+
+                            // Add all matching emails from this contributor to contacts
+                            for email in contributor_emails.iter() {
+                                if group_emails.contains(email) && !contacts.contains(email) {
+                                    contacts.push(email.clone());
+                                }
+                            }
                         }
                     }
                 }
@@ -81,6 +124,8 @@ pub async fn group_contributors_by_config(
                     deletions,
                     profile_colour: profile_bg_colour,
                     username_initials,
+                    total_regex_matches,
+                    commits_matching_regex,
                     ai_summary,
                 });
             }
@@ -117,10 +162,11 @@ pub async fn get_contributor_info(
     path: &str,
     branch: Option<&str>,
     date_range: Option<DateRange>,
+    regex_query: Option<&str>,
 ) -> Result<HashMap<String, Contributor>, String> {
     let canonical_path = std::path::Path::new(path)
         .canonicalize()
-        .map_err(|e| e.to_string())?;
+        .map_err(to_string)?;
 
     let repo = match Repository::open(canonical_path) {
         Ok(repo) => {
@@ -135,15 +181,15 @@ pub async fn get_contributor_info(
     };
 
     let mut branches: Vec<String> = Vec::new();
-    for branch in repo.branches(None).map_err(|e| e.to_string())? {
-        let (branch, _branch_type) = branch.map_err(|e| e.to_string())?;
-        if let Some(name) = branch.name().map_err(|e| e.to_string())? {
+    for branch in repo.branches(None).map_err(to_string)? {
+        let (branch, _branch_type) = branch.map_err(to_string)?;
+        if let Some(name) = branch.name().map_err(to_string)? {
             branches.push(name.to_string());
         }
     }
 
     // Resolve branch reference
-    let mut revwalk = repo.revwalk().map_err(|e| e.to_string())?;
+    let mut revwalk = repo.revwalk().map_err(to_string)?;
     let head = match branch {
         Some(target) => {
             // Ensure the branch exists before proceeding
@@ -155,20 +201,22 @@ pub async fn get_contributor_info(
         }
         None => repo
             .head()
-            .map_err(|e| e.to_string())?
+            .map_err(to_string)?
             .target()
             .ok_or(git2::Error::from_str("Invalid HEAD"))
-            .map_err(|e| e.to_string())?,
+            .map_err(to_string)?,
     };
 
-    revwalk.push(head).map_err(|e| e.to_string())?;
-    revwalk.set_sorting(Sort::TIME).map_err(|e| e.to_string())?;
+    revwalk.push(head).map_err(to_string)?;
+    revwalk.set_sorting(Sort::TIME).map_err(to_string)?;
 
     let mut contributors: HashMap<String, Contributor> = HashMap::new();
 
+    let rgx = regex_query.map(|rgx_str| Regex::new(rgx_str).map_err(to_string));
+
     for oid_result in revwalk {
-        let oid = oid_result.map_err(|e| e.to_string())?;
-        let commit = repo.find_commit(oid).map_err(|e| e.to_string())?;
+        let oid = oid_result.map_err(to_string)?;
+        let commit = repo.find_commit(oid).map_err(to_string)?;
         let time = commit.time().seconds();
 
         if let Some(ref date_range) = date_range {
@@ -180,46 +228,19 @@ pub async fn get_contributor_info(
 
         let author_signature = commit.author();
         let email = author_signature.email().unwrap_or("").to_string();
-        //let email_hash = md5::compute(email.clone().trim().to_lowercase());
-        //let login_name = author_signature.name().unwrap_or("Unknown").to_string();
-        //let gravatar_url = format!("https://www.gravatar.com/avatar/{gravatar_hash:x}?d=identicon");
-
         let username = author_signature.name().unwrap_or("unknown");
-
         let initials = generate_initials(username);
-
         let profile_bg_colour = generate_profile_bg_colour(username);
 
-        // Normalize username for grouping
-        //let normalized_username = if email.ends_with("@users.noreply.github.com") {
-        //    // Extract username from GitHub noreply email
-        //    if let Some(pos) = email.find('+') {
-        //        let rest = &email[pos + 1..];
-        //        if let Some(at_pos) = rest.find('@') {
-        //            rest[..at_pos].to_string()
-        //        } else {
-        //            login_name.clone()
-        //        }
-        //    } else {
-        //        login_name.clone()
-        //    }
-        //} else {
-        //    // Use login name or email prefix
-        //    if !login_name.is_empty() && login_name != "Unknown" {
-        //        login_name.clone()
-        //    } else {
-        //        email.split('@').next().unwrap_or("").to_string()
-        //    }
-        //};
+        let commit_tree = commit.tree().map_err(to_string)?;
 
-        let commit_tree = commit.tree().map_err(|e| e.to_string())?;
         let parent_tree = if commit.parent_count() > 0 {
             Some(
                 commit
                     .parent(0)
-                    .map_err(|e| e.to_string())?
+                    .map_err(to_string)?
                     .tree()
-                    .map_err(|e| e.to_string())?,
+                    .map_err(to_string)?,
             )
         } else {
             None
@@ -227,11 +248,25 @@ pub async fn get_contributor_info(
 
         let diff = repo
             .diff_tree_to_tree(parent_tree.as_ref(), Some(&commit_tree), None)
-            .map_err(|e| e.to_string())?;
-        let stats = diff.stats().map_err(|e| e.to_string())?;
+            .map_err(to_string)?;
 
+        let stats = diff.stats().map_err(to_string)?;
         let additions = stats.insertions() as u64;
         let deletions = stats.deletions() as u64;
+
+        let total_matches = if regex_query.is_some() {
+            let commit_msg = commit.message_raw().unwrap_or("");
+            let id = commit.id().to_string().chars().take(6).collect::<String>();
+            let re = rgx.clone().unwrap()?;
+
+            re.find_iter(commit_msg)
+                .inspect(|m| {
+                    info!("{id} :: {}", m.as_str());
+                })
+                .count()
+        } else {
+            0
+        };
 
         let entry = contributors
             .entry(username.to_string())
@@ -243,6 +278,8 @@ pub async fn get_contributor_info(
                 deletions: 0,
                 profile_colour: profile_bg_colour,
                 username_initials: initials,
+                total_regex_matches: 0,
+                commits_matching_regex: 0,
                 ai_summary: String::from(""),
             });
 
@@ -263,6 +300,8 @@ pub async fn get_contributor_info(
                         deletions: entry.deletions,
                         profile_colour: entry.profile_colour.clone(),
                         username_initials: entry.username_initials.clone(),
+                        total_regex_matches: entry.total_regex_matches,
+                        commits_matching_regex: entry.commits_matching_regex,
                         ai_summary: String::from(""),
                     };
                 }
@@ -272,6 +311,11 @@ pub async fn get_contributor_info(
         entry.total_commits += 1;
         entry.additions += additions;
         entry.deletions += deletions;
+        entry.total_regex_matches += total_matches;
+
+        if total_matches > 0 {
+            entry.commits_matching_regex += 1;
+        }
     }
 
     Ok(contributors)
@@ -305,4 +349,12 @@ fn generate_profile_bg_colour(username: &str) -> String {
     let b: u8 = u8::try_from((hash >> 16) & 0xff).unwrap_or(0);
 
     format!("#{r:02x}{g:02x}{b:02x}")
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub fn check_regex(regex_query: &str) -> Result<(), String> {
+    match Regex::new(regex_query) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e.to_string()),
+    }
 }
