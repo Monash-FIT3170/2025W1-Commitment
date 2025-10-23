@@ -42,7 +42,7 @@
     }
 </script>
 
-<main class="container">
+<main class="overview-container">
     <div class="header-row">
         <DropdownTintedMedium
             options={criteria}
@@ -98,7 +98,9 @@
 </main>
 
 <style>
-    .container {
+    .overview-container {
+        width: 100%;
+        box-sizing: border-box;
         padding: 0rem 2rem;
         display: flex;
         flex-direction: column;
