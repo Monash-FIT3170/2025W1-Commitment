@@ -108,7 +108,7 @@ Regex Modal
   <p align="center"><em>Fig. 3 – Uploading an email configuration file to map emaisl to contributors</em></p>
 
 !!! tip
-    Try `^(?!.*(fix|format)).*$` to exclude small or irrelevant commits.
+    Try `^(?!.*(fix|format)).*` to exclude small or irrelevant commits.
 
 ---
 
@@ -179,13 +179,14 @@ Use a `.json` file to group all known emails under a single student identity.
 ```
 
 {
-    "student1@university.edu": [
+    "student full name 1": [
+        "student1@university.edu",
         "alt1@gmail.com",
         "alt2@users.noreply.github.com"
     ],
 
-    "student2@university.edu": [
-        "another.email@example.com"
+    "student full name 2: [
+        "student2@university.edu"
     ]
 
 }
