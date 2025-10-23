@@ -61,7 +61,7 @@ Start the app from your desktop.
 - If importing a private repository, enter your Personal Access Token (PAT) when prompted  
 
 <p align="center">
-  <img src="../assets/screenshots/1_import_repo.png" alt="Importing a local or remote Git repository" width="700">
+  <img src="../../assets/screenshots/1_import_repo.png" alt="Importing a local or remote Git repository" width="700">
 </p>
 <p align="center"><em>Fig. 1 – Importing a local or remote Git repository</em></p>
 
@@ -75,12 +75,12 @@ Students often commit using different emails. To group them correctly:
 - Upload a `.json` file mapping alternate emails to the student’s main email  
 
 <p align="center">
-  <img src="../assets/screenshots/2a_empty_config_modal.png" alt="Empty configuration modal before upload" width="700">
+  <img src="../../assets/screenshots/2a_empty_config_modal.png" alt="Empty configuration modal before upload" width="600">
 </p>
 <p align="center"><em>Fig. 2a – Empty configuration modal before upload</em></p>
 
 <p align="center">
-  <img src="../assets/screenshots/2b_active_config_modal.png" alt="Active configuration modal showing mapped contributors" width="700">
+  <img src="../../assets/screenshots/2b_active_config_modal.png" alt="Active configuration modal showing mapped contributors" width="600">
 </p>
 <p align="center"><em>Fig. 2b – Configuration modal with mapped contributors</em></p>
 
@@ -101,22 +101,22 @@ Students often commit using different emails. To group them correctly:
 - Apply regex filters to ignore noise (e.g. `"typo"`, `"test commit"`)
 
 <p align="center">
-  <img src="../assets/screenshots/3a_empty_regexx_modal.png" alt="Empty regex filter modal" width="700">
+  <img src="../../assets/screenshots/3a_empty_regexx_modal.png" alt="Empty regex filter modal" width="600">
 </p>
 <p align="center"><em>Fig. 3a – Empty regex filter modal</em></p>
 
 <p align="center">
-  <img src="../assets/screenshots/3b_active_regex_modal.png" alt="Active regex modal with applied filters" width="700">
+  <img src="../../assets/screenshots/3b_active_regex_modal.png" alt="Active regex modal with applied filters" width="600">
 </p>
 <p align="center"><em>Fig. 3b – Active regex modal with applied filters</em></p>
 
 <p align="center">
-  <img src="../assets/screenshots/3c_active_regex_cont_cards.png" alt="Regex modal showing filtered commit cards" width="700">
+  <img src="../../assets/screenshots/3c_active_regex_cont_cards.png" alt="Regex modal showing filtered commit cards" width="600">
 </p>
 <p align="center"><em>Fig. 3c – Regex modal showing filtered commit cards</em></p>
 
 !!! tip
-    Try `^(?!.*(fix|format)).*$` to exclude small or irrelevant commits.
+    Try `.*merge: PR#.*` to exclude merge commits as a test.
 
 ---
 
@@ -129,7 +129,7 @@ Students often commit using different emails. To group them correctly:
     - Contribution weighting by metric
 
 <p align="center">
-  <img src="../assets/screenshots/4_contributor_overview.png" alt="Per-contributor breakdown view" width="700">
+  <img src="../../assets/screenshots/4_contributor_overview.png" alt="Per-contributor breakdown view" width="600">
 </p>
 <p align="center"><em>Fig. 4 – Per-contributor breakdown with scoring</em></p>
 
@@ -145,7 +145,7 @@ Students often commit using different emails. To group them correctly:
     - Highlights or red flags  
 
 <p align="center">
-  <img src="../assets/screenshots/5_ai_summary_view.png" alt="AI summary view showing Gemini-powered analysis" width="700">
+  <img src="../../assets/screenshots/5_ai_summary_view.png" alt="AI summary view showing Gemini-powered analysis" width="700">
 </p>
 <p align="center"><em>Fig. 5 – Commit summary powered by Gemini</em></p>
 
@@ -158,13 +158,13 @@ Students often commit using different emails. To group them correctly:
 - Export final results as a CSV file  
 
 <p align="center">
-  <img src="../assets/screenshots/6_grading_modal.png" alt="Uploading a CSV grading sheet modal" width="700">
+  <img src="../../assets/screenshots/6_grading_modal.png" alt="Uploading a CSV grading sheet modal" width="700">
 </p>
 <p align="center"><em>Fig. 6 – Uploading a CSV grading sheet</em></p>
 
 ---
 
-## Contributor Configuration File
+## **Contributor Configuration File**
 
 Use a .json file to group all known emails under a single student identity.
 
