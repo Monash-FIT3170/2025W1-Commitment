@@ -51,6 +51,8 @@
 
     let manifest_state = $state<ManifestSchema>({ repository: [] });
 
+    let regex_query = $state<string | undefined>(undefined);
+
     // Subscribe to manifest store
     $effect(() => {
         const unsubscribe = manifest.subscribe((value) => {
@@ -142,11 +144,13 @@
                     end_date,
                 })
         );
+
         let new_contributors = await load_commit_data(
             repo_path,
             branch_arg,
             start_date,
-            end_date
+            end_date,
+            regex_query
         );
 
         // Apply config grouping if email_mapping is present
@@ -188,17 +192,28 @@
         }
     });
 
-    let auth_error_state = $state({ needs_token: false, message: "" });
+    let show_auth_modal = $state(false);
+    let previous_auth_modal_state = $state(false);
 
-    // Subscribe to auth_error store
+    // Subscribe to auth_error store and update modal state
     $effect(() => {
         const unsubscribe = auth_error.subscribe((value) => {
-            auth_error_state = value;
+            show_auth_modal = value.needs_token;
         });
         return unsubscribe;
     });
 
-    let show_auth_modal = $derived(auth_error_state.needs_token);
+    // Clear auth error when modal is closed by user (clicking X or backdrop)
+    $effect(() => {
+        if (previous_auth_modal_state && !show_auth_modal) {
+            // Modal was open and is now closed, clear the auth error
+            auth_error.set({
+                needs_token: false,
+                message: "",
+            });
+        }
+        previous_auth_modal_state = show_auth_modal;
+    });
 
     async function reload_repository_data() {
         try {
@@ -207,7 +222,15 @@
             const new_branches = await load_branches(repo_path);
             branches = new_branches.filter((branch) => branch !== "All");
 
-            const new_contributors = await load_commit_data(repo_path);
+            // Use current branch and date filters to match load_graph behavior
+            const branch_arg =
+                branch_selection === "" ? undefined : branch_selection;
+            const new_contributors = await load_commit_data(
+                repo_path,
+                branch_arg,
+                start_date,
+                end_date
+            );
 
             if (email_mapping) {
                 try {
@@ -251,9 +274,16 @@
         try {
             info(`Refreshing repository: ${repo_url} at ${repo_path}`);
 
+            // Get the depth from the manifest
+            const repo_data = manifest_state.repository.find(
+                (r) => r.url === repo_url
+            );
+            const depth = repo_data?.depth || null;
+
             await invoke("refresh_repo", {
                 url: repo_url,
                 path: repo_path,
+                depth: depth,
             });
 
             info("Repository refreshed successfully");
@@ -262,14 +292,22 @@
             const error_message = e.message || String(e);
             error("Failed to refresh repository: " + error_message);
 
-            if (error_message.includes("private and requires authentication")) {
+            // Check for authentication errors - the error can come in different forms
+            if (error_message.includes("remote authentication required")) {
                 info("Authentication required for refresh");
+                // Get depth from manifest for auth retry
+                const repo_data = manifest_state.repository.find(
+                    (r) => r.url === repo_url
+                );
+                const depth = repo_data?.depth || null;
+
                 auth_error.set({
                     needs_token: true,
                     message:
                         "This repository is private. Please provide a Personal Access Token to refresh.",
                     repo_url: repo_url,
                     repo_path: repo_path,
+                    depth: depth,
                 });
             }
         } finally {
@@ -334,25 +372,28 @@
             let data = await invoke<ManifestSchema>("read_manifest");
             manifest.set(data);
             info("page " + data);
+
+            // Check if there's an email mapping for this repository
+            const repo_entry = data.repository.find((r) => r.url === repo_url);
+            const has_email_mapping = !!repo_entry?.email_mapping;
+
+            // Always reload if we have an email mapping (to ensure config is applied to fresh data)
+            // or if we have no branches/contributors
+            if (
+                branches.length === 0 ||
+                contributors.length === 0 ||
+                has_email_mapping
+            ) {
+                await load_graph();
+            }
         } catch (e: any) {
             let err = typeof e === "string" ? e : (e?.message ?? String(e));
             error("read_manifest failed: " + err);
-        }
-        if (email_mapping) {
-            try {
-                contributors = await invoke<Contributor[]>(
-                    "group_contributors_by_config",
-                    {
-                        config_json: email_mapping,
-                        contributors: contributors,
-                    }
-                );
-            } catch (e) {
-                error("Error applying config: " + e);
+
+            // Fallback: always reload if manifest reading fails
+            if (branches.length === 0 || contributors.length === 0) {
+                await load_graph();
             }
-        }
-        if (branches.length === 0 || contributors.length === 0) {
-            await load_graph();
         }
     });
 </script>
@@ -363,7 +404,13 @@
     on_token_add={handle_token_add}
 />
 
-<div class="page">
+<div
+    class="page {source_type === 0
+        ? 'github'
+        : source_type === 1
+          ? 'gitlab'
+          : 'local'}"
+>
     <Heading
         {repo}
         {source_type}
@@ -374,6 +421,7 @@
         bind:start_date
         bind:end_date
         bind:contributors
+        bind:regex_query
     />
 
     <div class="page-select-btns">
@@ -388,7 +436,7 @@
             />
         {/each}
     </div>
-    {#if loading}
+    {#if loading_state.loading}
         <LoadingIndicator />
     {/if}
     <!-- commit graph -->
@@ -404,6 +452,7 @@
                 bind:selected_criteria
                 {aggregation_options}
                 bind:selected_aggregation
+                querying_msgs={regex_query !== undefined}
             />
         {/key}
     {:else if selected_view === "analysis"}
@@ -464,5 +513,53 @@
             padding-top: 0rem;
             padding-bottom: 1rem;
         }
+    }
+
+    .page.github {
+        margin: 0;
+        background:
+            linear-gradient(135deg, #111, #222 80%),
+            radial-gradient(
+                circle at center bottom,
+                rgba(10, 20, 160, 0.85) 0%,
+                rgba(40, 30, 130, 0.4) 15%,
+                rgba(40, 30, 130, 0) 60%
+            );
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-attachment: fixed;
+        background-blend-mode: screen;
+    }
+
+    .page.gitlab {
+        margin: 0;
+        background:
+            linear-gradient(135deg, #111, #222 80%),
+            radial-gradient(
+                circle at center bottom,
+                rgba(160, 65, 10, 0.85) 0%,
+                rgba(130, 63, 30, 0.4) 15%,
+                rgba(130, 58, 30, 0) 60%
+            );
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-attachment: fixed;
+        background-blend-mode: screen;
+    }
+
+    .page.local {
+        margin: 0;
+        background:
+            linear-gradient(135deg, #111, #222 80%),
+            radial-gradient(
+                circle at center bottom,
+                rgba(93, 94, 106, 0.85) 0%,
+                rgba(80, 79, 87, 0.4) 15%,
+                rgba(59, 58, 64, 0) 60%
+            );
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-attachment: fixed;
+        background-blend-mode: screen;
     }
 </style>

@@ -63,4 +63,9 @@ This is the left menu component that contains the logo and optional content.
     .logo-img {
         height: 0.9375rem;
     }
+
+    .clickable:hover,
+    .clickable:focus {
+        opacity: 0.7;
+    }
 </style>

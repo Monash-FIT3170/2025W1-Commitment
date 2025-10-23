@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use crate::utils::to_string;
+
 /*
 manifest.json is this format
 {
@@ -47,8 +49,8 @@ pub async fn read_manifest() -> Result<serde_json::Value, String> {
     if !path.exists() {
         create_manifest().await?;
     }
-    let content = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
-    serde_json::from_str(&content).map_err(|e| e.to_string())
+    let content = std::fs::read_to_string(path).map_err(to_string)?;
+    serde_json::from_str(&content).map_err(to_string)
 }
 
 async fn create_manifest() -> Result<(), String> {
@@ -58,13 +60,13 @@ async fn create_manifest() -> Result<(), String> {
 
     let path = get_manifest_path().await;
     if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+        std::fs::create_dir_all(parent).map_err(to_string)?;
     }
     std::fs::write(
         path,
-        serde_json::to_string_pretty(&manifest).map_err(|e| e.to_string())?,
+        serde_json::to_string_pretty(&manifest).map_err(to_string)?,
     )
-    .map_err(|e| e.to_string())?;
+    .map_err(to_string)?;
     Ok(())
 }
 
@@ -111,9 +113,9 @@ pub async fn check_manifest() -> Result<(), String> {
         let path = get_manifest_path().await;
         std::fs::write(
             path,
-            serde_json::to_string_pretty(&new_manifest).map_err(|e| e.to_string())?,
+            serde_json::to_string_pretty(&new_manifest).map_err(to_string)?,
         )
-        .map_err(|e| e.to_string())?;
+        .map_err(to_string)?;
     }
     Ok(())
 }
@@ -172,9 +174,9 @@ async fn save_manifest_file(manifest: &serde_json::Value) -> Result<(), String> 
     let path = get_manifest_path().await;
     std::fs::write(
         path,
-        serde_json::to_string_pretty(manifest).map_err(|e| e.to_string())?,
+        serde_json::to_string_pretty(manifest).map_err(to_string)?,
     )
-    .map_err(|e| e.to_string())?;
+    .map_err(to_string)?;
     Ok(())
 }
 

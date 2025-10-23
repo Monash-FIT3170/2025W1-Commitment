@@ -1,4 +1,5 @@
 <script lang="ts">
+    import "../app.css";
     import { invoke } from "@tauri-apps/api/core";
     import {
         get_source_type,
@@ -12,6 +13,7 @@
     import { set_repo_url } from "$lib/stores/repo";
     import ErrorMessage from "$lib/components/global/ErrorMessage.svelte";
     import RepoSearchbar from "$lib/components/global/RepoSearchbar.svelte";
+    import DepthInput from "$lib/components/global/DepthInput.svelte";
     import Banner from "$lib/components/overview-page/Banner.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
     import RepoBookmarkList from "$lib/components/global/RepoBookmarkList.svelte";
@@ -22,6 +24,7 @@
     import { manifest, type ManifestSchema } from "$lib/stores/manifest";
     import { info, error } from "@tauri-apps/plugin-log";
     import LoadingIndicator from "$lib/components/global/LoadingIndicator.svelte";
+    import { loading_sleep } from "$lib/utils/sleep";
 
     // only run on the browser
     onMount(async () => {
@@ -67,6 +70,7 @@
         }
     });
     let repo_url_input: string = $state("");
+    let depth_input: string = $state("");
 
     let verification_message: string = $state("");
     let verification_error: boolean = $state(false);
@@ -83,18 +87,30 @@
     }
 
     // Subscribe to auth errors to show modal when needed
-    let show_modal = $derived($auth_error.needs_token);
-
-    // Track previous modal state to detect when modal closes
+    let show_modal = $state(false);
     let previous_show_modal = $state(false);
 
-    // Clear verification message when modal closes without using Add button
+    // Subscribe to auth_error store
     $effect(() => {
-        if (previous_show_modal && !show_modal && !verification_error) {
-            // Modal was open and is now closed, and we don't have an error
-            // This means the user closed the modal by clicking outside
-            verification_message = "";
-            // waiting_for_auth = false;
+        const unsubscribe = auth_error.subscribe((value) => {
+            show_modal = value.needs_token;
+        });
+        return unsubscribe;
+    });
+
+    // Clear verification message and auth error when modal closes
+    $effect(() => {
+        if (previous_show_modal && !show_modal) {
+            // Modal was open and is now closed
+            if (!verification_error) {
+                // User closed the modal without adding a token
+                verification_message = "";
+            }
+            // Clear the auth error store to prevent modal from showing on other pages
+            auth_error.set({
+                needs_token: false,
+                message: "",
+            });
         }
         previous_show_modal = show_modal;
     });
@@ -106,6 +122,7 @@
             info("No token entered, keeping modal open");
             verification_message = "Please enter a Personal Access Token";
             verification_error = true;
+            // Keep modal open by not clearing auth_error
             return;
         }
 
@@ -152,16 +169,9 @@
         loading = false;
     }
 
-    function update_progress(progress: string) {
-        info(progress);
-    }
-
-    async function local_verification() {
-        await invoke("get_local_repo_information", { path: repo_url_input });
-        info("Local repo selected, skipping verification.");
-    }
-
     async function handle_verification() {
+        loading = true;
+        let start_time = Date.now();
         info(
             "handleVerification called with: " + repo_url_input + " " + selected
         );
@@ -172,8 +182,6 @@
             verification_message = "Please enter a URL/path.";
             return;
         }
-
-        loading = true;
 
         let source_type = get_source_type(repo_url_input);
 
@@ -192,6 +200,7 @@
                 verification_error = true;
                 verification_message =
                     "Please enter a valid URL/path. (Prefix with https:// or /)";
+                await loading_sleep(start_time);
                 loading = false;
                 return;
             }
@@ -209,6 +218,14 @@
                 repository_information = get_repo_info(repo_url_input);
             }
 
+            // Parse depth input
+            const parsed_depth =
+                depth_input.trim() !== "" ? parseInt(depth_input.trim()) : null;
+            const depth_value =
+                parsed_depth && !isNaN(parsed_depth) && parsed_depth > 0
+                    ? parsed_depth
+                    : null;
+
             // Update the repo store with the new URL
             let repo_path: string;
             if (source_type === 2) {
@@ -220,7 +237,8 @@
                         repository_information.source,
                         repository_information.owner,
                         repository_information.repo,
-                        source_type
+                        source_type,
+                        depth_value
                     );
                 } catch (err: any) {
                     error(err);
@@ -240,6 +258,8 @@
                         verification_message = "Unknown Error: " + err_check;
                     }
                     verification_error = true;
+                    await loading_sleep(start_time);
+                    loading = false;
                     return;
                 }
             }
@@ -268,7 +288,8 @@
                     repository_information,
                     url_trimmed,
                     source_type,
-                    repo_path
+                    repo_path,
+                    depth_value
                 );
             }
 
@@ -287,6 +308,8 @@
             await save_state(storage_obj);
 
             // Navigate to the overview page
+            await loading_sleep(start_time);
+            loading = false;
             goto(`/overview-page`);
         } catch (error: any) {
             loading = false;
@@ -333,11 +356,18 @@
             <RepoDropdown bind:selected action={reset_verification_result} />
 
             <!-- Repo link -->
-            <RepoSearchbar
-                on_submit={handle_verification}
-                bind:repo_url_input
-                error={verification_error}
-            />
+            <div class="searchbar-row">
+                <RepoSearchbar
+                    on_submit={handle_verification}
+                    bind:repo_url_input
+                    error={verification_error}
+                />
+                <DepthInput
+                    bind:value={depth_input}
+                    placeholder="depth"
+                    error={verification_error}
+                />
+            </div>
 
             <!-- Repo link list -->
             <RepoBookmarkList
@@ -377,5 +407,11 @@
         justify-content: center;
         align-items: center;
         row-gap: 10px;
+    }
+
+    .searchbar-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
     }
 </style>
