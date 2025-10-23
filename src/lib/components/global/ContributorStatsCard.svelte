@@ -11,6 +11,9 @@
         total_additions,
         total_deletions,
         scaling_factor,
+        querying_msgs,
+        total_regex_matches,
+        commits_matching_regex,
     } = $props();
 </script>
 
@@ -31,6 +34,16 @@ contributor statistics.
             <div>{num_commits} commits</div>
             <div>{total_lines_of_code} lines of code</div>
             <div>{lines_per_commit} lines/commit</div>
+            {#if querying_msgs}
+                <div>{total_regex_matches} total matches found</div>
+                <div>
+                    {commits_matching_regex} commit(s) match the regex
+                </div>
+                <div>
+                    {((commits_matching_regex / num_commits) * 100).toFixed(3)}%
+                    of commits contain at least one match
+                </div>
+            {/if}
             <div class="body-accent addition">
                 {total_additions}++ additions
             </div>

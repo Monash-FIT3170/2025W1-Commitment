@@ -8,6 +8,8 @@ use std::sync::Arc;
 use std::time::Duration;
 use tauri::{Emitter, State};
 
+use crate::utils::to_string;
+
 #[derive(Clone, serde::Serialize)]
 struct SummaryProgress {
     email: String,
@@ -179,14 +181,14 @@ pub async fn gemini_key_validation(api_key: String) -> Result<bool, String> {
         .timeout(Duration::from_secs(30)) //Set a timeout of 30 seconds
         .connect_timeout(Duration::from_secs(10)) // Set a connection timeout of 10 seconds
         .build()
-        .map_err(|e| e.to_string())?;
+        .map_err(to_string)?;
 
     let response = client
         .get(url)
         .query(&[("key", &api_key)])
         .send()
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(to_string)?;
 
     match response.status() {
         reqwest::StatusCode::OK => {

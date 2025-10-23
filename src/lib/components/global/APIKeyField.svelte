@@ -40,14 +40,23 @@
         }
     }
 
+    function handle_input_focus() {
+        editing = true;
+    }
+
     async function toggle_edit() {
         const input_field = document.getElementById(
             "api-input-field"
         ) as HTMLInputElement;
         if (editing) {
+            // Remove focus from the button to reset hover state
+            const button = document.activeElement as HTMLElement;
+            if (button) button.blur();
+
             let error = await on_submit();
             if (!error) {
                 api_input = "";
+                editing = false; // Set to false after successful submit to show edit icon
                 return;
             } else {
                 input_field.disabled = true;
@@ -89,6 +98,7 @@ repository URL.
         placeholder="enter your gemini API key..."
         bind:value={api_input}
         onkeydown={handle_input_keydown}
+        onfocus={handle_input_focus}
     />
     <button class="api-button btn-icon" onclick={toggle_edit}>
         {#if !editing}
@@ -99,7 +109,7 @@ repository URL.
             />
         {:else}
             <Icon
-                icon={"tabler:circle-arrow-right"}
+                icon={"tabler:device-floppy"}
                 class="icon-medium"
                 style="color: inherit"
             />
