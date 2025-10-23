@@ -191,14 +191,15 @@ Use a `.json` file to group all known emails under a single student identity.
 
 The table below describes how GitGauge behaves when contributor email data is incomplete or mismatched across the repository, grading sheet, or configuration file.
 
-| Student found in Repository | Student found in Grading Sheet | Student found in Config File | Outcome |
-|-----------------------------|--------------------------------|------------------------------|---------|
-| Yes | Yes | Yes | Student receives a scaled grade based on their contributions using the selected metric and branch. |
-| No | Yes | Yes | Student appears in the grading sheet but has made no commits. They receive **"NA"** in the scaled mark output. |
-| Yes | No | Yes | Contributor is not listed in the grading sheet and is assumed to be outside the analysed cohort. Their data is **ignored** in the export. |
-| Yes | Yes | No | Contributor’s commits are found, but their email is not mapped in the config file. These commits are **ignored** and not shown as separate contributors. |
+| In Repository | In Grading Sheet | In Config File | Outcome |
+|---------------|------------------|----------------|---------|
+| {{ check_icon() }} | {{ check_icon() }} | {{ check_icon() }} | Student receives a scaled grade based on their contributions using the selected metric and branch. |
+| {{ cross_icon() }} | {{ check_icon() }} | {{ check_icon() }} | Student appears in the grading sheet but has made no commits. They receive **"NA"** in the scaled mark output. |
+| {{ check_icon() }} | {{ cross_icon() }} | {{ check_icon() }} | Contributor is not listed in the grading sheet and is assumed to be outside the analysed cohort. Their data is **ignored** in the export. |
+| {{ check_icon() }} | {{ check_icon() }} | {{ cross_icon() }} | Contributor’s commits are found, but their email is not mapped in the config file. These commits are **ignored** and not shown as separate contributors. |
 
-> **NOTE:** gitgauge only includes contributors who appear in the config file. Unmapped contributors are not displayed or counted in grading calculations.
+> **NOTE:** gitgauge only includes contributors who appear in the config file.  
+> Unmapped contributors are not displayed or counted in grading calculations.
 
 ---
 
