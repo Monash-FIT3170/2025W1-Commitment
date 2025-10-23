@@ -1,4 +1,5 @@
 <script lang="ts">
+    import "../app.css";
     import { invoke } from "@tauri-apps/api/core";
     import {
         get_source_type,
