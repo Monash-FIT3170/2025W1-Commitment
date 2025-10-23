@@ -162,10 +162,16 @@ Students often commit using different emails. To group them correctly:
 - gitgauge matches contributors to the grading sheet  
 - Export final results as a CSV file  
 
+# **SAMPLE** input and output
+
 <p align="center">
-  <img src="../../assets/screenshots/6_grading_modal.png" alt="Uploading a CSV grading sheet modal" width="700">
+  <img src="../../assets/screenshots/6a_empty_grading_modal.png" alt="Uploading a CSV grading sheet modal" width="600">
+  <img src="../../assets/screenshots/6b_active_grading_modal.png" alt="Uploading a CSV grading sheet modal" width="600">
+  <img src="../../assets/screenshots/6c_output_grading_modal.png" alt="Uploading a CSV grading sheet modal" width="600">
+
+
 </p>
-<p align="center"><em>Fig. 6 – Uploading a CSV grading sheet</em></p>
+<p align="center"><em>Fig. 6 – Uploading and exporting a CSV grading sheet</em></p>
 
 ---
 
