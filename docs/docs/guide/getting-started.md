@@ -1,27 +1,47 @@
 # **User Guide**
 
+---
+
 ## **What is gitgauge?**
 
-gitgauge is a desktop tool that helps Teaching Assistants (TAs) assess student group contributions in Git-based projects. It analyses repository activity to provide visual summaries, AI-generated insights, and grading exports, making group assessment more transparent and manageable.
+gitgauge is a desktop application for Teaching Assistants (TAs) to assess individual contributions in student group coding projects.  
+By analysing Git repository history, it provides:
+
+- Clear contribution summaries  
+- Visual insights and timelines  
+- AI-generated commit analysis  
+- Ready-to-export grading sheets
+
+All data stays on your machine. No setup headaches, no cloud sync.
+
+---
+
+## **Features at a Glance**
+
+- Import local or remote Git repositories (with optional PAT for private repos)  
+- View per-student contribution breakdowns with visual dashboards  
+- Use regex filters to refine commit analysis  
+- Upload a config file to map multiple contributor emails to one student  
+- Generate AI summaries using Gemini  
+- Export grading data to CSV for upload to Moodle or your LMS
 
 ---
 
 ## **Before You Start**
 
-### **Generate a Gemini API Key (for AI summaries)**
+### **Generate a Gemini API Key (Optional)**
 
-gitgauge uses Google Gemini to generate commit insights. You will need an API key to enable this feature.
+> Note: AI summaries are optional. gitgauge works fully without Gemini.
 
-**Steps:**
+If you want AI-generated commit summaries:
 
 1. Visit: [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)  
-2. Sign in with a Google account.  
+2. Sign in with a Google account  
 3. Click "Create API Key"  
-4. Name your key  
-5. Attach your key to a Cloud Project  
-6. Copy and paste the key into the application when prompted.
+4. Assign the key to a Cloud Project  
+5. Copy the key and paste it into gitgauge when prompted
 
-> Note: Gemini summaries are optional, gitgauge will still function without AI insights.
+> Warning: Gemini API tokens are not stored and only used for the current session.
 
 ---
 
@@ -29,136 +49,178 @@ gitgauge uses Google Gemini to generate commit insights. You will need an API ke
 
 ### **1\. Launch gitgauge**
 
-Open the gitgauge application from your desktop.
+Start the app from your desktop.
+
+---
 
 ### **2\. Import a Repository**
 
 - Click "Import Repository"  
-- Paste the HTTPS Git URL or choose a local folder.  
-- For private repos, enter your Personal Access Token (PAT) when prompted.
+- Enter a Git URL or choose a local folder  
+- If importing a private repository, enter your Personal Access Token (PAT) when prompted
 
-\img of homepage 
-\img of PAT screen
+Import View  
+*Fig. 1 – Importing a local or remote Git repo*
 
 ---
 
 ### **3\. Link Contributor Emails (Optional)**
 
-Students may have committed using multiple email addresses. To group these under one name:
+Students often commit using different emails. To group them correctly:
 
 - Click "Upload Config File"  
-- Upload a `.json` file mapping alternate emails to the main student email (see format below)
+- Upload a `.json` file mapping alternate emails to the student’s main email
 
-This ensures accurate grouping in the dashboard and grading report.
+Empty Config Modal  
+*Fig. 2 – Email mapping configuration modal*
 
-\img of empy config modal 
-\img of uploaded config modal
+> Only contributors listed in the config file will be included in the analysis and export.  
+Unmapped commit emails are ignored entirely.
 
 ---
 
 ### **4\. Explore the Visual Dashboard**
 
-- View commit timelines, activity graphs, and contribution summaries.  
-- Use filters (e.g., regex to exclude "typo", "test", etc.) to refine the data.
+- See visualisations of contributions:
 
-\img of regex modal 
-\img of active regex modal
+    - Commit timelines  
+    - Code churn over time  
+    - Metric-based breakdowns
+
+- Apply regex filters to ignore noise (e.g. `"typo"`, `"test commit"`)
+
+Regex Modal  
+*Fig. 3 – Filtering commit messages using regex*
+
+> Tip: Try `^(?!.*(fix|format)).*$` to exclude small or irrelevant commits.
 
 ---
 
 ### **5\. Review Contributor Overview**
 
-See each student’s:  
+- View:  
+    - Total commits  
+    - Lines of code added/removed  
+    - Contribution weighting by metric
 
-- Total commits  
-- Lines added/deleted  
-- Contribution weighting based on your selected metric
-
-\img of overview page with card highlightedz and icon highlighted
+Overview View  
+*Fig. 4 – Per-contributor breakdown with scoring*
 
 ---
 
 ### **6\. View AI-Generated Analysis**
 
-- Toggle the "AI Analysis" tab to see summaries of each student’s contribution patterns, effort, and anomalies.  
-- Helps identify under-contributors, red flags, or standout efforts.
+Note: Gemini summaries enhance your grading process but are entirely optional.
 
-AI tokens are never stored and used only for session-based summaries.
+- Open the "AI Analysis" tab  
 
-\img of AI summary screen 
-\img of AI loading screen 
-\img of finished AI summary screen
+- Review summaries of:  
+
+    - Commit patterns  
+    - Effort distribution  
+    - Highlights or red flags
+
+AI Summary View  
+*Fig. 5 – Commit summary powered by Gemini*
 
 ---
 
-### **7\. Import Grading Sheet & Export**
+### **7\. Upload Grading Sheet & Export**
 
-- Upload a CSV containing student names/emails.  
-- gitgauge maps found contributors to this list.  
-- Export your grading summary (CSV format) for upload to Moodle or your LMS.
+- Upload a CSV with student emails  
+- gitgauge matches contributors to the grading sheet  
+- Export final results as a CSV file
 
-\img of inputted grading sheet 
-\img of upload grading sheet modal 
-\img of downloaded grading sheet modal 
-\img of outputted grading sheet
+Grading Modal  
+*Fig. 6 – Uploading a CSV grading sheet*
 
-### **What happens if an email is missing from the grading sheet?**
+---
 
-If an email in the grading CSV is not found in the Git history or config file, gitgauge will:  
+## **How to Obtain Contributor Emails**
 
-- Flag it as "missing" in the results  
-- Leave that contributor's row empty in the export  
-- Still include other matched students normally
+To accurately map contributions to students, you need their commit email addresses.
 
-It's strongly recommended to review and update the config file before final grading export.
+### **Option 1: Ask Students to Submit**
+
+Ask each student to run the following command and submit the result:
+
+```git config user.email```
+
+### **Option 2: Extract From Git Log**
+
+If you have the repo locally:
+
+```git log \--format='%ae' | sort | uniq```
+
+This prints all unique emails used in commits.
 
 ---
 
 ## **Contributor Config File**
 
-To group multiple commit emails under one student identity, create a `.json` config file with the following format:
+Use a `.json` file to group all known emails under a single student identity.
+
+### **Example Format**
 
 ```
+
 {
     "student1@university.edu": [
-        "alt1@gmail.com", 
+        "alt1@gmail.com",
         "alt2@users.noreply.github.com"
     ],
 
-    "student2@university.edu": ["another.email@example.com"]
+    "student2@university.edu": [
+        "another.email@example.com"
+    ]
+
 }
+
 ```
 
-### **What happens if an email is missing from the config file?**
+### **Important Notes**
 
-If a contributor’s email address is not found in the config file, gitgauge will:
+- Only mapped contributors are included  
+- Emails not in the config will not be shown as contributors or included in stats  
+- Contributions from unlinked emails are silently ignored  
+- Ask students to list all possible Git emails before submission
 
-- Not include those contributions in any statistics for any other contributor  
-- Not include those contributions as an additional person  
-- Contributions under the unlinked email address are discarded
+---
 
-It is the responsibility of the students providing their information to make sure potential contributing email addresses are all accounted for.
+## Handling Missing Email Cases
+
+The table below describes how GitGauge behaves when contributor email data is incomplete or mismatched across the repository, grading sheet, or configuration file.
+
+| Student found in Repository | Student found in Grading Sheet | Student found in Config File | Outcome |
+|-----------------------------|--------------------------------|------------------------------|---------|
+| Yes | Yes | Yes | Student receives a scaled grade based on their contributions using the selected metric and branch. |
+| No | Yes | Yes | Student appears in the grading sheet but has made no commits. They receive **"NA"** in the scaled mark output. |
+| Yes | No | Yes | Contributor is not listed in the grading sheet and is assumed to be outside the analysed cohort. Their data is **ignored** in the export. |
+| Yes | Yes | No | Contributor’s commits are found, but their email is not mapped in the config file. These commits are **ignored** and not shown as separate contributors. |
+
+> **Note:** gitgauge only includes contributors who appear in the config file.  
+> Unmapped contributors are not displayed or counted in grading calculations.
 
 ---
 
 ## **Privacy and Security**
 
-- gitgauge runs entirely on your local machine  
-- No data is uploaded, shared, or stored externally  
-- Cloned repositories are automatically deleted after 30 days  
-- PATs and Gemini tokens are not stored, they are used only for the active session
+- gitgauge runs 100% locally  
+- No data is uploaded or synced  
+- Repositories are auto-deleted after 30 days  
+- PATs and Gemini tokens are never stored
 
-Always obtain student consent before analysing their contributions.
+> Reminder: Always obtain student consent before analysis.
 
 ---
 
 ## **Troubleshooting & FAQ**
 
-**Q: The AI summary isn’t loading.**  
-A: Check that your Gemini API key is valid and hasn’t exceeded quota.
+**Q: The AI summary isn’t loading**  
+A: Check your Gemini API key and verify your usage quota.
 
-**Q: A contributor shows up as multiple people.**  
-A: Use the config file to map all alternate emails to the main student email.
+**Q: A contributor shows up twice**  
+A: Use the config file to group all their email addresses.
 
-**Q: A student in my grading sheet isn’t showing up.**  
-A: They may not have committed to the repo or their email isn’t included in the config file.
+**Q: A student isn’t appearing in the outputted grading sheet**  
+A: Their email may be missing from the config file or inputted grading CSV.
