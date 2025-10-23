@@ -108,7 +108,7 @@ Regex Modal
   <p align="center"><em>Fig. 3 – Uploading an email configuration file to map emaisl to contributors</em></p>
 
 !!! tip
-    Try `^(?!.*(fix|format)).*` to exclude small or irrelevant commits.
+    Try `*merge: *` to isolate merge commits.
 
 ---
 
