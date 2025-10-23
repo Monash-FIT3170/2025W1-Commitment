@@ -50,6 +50,7 @@
             };
         })
     );
+
     let api_input = $state("");
     let api_error = $state(false);
     let api_err_desc = $state("");
@@ -273,34 +274,24 @@
                 />
             </button>
         </div>
-        <button
-            class="close-button"
-            onclick={close_sidebar}
-            aria-label="Close sidebar"
-        >
-            <Icon icon="tabler:x" class="icon-medium" style="color: white" />
-        </button>
-    </div>
 
-    <div class= "clear-history-button">
-    
-        <Icon 
-        icon="tabler:trash" 
-        class="icon-medium" 
-        style="color: white"
-        />
-        <button
-            type="button"
-            class="heading-1 sidebar-item-header white"
-            onclick={clear_search_history}
-            aria-label="Clear search history"
-        >
-            Clear History & Bookmarks
-        </button>
+        <div class="clear-history-button">
+            <Icon
+                icon="tabler:trash"
+                class="icon-medium"
+                style="color: white"
+            />
 
-    </div>
+            <button
+                type="button"
+                class="heading-1 sidebar-item-header white"
+                onclick={clear_search_history}
+                aria-label="Clear search history"
+            >
+                Clear History & Bookmarks
+            </button>
+        </div>
 
-    
         <div class="sidebar-item-container">
             <div class="header">
                 <Icon
@@ -457,11 +448,10 @@
         display: flex;
         align-items: center;
         justify-content: left;
-        background:var(--tint-00);
+        background: var(--tint-00);
         border-radius: 12px;
         font-size: 0.95rem;
         font: inherit;
-        
     }
     .clear-history-button > button {
         background: none;

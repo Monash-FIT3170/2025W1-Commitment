@@ -26,8 +26,9 @@
     import LoadingIndicator from "$lib/components/global/LoadingIndicator.svelte";
     import { loading_sleep } from "$lib/utils/sleep";
 
-    let search_history_array = $state<{ repo_name: string; repo_url: string; repo_visited: boolean }[]>([]);
-
+    let search_history_array = $state<
+        { repo_name: string; repo_url: string; repo_visited: boolean }[]
+    >([]);
 
     // only run on the browser
     onMount(async () => {
@@ -45,18 +46,18 @@
                 const s = v?.repo_last_accessed ?? v ?? "";
                 const t = Date.parse(s);
                 return isNaN(t) ? 0 : t;
-            }
+            };
 
             search_history_array = (data.repository ?? [])
                 .slice()
                 .sort((a: any, b: any) => get_time_stamp(b) - get_time_stamp(a))
                 .map((item: any) => ({
-                        repo_name: item.name ?? "unknown",
-                        repo_url: item.url ?? "",
-                        repo_visited: item.visited ?? false,
-                        repo_last_accessed: item.last_accessed ?? ""
-                    }
-                )).slice(0, 10);
+                    repo_name: item.name ?? "unknown",
+                    repo_url: item.url ?? "",
+                    repo_visited: item.visited ?? false,
+                    repo_last_accessed: item.last_accessed ?? "",
+                }))
+                .slice(0, 10);
 
             info("page " + JSON.stringify(data));
         } catch (e: any) {
@@ -81,7 +82,7 @@
                 repo_name: item.name ?? "unknown",
                 repo_url: item.url ?? "",
                 repo_visited: item.visited ?? false,
-                repo_last_accessed: item.last_accessed ?? ""
+                repo_last_accessed: item.last_accessed ?? "",
             }))
             .slice(0, 10);
     });
@@ -118,7 +119,6 @@
             };
         })
     );
-
 
     let selected: RepoOption = $state(repo_options[2]); // Default to Local
 
@@ -393,14 +393,15 @@
                 verification_message = error_message;
             }
         }
-        search_history_array = [{
-            repo_name: repo_name,
-            repo_url: url_trimmed,
-            repo_visited: true,
-            repo_last_accessed: new Date().toISOString()
-        },
-        ...search_history_array
-        ].slice(0,10);
+        search_history_array = [
+            {
+                repo_name: repo_name,
+                repo_url: url_trimmed,
+                repo_visited: true,
+                repo_last_accessed: new Date().toISOString(),
+            },
+            ...search_history_array,
+        ].slice(0, 10);
     }
 
     function clear_history() {
@@ -410,7 +411,7 @@
             $manifest.repository = [];
 
             invoke("save_manifest", { manifest: $manifest });
-                console.error("save_manifest failed:", err);
+            console.error("save_manifest failed:", err);
         }
     }
 </script>
@@ -449,7 +450,7 @@
                     error={verification_error}
                 />
             </div>
-          
+
             <!-- Repo Search history list -->
             <RepoSearchHistory
                 stored_repo_url_input={search_history_array}

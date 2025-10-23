@@ -1,22 +1,20 @@
 <script lang="ts">
-
     export let stored_repo_url_input: {
         repo_name: string;
         repo_url: string;
         repo_visited: boolean;
         repo_last_accessed: string;
     }[];
-    export let onclick: (repo_url:string) => void = () => {};
-    </script>
+    export let onclick: (repo_url: string) => void = () => {};
+</script>
 
 <div class="repo-search-history">
-
     {#each stored_repo_url_input as history (history.repo_url)}
         {#if history.repo_visited}
             <button
                 class="repo-list-btn"
                 type="button"
-                onclick={() => onclick(history.repo_url)} 
+                onclick={() => onclick(history.repo_url)}
             >
                 <h6 class="display-body repo-list-text">
                     {history.repo_url}
@@ -25,7 +23,6 @@
         {/if}
     {/each}
 </div>
-
 
 <style>
     .repo-search-history {
@@ -47,7 +44,7 @@
         scrollbar-width: 10px;
         scrollbar-color: var(--tint-01) transparent;
         -ms-overflow-style: none;
-        
+
         -webkit-mask-image: linear-gradient(
             to bottom,
             black 0%,

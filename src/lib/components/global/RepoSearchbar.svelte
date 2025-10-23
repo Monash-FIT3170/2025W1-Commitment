@@ -9,12 +9,10 @@
 
     function handle_input_keydown(event: KeyboardEvent) {
         if (event.key === "Enter") {
-            on_submit();          
+            on_submit();
         }
     }
     let stored_repo_url_input: string[] = [];
-
-
 </script>
 
 <!--
@@ -53,7 +51,6 @@ repository URL.
             style="color: inherit"
         />
     </button>
-
 </div>
 
 <style>
