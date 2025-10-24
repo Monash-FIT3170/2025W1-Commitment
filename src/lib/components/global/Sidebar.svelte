@@ -86,26 +86,16 @@
         loading_state.loading = true;
         let start_time = Date.now();
         let source_type = get_source_type(repo_url_input);
-        let repository_information: {
-            source_type: 0 | 1 | 2;
-            source: string;
-            owner: string;
-            repo: string;
-        };
 
         try {
-            if (source_type === 2) {
-                let remote_url = await invoke<string>(
-                    "get_local_repo_information",
-                    { path: repo_url_input }
-                );
-                repository_information = get_repo_info(
-                    remote_url.replace(".git", "")
-                );
-                repository_information.source_type = 2;
-            } else {
-                repository_information = get_repo_info(repo_url_input);
-            }
+            const repository_information = get_repo_info(repo_url_input);
+
+            let repo_path = await bare_clone(
+                repository_information.source,
+                repository_information.owner,
+                repository_information.repo,
+                source_type
+            );
 
             // Update the repo store with the new URL
             let repo_path: string;
@@ -150,13 +140,11 @@
             let contributors = await load_commit_data(repo_path);
 
             const url_trimmed =
-                source_type === 2
-                    ? repo_url_input
-                    : repository_information.source +
-                      "/" +
-                      repository_information.owner +
-                      "/" +
-                      repository_information.repo;
+                repository_information.source +
+                "/" +
+                repository_information.owner +
+                "/" +
+                repository_information.repo;
 
             manifest.update_repository_timestamp(url_trimmed);
             await invoke("save_manifest", { manifest: $manifest });
@@ -190,7 +178,6 @@
             bookmark_error = true;
             bookmark_err_desc =
                 "Failed to open bookmarked repository. Please try again.";
-            loading_state.loading = false;
         }
     }
 
@@ -243,59 +230,40 @@
     }
 </script>
 
-<div class={`sidebar-container ${$sidebar_open ? "open" : ""}`}>
-    <div class="sidebar-backdrop" onclick={close_sidebar}></div>
-    <div class={`sidebar ${$sidebar_open ? "open" : "closed"}`}>
-        <div class="sidebar-header">
-            <div class="sidebar-title">
-                <Icon
-                    icon="tabler:chart-line"
-                    class="icon-large"
-                    style="color: white"
-                />
-                <h1 class="title sidebar-title-text white">Settings</h1>
-            </div>
-            <button
-                class="close-button btn-icon"
-                onclick={close_sidebar}
-                aria-label="Close sidebar"
-            >
-                <Icon
-                    icon="tabler:x"
-                    class="icon-medium"
-                    style="color: inherit"
-                />
-            </button>
+<div class={`sidebar ${$sidebar_open ? "open" : "closed"}`}>
+    <div class="sidebar-header">
+        <div class="sidebar-title">
+            <Icon
+                icon="tabler:chart-line"
+                class="icon-large"
+                style="color: white"
+            />
+            <h1 class="title sidebar-title-text white">Settings</h1>
         </div>
-        <div class="sidebar-item-container">
-            <div class="header">
-                <Icon
-                    icon="tabler:sparkles"
-                    class="icon-medium"
-                    style="color: white"
-                />
-                <h2 class="heading-1 sidebar-item-header white">
-                    AI integration
-                </h2>
-            </div>
-            <div class="caption label-secondary">
-                Add your Gemini API key to enable AI-powered features.
-            </div>
-            <ApiKeyField bind:api_input {on_submit} {api_error} />
-            {#if api_error}
-                <div class="caption error" style="margin-top: 0.25rem;">
-                    {api_err_desc}
-                </div>
-            {/if}
+        <button
+            class="close-button btn-icon"
+            onclick={close_sidebar}
+            aria-label="Close sidebar"
+        >
+            <Icon icon="tabler:x" class="icon-medium" style="color: inherit" />
+        </button>
+    </div>
+    <div class="sidebar-item-container">
+        <div class="header">
+            <Icon
+                icon="tabler:sparkles"
+                class="icon-medium"
+                style="color: white"
+            />
+            <h2 class="heading-1 sidebar-item-header white">AI integration</h2>
         </div>
-        <div class="sidebar-item-container">
-            <div class="header">
-                <Icon
-                    icon="tabler:star-filled"
-                    class="icon-medium"
-                    style="color: white"
-                />
-                <h2 class="heading-1 sidebar-item-header white">Bookmarks</h2>
+        <div class="caption label-secondary">
+            Add your Gemini API key to enable AI-powered features.
+        </div>
+        <ApiKeyField bind:api_input {on_submit} {api_error} />
+        {#if api_error}
+            <div class="caption error" style="margin-top: 0.25rem;">
+                {api_err_desc}
             </div>
             {#if bookmark_error}
                 <div class="caption error" style="margin-top: 0.25rem;">
@@ -306,18 +274,16 @@
                 {#if repo.repo_bookmarked}
                     <div class="bookmark-wrapper">
                         <button
-                            class="bookmark-item"
+                            class="delete-button"
                             type="button"
-                            onclick={() => {
-                                bookmark_open(repo.repo_url);
-                            }}
+                            onclick={(e) => delete_repository(repo.repo_url, e)}
+                            aria-label="Delete repository"
                         >
-                            <h6 class="heading-2 repo-name label-secondary">
-                                {repo.repo_name}
-                            </h6>
-                            <h6 class="caption repo-url label-secondary">
-                                {repo.repo_url}
-                            </h6>
+                            <Icon
+                                icon="tabler:trash"
+                                class="icon-medium"
+                                style="color: var(--label-secondary)"
+                            />
                         </button>
                         {#if repo.source_type !== 2}
                             <button

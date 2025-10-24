@@ -34,7 +34,6 @@
     } from "$lib/stores/refresh.svelte";
     import { goto } from "$app/navigation";
     import LoadingIndicator from "$lib/components/global/LoadingIndicator.svelte";
-    import { loading_state } from "$lib/stores/loading.svelte";
 
     const s = page.state as any;
     load_state(s);
@@ -87,7 +86,7 @@
 
     let show_modal = $state(false);
     const open_modal = () => (show_modal = true);
-    let loading = $state(loading_state.loading);
+    let loading = $state(false);
 
     let current_upload = $state<UploadedGradingFile | null>(null);
 
@@ -270,9 +269,8 @@
     }
 
     async function refresh_repository() {
-        loading_state.loading = true;
+        loading = true;
         set_refreshing(true);
-
         try {
             info(`Refreshing repository: ${repo_url} at ${repo_path}`);
 
@@ -314,7 +312,7 @@
             }
         } finally {
             set_refreshing(false);
-            loading_state.loading = false;
+            loading = false;
         }
     }
 
@@ -403,7 +401,6 @@
 <!-- Access Token Modal for private repository refresh -->
 <AccessTokenModal
     bind:show_modal={show_auth_modal}
-    bind:is_loading={loading}
     on_token_add={handle_token_add}
 />
 
