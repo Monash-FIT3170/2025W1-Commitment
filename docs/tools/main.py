@@ -23,6 +23,15 @@ def define_env(env):
         "linux": downloads.get("linux") or [],
     }
 
+    # Add reusable icon macros
+    @env.macro
+    def check_icon():
+        return '<span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/check.png" alt="Yes" width="20" height="20" /> <b> Yes </b> </span>'
+
+    @env.macro
+    def cross_icon():
+        return '<span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/cross.png" alt="No" width="20" height="20" /> <b> No </b> </span>'
+
     def render_platform(title, version, date, notes_url, items):
         rows = []
         if items:

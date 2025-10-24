@@ -42,15 +42,20 @@
               GH_REPO: Monash-FIT3170/2025W1-Commitment
               GG_YAML_PATH: docs/data/releases.yml
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              GG_COMPUTE_SHA: "1"
             run: python docs/tools/update_releases.py
 
+          - name: Generate release pages and nav
+            run: |
+              python docs/tools/page_per_release.py
+              python docs/tools/inject_releases.py
           - name: Commit releases.yml if changed
             run: |
               if git diff --quiet -- docs/data/releases.yml; then
                 echo "No changes to releases.yml"
               else
-                git add docs/data/releases.yml
-                git commit -m "chore: sync releases.yml from latest GitHub Release"
+                git add docs/data/releases.yml docs/releases/*.md docs/mkdocs.yml
+                git commit -m "chore: update releases pages and nav from GitHub Release"
               fi
 
           - name: Deploy MkDocs Site
