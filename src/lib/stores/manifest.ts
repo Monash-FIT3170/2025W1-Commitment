@@ -18,6 +18,7 @@ export interface RepoSchema {
     source_type: 0 | 1 | 2; // 0 = GitHub, 1 = GitLab, 2 = Local
     path: string;
     url: string;
+    visited: boolean;
 }
 
 export interface ManifestSchema {
@@ -132,6 +133,21 @@ function create_manifest_store() {
             return get({ subscribe }).repository.filter((r) => r.bookmarked);
         },
 
+        visited(url: string): RepoSchema | undefined {
+            let changed: RepoSchema | undefined;
+            update((m) => {
+                const next = m.repository.map((r) => {
+                    if (r.url === url) {
+                        changed = { ...r, visited: true };
+                        return changed!;
+                    }
+                    return r;
+                });
+                return { repository: next };
+            });
+            return changed;
+        },
+
         /** Create a new repository inside of the manifest file */
         async create_repository(
             repo_info: RepositoryInformation,
@@ -162,6 +178,7 @@ function create_manifest_store() {
                     email_mapping: null,
                     grading_sheet: null,
                     last_accessed: new Date().toISOString(),
+                    visited: false,
                 };
                 update((m) => ({
                     repository: [...m.repository, new_repo],
