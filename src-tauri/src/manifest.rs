@@ -127,6 +127,12 @@ async fn check_repository(repo: &serde_json::Value) -> Result<(), bool> {
             return Ok(());
         }
     }
+        // If repository is visited, it always stays in the manifest
+    if let Some(visited) = repo.get("visited").and_then(|b| b.as_bool()) {
+        if visited {
+            return Ok(());
+        }
+    }
 
     // Check if the repository has been accessed within 30 days
     if let Some(last_accessed) = repo.get("last_accessed").and_then(|l| l.as_str()) {
