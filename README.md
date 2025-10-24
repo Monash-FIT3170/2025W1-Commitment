@@ -28,32 +28,45 @@ where traditional peer review or manual weighting is too slow or inconsistent.
 
 ```
 gitgauge/
-├── .gitgauge/                     # App cache (safe to delete)
-├── .githooks/                     # Pre-commit hook scripts
-├── .svelte-kit/                   # SvelteKit build cache
-├── node_modules/                  # Node.js dependencies
+├── .gitgauge/                  # App cache (safe to delete)
+├── .githooks/                  # Pre-commit hook scripts
+├── .svelte-kit/                # SvelteKit build cache
+├── node_modules/               # Node.js dependencies
 ├── src/
-│   ├── lib/                       # Shared frontend logic
-│   │   ├── components/            # Reusable UI components
-│   │   │   ├── global/            # Global UI (e.g. buttons)
-│   │   │   └── overview-page/     # UI for overview route
-│   │   ├── stores/                # Global/local state stores
-│   │   └── utils/                 # Helpers (CSV, grading, etc.)
-│   ├── routes/                    # App pages (SvelteKit routing)
-│   │   ├── overview-page/         # Contributor stats page
-│   │   │   ├── +layout.svelte     # Route layout wrapper
-│   │   │   └── +page.svelte       # Route content
-│   │   ├── +layout.ts             # App-wide layout logic
-│   │   └── +page.svelte           # Upload page
-│   ├── app.html                   # Root HTML shell
-│   └── ...                        # Other routes/config
-├── src-tauri/                     # Rust backend for Tauri
+│   ├── lib/                    # Shared frontend logic
+│   │   ├── components/         # Reusable UI components
+│   │   │   ├── global/         # Global UI (e.g. buttons)
+│   │   │   └── overview-page/  # UI for overview route
+│   │   ├── stores/	            # Global/local state stores
+│   │   └── utils/              # Helpers (CSV, grading, etc.)
+│   ├── routes/                 # App pages (SvelteKit routing)
+│   │   ├── overview-page/      # Contributor stats page
+│   │   │   ├── +layout.svelte  # Route layout wrapper
+│   │   │   └── +page.svelte    # Route content
+│   │   ├── +layout.ts	        # App-wide layout logic
+│   │   └── +page.svelte        # Upload page
+│   ├── app.html                # Root HTML shell
+│   └── ...                     # Other routes/config
+├── src-tauri/	                # Rust backend for Tauri
 │   ├── src/
-│   │   ├── lib.rs                 # Shared Rust utils
-│   │   └── main.rs                # Tauri backend entry
-│   └── ...                        # Tauri configs/assets
-├── package.json                   # Scripts + dependencies
-└── README.md                      # Setup + handover docs
+│   │   ├── lib.rs	            # Shared Rust utils
+│   │   └── main.rs	            # Tauri backend entry
+│   └── ...                     # Tauri configs/assets
+├── docs/	
+│   ├── docs/
+│   │   └── assets/			
+│   │          ├── icons/       # holds icon assets for user guide
+│   │          ├── images/      # holds logo assets for user guide
+│   │          ├── screenshots/ # holds demo examples for user guide
+│   │          └── templates/   # holds file template examples for user guide
+│   ├── data/                   # holds historical releases data
+│   ├── guide/				
+│   │   └── getting-started.md	# user guide content
+│   ├── tools/                  # holds functions for updating landing page
+│   └── mkdocs.yml              # defines user guide landing page framework
+├── package.json                # Scripts + dependencies
+└── README.md                   # Setup + handover docs
+
 ```
 
 ## Developer Setup
