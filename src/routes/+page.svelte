@@ -17,6 +17,7 @@
     import Banner from "$lib/components/overview-page/Banner.svelte";
     import Sidebar from "$lib/components/global/Sidebar.svelte";
     import RepoBookmarkList from "$lib/components/global/RepoBookmarkList.svelte";
+    import RepoSearchHistory from "$lib/components/global/RepoSearchHistory.svelte";
     import AccessTokenModal from "$lib/components/global/AccessTokenModal.svelte";
     import { auth_error, retry_clone_with_token } from "$lib/stores/auth";
     import { generate_state_object, save_state } from "$lib/utils/localstorage";
@@ -44,12 +45,53 @@
         }
     });
 
+    onMount(async () => {
+        let data = await invoke<ManifestSchema>("read_manifest");
+        manifest.set(data);
+
+        const get_time_stamp = (v: any) => {
+            const s = v.repo_last_accessed;
+            const t = Date.parse(s);
+            return isNaN(t) ? 0 : t;
+        };
+
+        search_history_array = (data.repository ?? [])
+            .slice()
+            .sort(
+                (a, b) =>
+                    new Date(b.last_accessed).getTime() -
+                    new Date(a.last_accessed).getTime()
+            )
+            .map((item) => {
+                return {
+                    repo_name: item.name,
+                    repo_url: item.url,
+                    repo_visited: item.visited || true,
+                    repo_last_accessed: item.last_accessed,
+                };
+            })
+            .slice(0, 10);
+    });
+    let search_history_array: {
+        repo_name: string;
+        repo_url: string;
+        repo_visited: boolean;
+        repo_last_accessed: string;
+    }[] = $state([]);
+
     let loading: boolean = $state(false);
 
     interface RepoBookmark {
         repo_name: string;
         repo_url: string;
         repo_bookmarked: boolean;
+    }
+
+    interface RepoSearchHistory {
+        repo_name: string;
+        repo_url: string;
+        repo_visited: boolean;
+        repo_last_accessed: string;
     }
 
     let recent_repos: RepoBookmark[] = $derived(
@@ -77,6 +119,11 @@
     let waiting_for_auth: boolean = $state(false);
 
     async function select_bookmarked_repo(repo_url: string) {
+        repo_url_input = repo_url;
+        await handle_verification();
+    }
+
+    async function select_history_repo(repo_url: string) {
         repo_url_input = repo_url;
         await handle_verification();
     }
@@ -190,7 +237,8 @@
             source: string;
             owner: string;
             repo: string;
-        };
+        } | null = null;
+        let url_trimmed = "";
         try {
             if (
                 !repo_url_input.startsWith("/") &&
@@ -329,6 +377,26 @@
                 verification_message = error_message;
             }
         }
+        if (repository_information) {
+            search_history_array = [
+                {
+                    repo_name: repository_information.repo,
+                    repo_url: url_trimmed,
+                    repo_visited: true,
+                    repo_last_accessed: new Date().toISOString(),
+                },
+                ...search_history_array,
+            ].slice(0, 10);
+        }
+    }
+    function clear_history() {
+        search_history_array = [];
+
+        if ($manifest && Array.isArray($manifest.repository)) {
+            $manifest.repository = [];
+
+            invoke("save_manifest", { manifest: $manifest });
+        }
     }
 </script>
 
@@ -366,11 +434,9 @@
                     error={verification_error}
                 />
             </div>
-
-            <!-- Repo link list -->
-            <RepoBookmarkList
-                bookmarked_repos={recent_repos}
-                onclick={select_bookmarked_repo}
+            <RepoSearchHistory
+                stored_repo_url_input={search_history_array}
+                onSelect={select_history_repo}
             />
         </div>
     </main>
