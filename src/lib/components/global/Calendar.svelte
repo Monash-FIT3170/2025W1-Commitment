@@ -137,15 +137,15 @@
         min-width: 33px;
     }
 
-   .date-picker-container :global(.grid-cols-4) {
-    display: grid !important;
-    grid-template-columns: repeat(4, minmax(64px, 1fr)) !important;
-    gap: 0.25rem !important;
-}
+    .date-picker-container :global(.grid-cols-4) {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(64px, 1fr)) !important;
+        gap: 0.25rem !important;
+    }
 
-.date-picker-container :global(h3) {
-    margin: 0 !important;
-}
+    .date-picker-container :global(h3) {
+        margin: 0 !important;
+    }
     /* .date-picker-container :global(button:not(.day)) {
         padding-left: 0.6rem;
         padding-right: 0.6rem;

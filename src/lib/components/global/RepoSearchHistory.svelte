@@ -1,11 +1,9 @@
 <script lang="ts">
-
-    export let stored_repo_url_input:{
+    export let stored_repo_url_input: {
         repo_name: string;
         repo_url: string;
         repo_visited: boolean;
         repo_last_accessed: string;
-
     }[];
     export let onSelect: (repo_url: string) => void = () => {};
 </script>

@@ -53,25 +53,24 @@
             const s = v.repo_last_accessed;
             const t = Date.parse(s);
             return isNaN(t) ? 0 : t;
-        }
+        };
 
         search_history_array = (data.repository ?? [])
-        .slice()
-        .sort(
-            (a, b) =>
-                new Date(b.last_accessed).getTime() -
-                new Date(a.last_accessed).getTime()
-        )
-        .map((item) => {
-            return {
-                repo_name: item.name,
-                repo_url: item.url,
-                repo_visited: item.visited || true,
-                repo_last_accessed: item.last_accessed,
-            };
-        })
-        .slice(0,10);
-
+            .slice()
+            .sort(
+                (a, b) =>
+                    new Date(b.last_accessed).getTime() -
+                    new Date(a.last_accessed).getTime()
+            )
+            .map((item) => {
+                return {
+                    repo_name: item.name,
+                    repo_url: item.url,
+                    repo_visited: item.visited || true,
+                    repo_last_accessed: item.last_accessed,
+                };
+            })
+            .slice(0, 10);
     });
     let search_history_array: {
         repo_name: string;
@@ -88,7 +87,7 @@
         repo_bookmarked: boolean;
     }
 
-    interface RepoSearchHistory{
+    interface RepoSearchHistory {
         repo_name: string;
         repo_url: string;
         repo_visited: boolean;
@@ -378,7 +377,7 @@
                 verification_message = error_message;
             }
         }
-         if (repository_information) {
+        if (repository_information) {
             search_history_array = [
                 {
                     repo_name: repository_information.repo,
@@ -439,7 +438,7 @@
                 stored_repo_url_input={search_history_array}
                 onSelect={select_history_repo}
             />
-
+        </div>
     </main>
 </div>
 

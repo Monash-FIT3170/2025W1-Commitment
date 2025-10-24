@@ -132,7 +132,7 @@ function create_manifest_store() {
         get_bookmark(): RepoSchema[] {
             return get({ subscribe }).repository.filter((r) => r.bookmarked);
         },
-        
+
         visited(url: string): RepoSchema | undefined {
             let changed: RepoSchema | undefined;
             update((m) => {
