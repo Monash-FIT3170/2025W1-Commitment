@@ -1,0 +1,1439 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../..">
+      
+      
+        <link rel="next" href="../../releases/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.21">
+    
+    
+      
+        <title>Guide - gitgauge</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2a3383ac.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=DM+Mono:300,300i,400,400i,700,700i%7CDM+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"DM Mono";--md-code-font:"DM Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#user-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="gitgauge" class="md-header__button md-logo" aria-label="gitgauge" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            gitgauge
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="teal"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Monash-FIT3170/2025W1-Commitment" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    2025W1-Commitment
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="gitgauge" class="md-nav__button md-logo" aria-label="gitgauge" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.png" alt="logo">
+
+    </a>
+    gitgauge
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Monash-FIT3170/2025W1-Commitment" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    2025W1-Commitment
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Guide
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Guide
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-gitgauge" class="md-nav__link">
+    <span class="md-ellipsis">
+      What is gitgauge?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#before-you-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      Before You Start
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Before You Start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generate-an-api-key-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generate an API Key (OPTIONAL)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-scenario" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Scenario
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-by-step-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step By Step Workflow
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step By Step Workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-launch-gitgauge" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Launch gitgauge
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-import-a-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Import a Repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-link-disparate-emails-to-contributor-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Link Disparate Emails to Contributor (OPTIONAL)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-explore-the-visual-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Explore the Visual Dashboard
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-review-contributor-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Review Contributor Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-view-ai-generated-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. View AI Generated Analysis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-upload-grading-sheet-and-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Upload Grading Sheet and Export
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contributor-configuration-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Contributor Configuration File
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Contributor Configuration File">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-config-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Config Format
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-obtain-contributor-emails" class="md-nav__link">
+    <span class="md-ellipsis">
+      How To Obtain Contributor Emails
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How To Obtain Contributor Emails">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-1-ask-students-to-submit-all-potential-contributing-emails" class="md-nav__link">
+    <span class="md-ellipsis">
+      OPTION 1: Ask Students to Submit All Potential Contributing Emails
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-2-extract-from-git-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      OPTION 2: Extract From Git Log
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handling-missing-contributor-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Handling Missing Contributor Cases
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#privacy-and-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      Privacy and Security
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting-faq" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting &amp; FAQ
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Releases
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Releases
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    All releases
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v0.8.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    v0.8.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v0.7.2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    v0.7.2
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v0.7.1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    v0.7.1
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v0.7.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    v0.7.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v0.6.1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    v0.6.1
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v0.6.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    v0.6.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v0.5.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    v0.5.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v0.4.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    v0.4.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v0.3.1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    v0.3.1
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../releases/v0.3.0/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    v0.3.0
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-gitgauge" class="md-nav__link">
+    <span class="md-ellipsis">
+      What is gitgauge?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#before-you-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      Before You Start
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Before You Start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generate-an-api-key-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generate an API Key (OPTIONAL)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-scenario" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Scenario
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-by-step-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step By Step Workflow
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step By Step Workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-launch-gitgauge" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Launch gitgauge
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-import-a-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Import a Repository
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-link-disparate-emails-to-contributor-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Link Disparate Emails to Contributor (OPTIONAL)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-explore-the-visual-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Explore the Visual Dashboard
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-review-contributor-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Review Contributor Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-view-ai-generated-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. View AI Generated Analysis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-upload-grading-sheet-and-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Upload Grading Sheet and Export
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contributor-configuration-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Contributor Configuration File
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Contributor Configuration File">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-config-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Config Format
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-obtain-contributor-emails" class="md-nav__link">
+    <span class="md-ellipsis">
+      How To Obtain Contributor Emails
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How To Obtain Contributor Emails">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-1-ask-students-to-submit-all-potential-contributing-emails" class="md-nav__link">
+    <span class="md-ellipsis">
+      OPTION 1: Ask Students to Submit All Potential Contributing Emails
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-2-extract-from-git-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      OPTION 2: Extract From Git Log
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handling-missing-contributor-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      Handling Missing Contributor Cases
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#privacy-and-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      Privacy and Security
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting-faq" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting &amp; FAQ
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="user-guide"><strong>User Guide</strong><a class="headerlink" href="#user-guide" title="Permanent link">&para;</a></h1>
+<hr />
+<h2 id="what-is-gitgauge"><strong>What is gitgauge?</strong><a class="headerlink" href="#what-is-gitgauge" title="Permanent link">&para;</a></h2>
+<p>gitgauge is a desktop application for Teaching Assistants (TAs) to assess individual contributions in student group coding projects.
+By analysing Git repository history, it provides:</p>
+<ul>
+<li>Clear contribution summaries</li>
+<li>Visual insights and timelines</li>
+<li>AI-generated commit analysis</li>
+<li>Ready-to-export grading sheets</li>
+</ul>
+<p>All data stays on your machine. No setup headaches, no cloud sync.</p>
+<hr />
+<h2 id="features"><strong>Features</strong><a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Import local or remote Git repositories (with optional PAT for private repos)</li>
+<li>View per-student contribution breakdowns with visual dashboards</li>
+<li>Use regex filters to refine commit analysis</li>
+<li>Upload a configuration file to map multiple contributor emails to one student</li>
+<li>Generate AI summaries using Gemini</li>
+<li>Export scaled grading data to CSV for upload to Monash Moodle</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>gitgauge is intended for Teaching Assistant (TA) use only.</p>
+</div>
+<hr />
+<h2 id="before-you-start"><strong>Before You Start</strong><a class="headerlink" href="#before-you-start" title="Permanent link">&para;</a></h2>
+<h3 id="generate-an-api-key-optional"><strong>Generate an API Key (OPTIONAL)</strong><a class="headerlink" href="#generate-an-api-key-optional" title="Permanent link">&para;</a></h3>
+<p>If you want AI-generated commit summaries:</p>
+<ol>
+<li>Visit: <a href="https://aistudio.google.com/app/apikey">https://aistudio.google.com/app/apikey</a> </li>
+<li>Sign in with a Google account</li>
+<li>Click “Create API Key”</li>
+<li>Assign the key to a Cloud Project</li>
+<li>Copy the key and paste it into gitgauge when prompted</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>AI summaries are optional. gitgauge works fully without Gemini.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Gemini API tokens are not stored and only used for the current session.</p>
+</div>
+<hr />
+<h2 id="example-scenario"><strong>Example Scenario</strong><a class="headerlink" href="#example-scenario" title="Permanent link">&para;</a></h2>
+<p>You are grading a group project for FIT3170. The group has pushed their work to a GitHub 
+repository. You want to assess individual contributions.</p>
+<p>Here’s the process:</p>
+<ol>
+<li>Launch gitgauge.</li>
+<li>Import the repository.</li>
+<li>Upload a configuration file linking students to multiple emails.</li>
+<li>Filter out unhelpful commits (e.g. formatting).</li>
+<li>Review the AI summaries.</li>
+<li>Upload the grading sheet.</li>
+<li>Export the final scaled CSV.</li>
+</ol>
+<hr />
+<h2 id="step-by-step-workflow"><strong>Step By Step Workflow</strong><a class="headerlink" href="#step-by-step-workflow" title="Permanent link">&para;</a></h2>
+<h3 id="1-launch-gitgauge"><strong>1. Launch gitgauge</strong><a class="headerlink" href="#1-launch-gitgauge" title="Permanent link">&para;</a></h3>
+<p>Start the app from your desktop.</p>
+<hr />
+<h3 id="2-import-a-repository"><strong>2. Import a Repository</strong><a class="headerlink" href="#2-import-a-repository" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Enter a Git URL into the text box</li>
+<li>If importing a private repository, enter your Personal Access Token (PAT) when prompted</li>
+</ul>
+<p align="center">
+  <img src="../../assets/screenshots/1a_import_public_repo.png" alt="Importing a public Git repository" width="700">
+</p>
+<p align="center"><em>Fig. 1a – Importing a public Git repository</em></p>
+
+<p align="center">
+  <img src="../../assets/screenshots/1b_import_private_repo.png" alt="Importing a private Git repository" width="700">
+</p>
+<p align="center"><em>Fig. 1b – Importing a private Git repository using PAT</em></p>
+
+<hr />
+<h3 id="3-link-disparate-emails-to-contributor-optional"><strong>3. Link Disparate Emails to Contributor (OPTIONAL)</strong><a class="headerlink" href="#3-link-disparate-emails-to-contributor-optional" title="Permanent link">&para;</a></h3>
+<p>Students often commit using different emails. To group them correctly:</p>
+<ul>
+<li>Click “Upload Config File”</li>
+<li>Upload a <code>.json</code> file mapping alternate emails to the student’s full name / identifier</li>
+</ul>
+<p align="center">
+  <img src="../../assets/screenshots/2a_empty_config_modal.png" alt="Empty configuration modal before upload" width="600">
+</p>
+<p align="center"><em>Fig. 2a – Empty configuration modal</em></p>
+
+<p align="center">
+  <img src="../../assets/screenshots/2b_active_config_modal.png" alt="Active configuration modal showing mapped contributors" width="600">
+</p>
+<p align="center"><em>Fig. 2b – Configuration with mapped contributors</em></p>
+
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Only contributors listed in the config file will be included in the analysis and export.
+Unmapped commit emails are ignored entirely.</p>
+</div>
+<p>TEMPLATE AVAILABLE: See <a href="../../assets/templates/example-config.csv">Example Config</a> in the repo.</p>
+<hr />
+<h3 id="4-explore-the-visual-dashboard"><strong>4. Explore the Visual Dashboard</strong><a class="headerlink" href="#4-explore-the-visual-dashboard" title="Permanent link">&para;</a></h3>
+<ul>
+<li>See visualisations of contributions:<ul>
+<li>Commit timelines</li>
+<li>Code churn over time</li>
+<li>Metric-based breakdowns</li>
+<li>Apply regex filters to ignore noise (e.g. “typo”, “test commit”)</li>
+</ul>
+</li>
+</ul>
+<p align="center">
+  <img src="../../assets/screenshots/3a_empty_regexx_modal.png" alt="Empty regex filter modal" width="600">
+</p>
+<p align="center"><em>Fig. 3a – Add regex filter to refine analysis</em></p>
+
+<p align="center">
+  <img src="../../assets/screenshots/3b_active_regex_modal.png" alt="Active regex modal with applied filters" width="600">
+</p>
+<p align="center"><em>Fig. 3b – Example regex filter: exclude 'fix', 'format'</em></p>
+
+<p align="center">
+  <img src="../../assets/screenshots/3c_active_regex_cont_cards.png" alt="Regex modal showing filtered commit cards" width="600">
+</p>
+<p align="center"><em>Fig. 3c – Filtered view with irrelevant commits removed</em></p>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Try <code>*/merge: PR#.*</code> to exclude merge commits as a test.</p>
+</div>
+<hr />
+<h3 id="5-review-contributor-overview"><strong>5. Review Contributor Overview</strong><a class="headerlink" href="#5-review-contributor-overview" title="Permanent link">&para;</a></h3>
+<ul>
+<li>View:<ul>
+<li>Total commits</li>
+<li>Lines of code added/removed</li>
+<li>Contribution weighting by metric</li>
+</ul>
+</li>
+</ul>
+<p align="center">
+  <img src="../../assets/screenshots/4a_cont_overview.png" alt="Per-contributor breakdown view" width="700">
+</p>
+<p align="center"><em>Fig. 4a – Overview of all contributors</em></p>
+
+<p align="center">
+  <img src="../../assets/screenshots/4b_cont_card.png" alt="Specific contributor card view" width="600">
+</p>
+<p align="center"><em>Fig. 4b – Individual contributor performance</em></p>
+
+<hr />
+<h3 id="6-view-ai-generated-analysis"><strong>6. View AI Generated Analysis</strong><a class="headerlink" href="#6-view-ai-generated-analysis" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Open the “AI Analysis” tab</li>
+<li>Review summaries of:<ul>
+<li>Commit patterns</li>
+<li>Effort distribution</li>
+<li>Highlights or red flags</li>
+</ul>
+</li>
+</ul>
+<p align="center">
+  <img src="../../assets/screenshots/5a_enter_API_key.png" alt="Sidebar view showing text area to enter API key" width="400">
+</p>
+<p align="center"><em>Fig. 5a – Enter Gemini API key</em></p>
+
+<p align="center">
+  <img src="../../assets/screenshots/5b_progress_AI_summary_generation.png" alt="Progress screen showing status of number of AI summaries generated" width="700">
+</p>
+<p align="center"><em>Fig. 5b – Generating AI summaries</em></p>
+
+<p align="center">
+  <img src="../../assets/screenshots/5c_completed_AI_summary_generation.png" alt="AI summary view showing Gemini-powered analysis" width="700">
+</p>
+<p align="center"><em>Fig. 5c – Completed AI Summary per contributor</em></p>
+
+<hr />
+<h3 id="7-upload-grading-sheet-and-export"><strong>7. Upload Grading Sheet and Export</strong><a class="headerlink" href="#7-upload-grading-sheet-and-export" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Upload a CSV with student emails</li>
+<li>gitgauge matches contributors to the grading sheet</li>
+<li>Export final results as a CSV file</li>
+</ul>
+<p align="center">
+  <img src="../../assets/screenshots/6a_empty_grading_modal.png" alt="Uploading a CSV grading sheet modal" width="600">
+</p>
+<p align="center"><em>Fig. 6a – Upload grading sheet</em></p>
+
+<p align="center">
+  <img src="../../assets/screenshots/6b_active_grading_modal.png" alt="Uploading a CSV grading sheet modal" width="600">
+</p>
+<p align="center"><em>Fig. 6b – Review mapped grading</em></p>
+
+<p align="center">
+  <img src="../../assets/screenshots/6c_output_grading_modal.png" alt="Exporting a scaled CSV grading sheet modal" width="600">
+</p>
+<p align="center"><em>Fig. 6c – Export results</em></p>
+
+<hr />
+<h2 id="contributor-configuration-file"><strong>Contributor Configuration File</strong><a class="headerlink" href="#contributor-configuration-file" title="Permanent link">&para;</a></h2>
+<p>Use a <code>.json</code> file to group all known emails under a single student identity.</p>
+<h3 id="example-config-format"><strong>Example Config Format</strong><a class="headerlink" href="#example-config-format" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>{
+  &quot;Student Full Name 1&quot;: [
+    &quot;student1@university.edu&quot;,
+    &quot;alt1@gmail.com&quot;,
+    &quot;alt2@users.noreply.github.com&quot;
+  ],
+  &quot;Student Full Name 2&quot;: [
+    &quot;student2@university.edu&quot;
+  ]
+
+}
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<ul>
+<li>Only mapped contributors are included in contribution analysis</li>
+<li>Emails not in the configuration will not be shown or included in stats</li>
+<li>Unlinked commits are silently ignored</li>
+</ul>
+</div>
+<h3 id="how-to-obtain-contributor-emails"><strong>How To Obtain Contributor Emails</strong><a class="headerlink" href="#how-to-obtain-contributor-emails" title="Permanent link">&para;</a></h3>
+<h4 id="option-1-ask-students-to-submit-all-potential-contributing-emails"><strong>OPTION 1: Ask Students to Submit All Potential Contributing Emails</strong><a class="headerlink" href="#option-1-ask-students-to-submit-all-potential-contributing-emails" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>git config user.email
+</code></pre></div>
+<h4 id="option-2-extract-from-git-log"><strong>OPTION 2: Extract From Git Log</strong><a class="headerlink" href="#option-2-extract-from-git-log" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>git log --format=&#39;%ae&#39; | sort | uniq
+</code></pre></div>
+<hr />
+<h2 id="handling-missing-contributor-cases"><strong>Handling Missing Contributor Cases</strong><a class="headerlink" href="#handling-missing-contributor-cases" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th><strong>Contributor in Repository</strong></th>
+<th><strong>Contributor in Grading Sheet</strong></th>
+<th><strong>Contributor in Config File</strong></th>
+<th><strong>Outcome</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/check.png" alt="Yes" width="20" height="20" /> <b> Yes </b> </span></td>
+<td><span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/check.png" alt="Yes" width="20" height="20" /> <b> Yes </b> </span></td>
+<td><span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/check.png" alt="Yes" width="20" height="20" /> <b> Yes </b> </span></td>
+<td>Student receives a scaled grade based on their contributions using the selected metric and branch.</td>
+</tr>
+<tr>
+<td><span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/cross.png" alt="No" width="20" height="20" /> <b> No </b> </span></td>
+<td><span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/check.png" alt="Yes" width="20" height="20" /> <b> Yes </b> </span></td>
+<td><span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/check.png" alt="Yes" width="20" height="20" /> <b> Yes </b> </span></td>
+<td>Student appears in the grading sheet but has made no commits. They receive <strong>"NA"</strong> in the scaled mark output.</td>
+</tr>
+<tr>
+<td><span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/check.png" alt="Yes" width="20" height="20" /> <b> Yes </b> </span></td>
+<td><span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/cross.png" alt="No" width="20" height="20" /> <b> No </b> </span></td>
+<td><span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/check.png" alt="Yes" width="20" height="20" /> <b> Yes </b> </span></td>
+<td>Contributor is not listed in the grading sheet and is assumed to be outside the analysed cohort. Their data is <strong>ignored</strong> in the export.</td>
+</tr>
+<tr>
+<td><span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/check.png" alt="Yes" width="20" height="20" /> <b> Yes </b> </span></td>
+<td><span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/check.png" alt="Yes" width="20" height="20" /> <b> Yes </b> </span></td>
+<td><span style="display:inline-flex; align-items:center; gap:6px;"><img src="../../assets/icons/cross.png" alt="No" width="20" height="20" /> <b> No </b> </span></td>
+<td>Contributor’s commits are found, but their email is not mapped in the configuration file. These commits are <strong>ignored</strong> and not shown as separate contributors.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="privacy-and-security"><strong>Privacy and Security</strong><a class="headerlink" href="#privacy-and-security" title="Permanent link">&para;</a></h2>
+<ul>
+<li>gitgauge runs 100% locally</li>
+<li>No data is uploaded or synced</li>
+<li>Repositories are auto-deleted after 30 days</li>
+<li>PATs and Gemini tokens are never stored</li>
+</ul>
+<div class="admonition reminder">
+<p class="admonition-title">Reminder</p>
+<p>Always obtain student consent before analysis.</p>
+</div>
+<hr />
+<h2 id="troubleshooting-faq"><strong>Troubleshooting &amp; FAQ</strong><a class="headerlink" href="#troubleshooting-faq" title="Permanent link">&para;</a></h2>
+<p><strong>Q: The AI summary isn’t loading</strong></p>
+<blockquote>
+<p>A: Check your Gemini API key and verify your usage quota.</p>
+</blockquote>
+<p><strong>Q: A contributor shows up twice</strong></p>
+<blockquote>
+<p>A: Use the configuration file to group all their email addresses.</p>
+</blockquote>
+<p><strong>Q: A student isn’t appearing in the outputted grading sheet</strong></p>
+<blockquote>
+<p>A: Their email may be missing from the configuration file or inputted grading CSV.</p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>

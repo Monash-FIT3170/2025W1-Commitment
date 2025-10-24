@@ -1,0 +1,352 @@
+latest:
+  version: v0.8.0
+  date: '2025-10-22'
+  notes_url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/tag/v0.8.0
+  downloads:
+    mac:
+    - label: macOS — gitgauge_0.8.0_aarch64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.8.0/gitgauge_0.8.0_aarch64.dmg
+      checksum: sha256:ac0050c699bad625126054f3074f90857ce07ce6e810e092bd3f722953162cd5
+    - label: macOS — gitgauge_0.8.0_x64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.8.0/gitgauge_0.8.0_x64.dmg
+      checksum: sha256:2a55941b41387526df68fa7f07da0a29b20cee379cdd483f5886a8ac6bfa836d
+    - label: macOS — gitgauge_aarch64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.8.0/gitgauge_aarch64.app.tar.gz
+      checksum: sha256:7388a6ede3c1070bd75bea3209775cd897836e79a645f1eb9b083f417ecb07cb
+    - label: macOS — gitgauge_x64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.8.0/gitgauge_x64.app.tar.gz
+      checksum: sha256:edf34f97568cf033efffadab991f2321ea8f5c204c7484cbfe2955e99839857c
+    win:
+    - label: Windows (x64) — gitgauge_0.8.0_x64-setup.exe
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.8.0/gitgauge_0.8.0_x64-setup.exe
+      checksum: sha256:92aa180b72856b08c6b943ac81a72a5b614e2ebe473c8bbd798a866354d6b695
+    - label: Windows (x64) — gitgauge_0.8.0_x64_en-US.msi
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.8.0/gitgauge_0.8.0_x64_en-US.msi
+      checksum: sha256:a3c045fff9872c908fcfc0880ef2271b624eba5791254c36fea0a99b177f43b6
+    linux:
+    - label: Linux — gitgauge-0.8.0-1.x86_64.rpm
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.8.0/gitgauge-0.8.0-1.x86_64.rpm
+      checksum: sha256:4e67c17db3677596634f76665b46c5a83d68e6d32a7039cd26d0225639252248
+    - label: Linux — gitgauge_0.8.0_amd64.AppImage
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.8.0/gitgauge_0.8.0_amd64.AppImage
+      checksum: sha256:c320908bd1c7047ef29a7bde2dd2eb3b8cd32011a38432f7cc88e895c03bea64
+    - label: Linux — gitgauge_0.8.0_amd64.deb
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.8.0/gitgauge_0.8.0_amd64.deb
+      checksum: sha256:bd541b2865c0d2d01d834d0a573d1e9b5a8304152ee2c10354d51bf543887e43
+  draft: false
+previous:
+- version: v0.7.2
+  date: '2025-10-19'
+  notes_url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/tag/v0.7.2
+  downloads:
+    mac:
+    - label: macOS — gitgauge_0.7.2_aarch64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.2/gitgauge_0.7.2_aarch64.dmg
+      checksum: sha256:a995c2918f56385742c7ab73ca6dd3c640c53a9d2e7b9c861b7cf50e63423cc6
+    - label: macOS — gitgauge_0.7.2_x64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.2/gitgauge_0.7.2_x64.dmg
+      checksum: sha256:0698e82a1532f1f3f918cd3e73e8b0703db97d01bafa8bc50c2c6b287685cb6c
+    - label: macOS — gitgauge_aarch64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.2/gitgauge_aarch64.app.tar.gz
+      checksum: sha256:f4a9aa06918c1769304d5bdff30068e068e645ea810a7f2ad6b5224ec160c06c
+    - label: macOS — gitgauge_x64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.2/gitgauge_x64.app.tar.gz
+      checksum: sha256:daf6dd704db37a4776566bb127a0f1a71d72297570aaf3606416eca04be1978e
+    win:
+    - label: Windows (x64) — gitgauge_0.7.2_x64-setup.exe
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.2/gitgauge_0.7.2_x64-setup.exe
+      checksum: sha256:422ed23febe72db452723511171e500c80f13f68174487db54ead4c0c089f2cb
+    - label: Windows (x64) — gitgauge_0.7.2_x64_en-US.msi
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.2/gitgauge_0.7.2_x64_en-US.msi
+      checksum: sha256:cbba8586d25bfd5574832d2c81d30f3626ca316c9a41aecb244497a325c836fc
+    linux:
+    - label: Linux — gitgauge-0.7.2-1.x86_64.rpm
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.2/gitgauge-0.7.2-1.x86_64.rpm
+      checksum: sha256:aa078baed2389c661763a5950f2d00c0c754b305b718d7e6da3d82b1ff52c8df
+    - label: Linux — gitgauge_0.7.2_amd64.AppImage
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.2/gitgauge_0.7.2_amd64.AppImage
+      checksum: sha256:1ad0efb4188c920a28571db258522156d25d6f51a3b9aaede2f9f7564b556860
+    - label: Linux — gitgauge_0.7.2_amd64.deb
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.2/gitgauge_0.7.2_amd64.deb
+      checksum: sha256:770e67490d43b77a105ae1256168257a839bf20dd78229d6c703c303d12075ab
+  draft: false
+- version: v0.7.1
+  date: '2025-10-17'
+  notes_url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/tag/v0.7.1
+  downloads:
+    mac:
+    - label: macOS — gitgauge_0.7.1_aarch64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.1/gitgauge_0.7.1_aarch64.dmg
+      checksum: sha256:b0ac12c0ffa42693f3ae8845d43a0d79fe045b634b222ea86b49eeea0ef7bb90
+    - label: macOS — gitgauge_0.7.1_x64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.1/gitgauge_0.7.1_x64.dmg
+      checksum: sha256:790f7acc2b7d89116b216c63ad3a126fac809a49a8665c8ebb48a4d5f4adc57f
+    - label: macOS — gitgauge_aarch64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.1/gitgauge_aarch64.app.tar.gz
+      checksum: sha256:4f438b79a2f8fa8b8abd26cf96e32ac8892ba65d26eb0ea55a3afab530f09dfc
+    - label: macOS — gitgauge_x64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.1/gitgauge_x64.app.tar.gz
+      checksum: sha256:70524b410fe611b64a779175dd203bef19e20cf2ea93250f496591a239dbd78b
+    win:
+    - label: Windows (x64) — gitgauge_0.7.1_x64-setup.exe
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.1/gitgauge_0.7.1_x64-setup.exe
+      checksum: sha256:f38bb3d9557206bbb06e31b78fa2e832818821956f41beebbfb7f43948e0c5e3
+    - label: Windows (x64) — gitgauge_0.7.1_x64_en-US.msi
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.1/gitgauge_0.7.1_x64_en-US.msi
+      checksum: sha256:aca5eea6c68f476811587c5c8ea76930ed2408cedce939e51bf01e89dda66a76
+    linux:
+    - label: Linux — gitgauge-0.7.1-1.x86_64.rpm
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.1/gitgauge-0.7.1-1.x86_64.rpm
+      checksum: sha256:37266a5ea23f9c76dd9cbe1079527d5ba5fdf32520e834ab6d2a041dc27f557b
+    - label: Linux — gitgauge_0.7.1_amd64.AppImage
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.1/gitgauge_0.7.1_amd64.AppImage
+      checksum: sha256:c1099d74c3d632ca2e5d9c65d4ab4e484850f743b5fbfae4f657716e2ff31518
+    - label: Linux — gitgauge_0.7.1_amd64.deb
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.1/gitgauge_0.7.1_amd64.deb
+      checksum: sha256:1bf4a219c6d12d69135330e5c1d89568278f5ae52a619a89ea78887a9690f4fb
+  draft: false
+- version: v0.7.0
+  date: '2025-10-16'
+  notes_url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/tag/v0.7.0
+  downloads:
+    mac:
+    - label: macOS — gitgauge_0.7.0_aarch64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.0/gitgauge_0.7.0_aarch64.dmg
+      checksum: sha256:0588b224f6ec98a2ba5622ba2bc1fc1f214af8d798b4f1893ba37b13b1a73bb5
+    - label: macOS — gitgauge_0.7.0_x64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.0/gitgauge_0.7.0_x64.dmg
+      checksum: sha256:6667348e27dcfc4149f7a1ba64aa72b9091f0971cc58b399d8b3d0d5c4a22a13
+    - label: macOS — gitgauge_aarch64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.0/gitgauge_aarch64.app.tar.gz
+      checksum: sha256:a62568878f0ead0e675748173a22b57087f0908544e7baf2b0a1b3e6b9c2bce0
+    - label: macOS — gitgauge_x64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.0/gitgauge_x64.app.tar.gz
+      checksum: sha256:f4ef25bfa259e8675925d8c57e16810253c9ba7bb1b11dec55a742032ef60f2c
+    win:
+    - label: Windows (x64) — gitgauge_0.7.0_x64-setup.exe
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.0/gitgauge_0.7.0_x64-setup.exe
+      checksum: sha256:9340cd6085980638d20cf52fcacf5788f5021ac89d1c13ba446f38da7f4f3461
+    - label: Windows (x64) — gitgauge_0.7.0_x64_en-US.msi
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.0/gitgauge_0.7.0_x64_en-US.msi
+      checksum: sha256:1289b0e878e6657fb7f15a760b348bcb578007d3634f86f853d0cec5528fdd18
+    linux:
+    - label: Linux — gitgauge-0.7.0-1.x86_64.rpm
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.0/gitgauge-0.7.0-1.x86_64.rpm
+      checksum: sha256:fdf9f330c825733e3ff506d77d38a1378e407bea000ae03c80c99b53e28a6e78
+    - label: Linux — gitgauge_0.7.0_amd64.AppImage
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.0/gitgauge_0.7.0_amd64.AppImage
+      checksum: sha256:21076e460050ea3a8889356b0c82d0600342b240caaf041fb3007efc395eff7c
+    - label: Linux — gitgauge_0.7.0_amd64.deb
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.7.0/gitgauge_0.7.0_amd64.deb
+      checksum: sha256:e3874eb6bd58079acb40590fe99f24318e4d909b50081cbfe1cf2d83d0208845
+  draft: false
+- version: v0.6.1
+  date: '2025-10-16'
+  notes_url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/tag/v0.6.1
+  downloads:
+    mac:
+    - label: macOS — gitgauge_0.6.1_aarch64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.1/gitgauge_0.6.1_aarch64.dmg
+      checksum: sha256:eaf571167bdc0c3d52420c6aea8661f0891fba2e2acb7fa5bcdf19f12e1694ff
+    - label: macOS — gitgauge_0.6.1_x64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.1/gitgauge_0.6.1_x64.dmg
+      checksum: sha256:714e49f1923b99ecce6d91115448fad5403d5282282c061f06479a957215fc98
+    - label: macOS — gitgauge_aarch64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.1/gitgauge_aarch64.app.tar.gz
+      checksum: sha256:952c6d817bd53c263caab536d26d09fb41a5c33b19e2fc8e54a94cb7e4c9e049
+    - label: macOS — gitgauge_x64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.1/gitgauge_x64.app.tar.gz
+      checksum: sha256:ec0cb20940bb7d098061a36fa4ef135b683665c2c30c3f1e72d9cac80314ffb7
+    win:
+    - label: Windows (x64) — gitgauge_0.6.1_x64-setup.exe
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.1/gitgauge_0.6.1_x64-setup.exe
+      checksum: sha256:fc5cc46c3ec9ec87433aa0770595d6e5e68ce15e73aa99f7871d516b25c2cb58
+    - label: Windows (x64) — gitgauge_0.6.1_x64_en-US.msi
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.1/gitgauge_0.6.1_x64_en-US.msi
+      checksum: sha256:30f44dc831787d63f70977e1b0a87508ba29a267e817da7bebaffd24dd53ddcd
+    linux:
+    - label: Linux — gitgauge-0.6.1-1.x86_64.rpm
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.1/gitgauge-0.6.1-1.x86_64.rpm
+      checksum: sha256:1fbba84bffd33328bc00a38e1031e9836dc959144e4cbffb7f0152a3aee1b1c8
+    - label: Linux — gitgauge_0.6.1_amd64.AppImage
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.1/gitgauge_0.6.1_amd64.AppImage
+      checksum: sha256:e72797def4724c30ddbff0574c41b66dcac90fa22174fd3cd02546080721d0f3
+    - label: Linux — gitgauge_0.6.1_amd64.deb
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.1/gitgauge_0.6.1_amd64.deb
+      checksum: sha256:6e8ed1d7b2a4e46915f965c9aa933d0417897f901a6299bfa8de3350f63c385a
+  draft: false
+- version: v0.6.0
+  date: '2025-10-16'
+  notes_url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/tag/v0.6.0
+  downloads:
+    mac:
+    - label: macOS — gitgauge_0.6.0_aarch64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.0/gitgauge_0.6.0_aarch64.dmg
+      checksum: sha256:c416563f527440bdb387f87625cdf05b37bbecbee559ce9e9d02c439d8f5bd0a
+    - label: macOS — gitgauge_0.6.0_x64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.0/gitgauge_0.6.0_x64.dmg
+      checksum: sha256:7c7e63b445fef224365d5c79fcaca13d70285c9ac61f500f07847a9364b5aae9
+    - label: macOS — gitgauge_aarch64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.0/gitgauge_aarch64.app.tar.gz
+      checksum: sha256:4cedd70f4954413dc2b194712d3bc048b517ddd6b7d4d36684eb2ee1c9b137e2
+    - label: macOS — gitgauge_x64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.0/gitgauge_x64.app.tar.gz
+      checksum: sha256:0d5be41f418b7fda5cf374a9ca5fccb615a372b05d8b1f94c121e6b5dec66df0
+    win:
+    - label: Windows (x64) — gitgauge_0.6.0_x64-setup.exe
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.0/gitgauge_0.6.0_x64-setup.exe
+      checksum: sha256:24bd858f20dfa955f270c554a44f63c33a2ca5ee9f10b74baec8e3d9295443c8
+    - label: Windows (x64) — gitgauge_0.6.0_x64_en-US.msi
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.0/gitgauge_0.6.0_x64_en-US.msi
+      checksum: sha256:984f6c825602a69d8f2ef99a896c57f7b9d1c00aacbc617627514cf747c3bf89
+    linux:
+    - label: Linux — gitgauge-0.6.0-1.x86_64.rpm
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.0/gitgauge-0.6.0-1.x86_64.rpm
+      checksum: sha256:990bbca2cde25511aace78ef9b8bc3b2b84315c11ef606497a15c2dffa14d1f4
+    - label: Linux — gitgauge_0.6.0_amd64.AppImage
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.0/gitgauge_0.6.0_amd64.AppImage
+      checksum: sha256:37f6ee738af2e6873fd426da9c0776e121b0b5b2925ad79755cd654a22afb71f
+    - label: Linux — gitgauge_0.6.0_amd64.deb
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.6.0/gitgauge_0.6.0_amd64.deb
+      checksum: sha256:6952cf6a9664150abb11b68a56e581f333d5a710293b60e40abff755709577a2
+  draft: false
+- version: v0.5.0
+  date: '2025-10-01'
+  notes_url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/tag/v0.5.0
+  downloads:
+    mac:
+    - label: macOS — gitgauge_0.5.0_aarch64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.5.0/gitgauge_0.5.0_aarch64.dmg
+      checksum: sha256:bb74c5c8d1f04c8c742d66ecb4e17c979fb5d8cfea402d75b1e1c0872a6e3250
+    - label: macOS — gitgauge_0.5.0_x64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.5.0/gitgauge_0.5.0_x64.dmg
+      checksum: sha256:2cce0206cf19caa8ea4de445d1312daaf774dcac610761e559c2ed00b822602a
+    - label: macOS — gitgauge_aarch64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.5.0/gitgauge_aarch64.app.tar.gz
+      checksum: sha256:3912de54bced92ce256a5fbf8d4b1141037ba66df9e5c0fabbf0f40b047cc7fe
+    - label: macOS — gitgauge_x64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.5.0/gitgauge_x64.app.tar.gz
+      checksum: sha256:67c095e05fcec1c77e6a99ee775163deee93c71b258506d75f0de0cebc3a6410
+    win:
+    - label: Windows (x64) — gitgauge_0.5.0_x64-setup.exe
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.5.0/gitgauge_0.5.0_x64-setup.exe
+      checksum: sha256:eaf7c6f49a02bd5efb40b8a4dfcb3ef372dd2076105b9572e3b05cc0d8b82891
+    - label: Windows (x64) — gitgauge_0.5.0_x64_en-US.msi
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.5.0/gitgauge_0.5.0_x64_en-US.msi
+      checksum: sha256:6249eb4c0151fbfd00e7da26cb80218c016f274214c3131efc102442bc325c0f
+    linux:
+    - label: Linux — gitgauge-0.5.0-1.x86_64.rpm
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.5.0/gitgauge-0.5.0-1.x86_64.rpm
+      checksum: sha256:13bfde8d1691ff97f32518589692aad95a8ec5709ac54c1b411eb56f3c12a8ad
+    - label: Linux — gitgauge_0.5.0_amd64.AppImage
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.5.0/gitgauge_0.5.0_amd64.AppImage
+      checksum: sha256:135157cc83eb09fc6a1917052ae04d74f102b0b3f99e41f700e2d5956c1ef0ad
+    - label: Linux — gitgauge_0.5.0_amd64.deb
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.5.0/gitgauge_0.5.0_amd64.deb
+      checksum: sha256:2cefaa3bfcf48f254028ae9cd4523de06a55bb52d660f36b1f1837bbdea90dc4
+  draft: false
+- version: v0.4.0
+  date: '2025-09-19'
+  notes_url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/tag/v0.4.0
+  downloads:
+    mac:
+    - label: macOS — gitgauge_0.4.0_aarch64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.4.0/gitgauge_0.4.0_aarch64.dmg
+      checksum: sha256:dcadc47ca2e6ed943f01e46a61ec8ec30b2876a5cafd553d74459d0e2b675c0f
+    - label: macOS — gitgauge_0.4.0_x64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.4.0/gitgauge_0.4.0_x64.dmg
+      checksum: sha256:cee89b3c01eb8baa8b5b354e7e2dce4d48dbfbacb786446fbcdb7fc650753eef
+    - label: macOS — gitgauge_aarch64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.4.0/gitgauge_aarch64.app.tar.gz
+      checksum: sha256:a30fa4971cc41a8d6d7063993f400bdea4e920572b2598bc9e945ee9bc89899e
+    - label: macOS — gitgauge_x64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.4.0/gitgauge_x64.app.tar.gz
+      checksum: sha256:3d0138711548593f7656cc2c5ad763e2f2b700bd6677a5ad7efcb5edccf3c94f
+    win:
+    - label: Windows (x64) — gitgauge_0.4.0_x64-setup.exe
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.4.0/gitgauge_0.4.0_x64-setup.exe
+      checksum: sha256:82dee0fbb3d4e1d591ed976a744dd1512f7fbc0c10eddf52ee7ddc199e752ceb
+    - label: Windows (x64) — gitgauge_0.4.0_x64_en-US.msi
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.4.0/gitgauge_0.4.0_x64_en-US.msi
+      checksum: sha256:1b7495e0b2afb443996c3987f930860f5a9fca8b03c5f2d3ae8099d4ff01d7c5
+    linux:
+    - label: Linux — gitgauge-0.4.0-1.x86_64.rpm
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.4.0/gitgauge-0.4.0-1.x86_64.rpm
+      checksum: sha256:65c93256a970073239cd15ac4c7924f3d09a1a13991c47371e249278a138cd49
+    - label: Linux — gitgauge_0.4.0_amd64.AppImage
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.4.0/gitgauge_0.4.0_amd64.AppImage
+      checksum: sha256:f30e9ec8e7a625cc745e6838b0d6eeaa57a4bd595f238fd8211cb3016dc1fc85
+    - label: Linux — gitgauge_0.4.0_amd64.deb
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.4.0/gitgauge_0.4.0_amd64.deb
+      checksum: sha256:79900c3f9097faf9ffc7cd193c0987e24cd6dda2a0deaa1ab5a67cfe19f8ce07
+  draft: false
+- version: v0.3.1
+  date: '2025-09-14'
+  notes_url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/tag/v0.3.1
+  downloads:
+    mac:
+    - label: macOS — gitgauge_0.3.1_aarch64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.1/gitgauge_0.3.1_aarch64.dmg
+      checksum: sha256:6cfc259cff7dd660872c1118cc57a56fdb157dc91b61b75d07330de87603b4cc
+    - label: macOS — gitgauge_0.3.1_x64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.1/gitgauge_0.3.1_x64.dmg
+      checksum: sha256:385eafcda2552fc367ef18c3abe324b3cb17436145e4b3c7997577f935de069d
+    - label: macOS — gitgauge_aarch64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.1/gitgauge_aarch64.app.tar.gz
+      checksum: sha256:d658fc4540257e1efee5764d27522721e085b30cef6899247cdb122cc75a54ed
+    - label: macOS — gitgauge_x64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.1/gitgauge_x64.app.tar.gz
+      checksum: sha256:e016a3d9cce4439cf7055f90ec66ab81bcc3814551f2a7c333d404e79dec26ec
+    win:
+    - label: Windows (x64) — gitgauge_0.3.1_x64-setup.exe
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.1/gitgauge_0.3.1_x64-setup.exe
+      checksum: sha256:2e3899d44825b434a797c940ad145852e023cac81dce68bbda7287923ac780f8
+    - label: Windows (x64) — gitgauge_0.3.1_x64_en-US.msi
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.1/gitgauge_0.3.1_x64_en-US.msi
+      checksum: sha256:d581fecdec13a0a9459a9a0118be50fdf71212947dc83d7036f50696c7e29533
+    linux:
+    - label: Linux — gitgauge-0.3.1-1.x86_64.rpm
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.1/gitgauge-0.3.1-1.x86_64.rpm
+      checksum: sha256:1ef9fe48c660a2a480851d7c3120fed2393e2a0b3ceca11d0d61e3f10c8085e2
+    - label: Linux — gitgauge_0.3.1_amd64.AppImage
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.1/gitgauge_0.3.1_amd64.AppImage
+      checksum: sha256:08dc3e12a0b130495b3150e7223eae787acb88832ae7f1f83877b0cd723841a9
+    - label: Linux — gitgauge_0.3.1_amd64.deb
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.1/gitgauge_0.3.1_amd64.deb
+      checksum: sha256:f2c9668997a17f33615a8b20ea55e89d86f5a0aea8b559f2c9882a06079261ff
+  draft: false
+- version: v0.3.0
+  date: '2025-09-05'
+  notes_url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/tag/v0.3.0
+  downloads:
+    mac:
+    - label: macOS — gitgauge_0.3.0_aarch64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.0/gitgauge_0.3.0_aarch64.dmg
+      checksum: sha256:2c4990593191ceba8b633b568a48936c3038bacc4b9fdd14defddb11ffa94a16
+    - label: macOS — gitgauge_0.3.0_x64.dmg
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.0/gitgauge_0.3.0_x64.dmg
+      checksum: sha256:2373481611352770f0ca91b768fded596890885324d24fc2a11db3b0024900fd
+    - label: macOS — gitgauge_aarch64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.0/gitgauge_aarch64.app.tar.gz
+      checksum: sha256:4bf4705358f73be084488114e36b4ebcd533ca79e380f88ec099146b1fcdbe95
+    - label: macOS — gitgauge_x64.app.tar.gz
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.0/gitgauge_x64.app.tar.gz
+      checksum: sha256:f04dad7cdf0076b29c8c6269a34c6ac11ff01cd215c91cb498db6eb39db75eff
+    win:
+    - label: Windows (x64) — gitgauge_0.3.0_x64-setup.exe
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.0/gitgauge_0.3.0_x64-setup.exe
+      checksum: sha256:ab08b9a3d56e67f4f5ef27e1d6ef3ba299fc5c58de0338740636b5886b49bcba
+    - label: Windows (x64) — gitgauge_0.3.0_x64_en-US.msi
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.0/gitgauge_0.3.0_x64_en-US.msi
+      checksum: sha256:646d3c183ab011d3291ad71bff6eca0769b0d1db43f5f7850b3ea306e2177784
+    linux:
+    - label: Linux — gitgauge-0.3.0-1.x86_64.rpm
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.0/gitgauge-0.3.0-1.x86_64.rpm
+      checksum: sha256:b4552d1d1daa1efe11440b37e5767428ae9b7112ccc254a77d3830b172ec2372
+    - label: Linux — gitgauge_0.3.0_amd64.AppImage
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.0/gitgauge_0.3.0_amd64.AppImage
+      checksum: sha256:236fb84a457535d07942822afe8c0704425b3e72d2543153b1a74bdc6e14c6f8
+    - label: Linux — gitgauge_0.3.0_amd64.deb
+      url: https://github.com/Monash-FIT3170/2025W1-Commitment/releases/download/v0.3.0/gitgauge_0.3.0_amd64.deb
+      checksum: sha256:255b93dc0fb85bc041b485aa2ba4c50944b228505e8515b5a0136fd0da8f9ca8
+  draft: false
